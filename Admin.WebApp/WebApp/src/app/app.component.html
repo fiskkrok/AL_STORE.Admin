@@ -1,0 +1,10 @@
+<div class="container">
+  <h1>{{ title }}</h1>
+  <div *ngIf="backendMessage">{{ backendMessage }}</div>
+  <button (click)="sendMessage()">Send Test Message</button>
+  @for (message of messages$ | async; track $index) {
+  <div>
+    <div>{{ message }}</div>
+  </div>
+  }
+</div>

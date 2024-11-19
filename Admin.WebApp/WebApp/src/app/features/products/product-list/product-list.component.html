@@ -1,0 +1,60 @@
+<div class="product-list-container">
+    <div class="header">
+        <h1>Products</h1>
+        <button class="btn btn-primary" routerLink="/products/add">
+            <i class="bi bi-plus"></i> Add New Product
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th class="text-right">Price</th>
+                        <th class="text-right">Stock</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (products().length === 0) {
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No products available</td>
+                    </tr>
+                    }
+                    @for (product of products(); track product.id) {
+                    <tr>
+                        <td class="product-name">{{ product.name }}</td>
+                        <td>{{ product.category.name }}</td>
+                        <td class="text-right">{{ product.price | currency:product.currency }}</td>
+                        <td class="text-right">{{ product.stock }}</td>
+                        <td class="text-center">
+                            <button title="editProduct" class="btn btn-icon" (click)="editProduct(product)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button title="deleteProduct" class="btn btn-icon text-danger"
+                                (click)="deleteProduct(product)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="pagination">
+        <button class="btn btn-outline-secondary" [disabled]="page() === 1" (click)="previousPage()">
+            Previous
+        </button>
+        <span class="mx-4">
+            Page {{ page() }} of {{ totalCount() / pageSize() | ceil }}
+        </span>
+        <button class="btn btn-outline-secondary" [disabled]="!hasNextPage()" (click)="nextPage()">
+            Next
+        </button>
+    </div>
+</div>

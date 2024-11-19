@@ -1,0 +1,8 @@
+<div class="layout-container" [attr.data-theme]="isDarkTheme ? 'dark' : 'light'">
+    <app-sidebar></app-sidebar>
+    <main class="main-content">
+        <ng-content>
+            <app-products></app-products>
+        </ng-content>
+    </main>
+</div>

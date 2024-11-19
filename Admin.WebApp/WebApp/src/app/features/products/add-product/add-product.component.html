@@ -1,0 +1,19 @@
+<div class="add-product-container">
+    <div class="header">
+        <h1>Add New Product</h1>
+        <p>Create a new product listing with details and imagery</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+        <formly-form [form]="form" [fields]="fields" [model]="model" [options]="options"></formly-form>
+        <formly-field-file></formly-field-file>
+        <div class="form-actions">
+            <button type="button" class="btn btn-outline-secondary" (click)="reset()">
+                Clear Form
+            </button>
+            <button type="submit" class="btn btn-primary" (click)="submit()">
+                Add Product
+            </button>
+        </div>
+    </form>
+</div>

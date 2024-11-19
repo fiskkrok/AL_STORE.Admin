@@ -1,0 +1,10 @@
+@import '../styles/variables';
+
+// ...existing code...
+
+@media (max-width: map-get($breakpoints, 'md')) {
+  .bottom-nav {
+    // Include the bottom nav styles here if it's part of app component
+    // ...existing code or additional styles...
+  }
+}

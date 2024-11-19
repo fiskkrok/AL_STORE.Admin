@@ -1,0 +1,80 @@
+// src/styles/_variables.scss
+
+// Theme colors
+$theme-colors: (
+  "primary": rgb(87, 30, 47),
+  "secondary": rgb(47, 4, 21),
+  "dark": rgb(18, 3, 6),
+  "light": rgb(255, 250, 252),
+  "border": rgba(87, 30, 47, 0.2)
+);
+
+// Dark theme specific
+$dark-theme: (
+  "bg-primary": rgb(47, 4, 21),
+  "bg-secondary": rgb(87, 30, 47),
+  "bg-dark": rgb(18, 3, 6),
+  "text-primary": rgb(255, 250, 252),
+  "text-secondary": rgba(255, 250, 252, 0.7),
+  "border": rgba(87, 30, 47, 0.2)
+);
+
+// Light theme specific
+$light-theme: (
+  "bg-primary": rgb(255, 250, 252),
+  "bg-secondary": rgb(247, 242, 244),
+  "bg-dark": rgb(237, 232, 234),
+  "text-primary": rgb(18, 3, 6),
+  "text-secondary": rgba(18, 3, 6, 0.7),
+  "border": rgba(87, 30, 47, 0.1)
+);
+
+// Define CSS variables for light theme
+:root {
+  --bg-primary: rgb(255, 250, 252);
+  --bg-secondary: rgb(247, 242, 244);
+  --bg-dark: rgb(237, 232, 234);
+  --text-primary: rgb(18, 3, 6);
+  --text-secondary: rgba(18, 3, 6, 0.7);
+  --border: rgba(87, 30, 47, 0.1);
+}
+
+// Define CSS variables for dark theme
+[data-theme="dark"] {
+  --bg-primary: rgb(47, 4, 21);
+  --bg-secondary: rgb(87, 30, 47);
+  --bg-dark: rgb(18, 3, 6);
+  --text-primary: rgb(255, 250, 252);
+  --text-secondary: rgba(255, 250, 252, 0.7);
+  --border: rgba(87, 30, 47, 0.2);
+}
+
+// Spacing
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * 0.25,
+  2: $spacer * 0.5,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+);
+
+// Breakpoints
+$breakpoints: (
+  'xs': 0,
+  'sm': 576px,
+  'md': 768px,
+  'lg': 992px,
+  'xl': 1200px
+);
+
+// Sidebar
+$sidebar-width: 250px;
+$sidebar-collapsed-width: 70px;
+$sidebar-transition: all 0.3s ease;
+
+// src/styles/_variables.scss - Add new variables
+$input-padding: 0.75rem 1rem;
+$input-border-radius: 8px;
+$transition-speed: 0.2s;

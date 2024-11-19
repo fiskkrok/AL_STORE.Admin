@@ -1,0 +1,27 @@
+@import '../../../styles/variables';
+
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  transition: $sidebar-transition;
+  
+  .sidebar.collapsed + & {
+    // margin-left: $sidebar-collapsed-width;
+  }
+}
+
+@media (max-width: map-get($breakpoints, 'md')) {
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+    // Add bottom padding to prevent content overlap with bottom nav
+    padding-bottom: 80px;
+  }
+}
