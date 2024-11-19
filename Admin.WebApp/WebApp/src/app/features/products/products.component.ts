@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-    selector: 'app-products',
-    standalone: true,
-    imports: [CommonModule, RouterOutlet],
-    template: `
+  selector: 'app-products',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet],
+  template: `
     <router-outlet></router-outlet>
   `
 })

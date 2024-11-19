@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, signal } from "@angular/core";
+import { Component } from "@angular/core";
 import { DialogConfig, DialogService } from "../../../core/services/dialog.service";
 import { Observable } from "rxjs";
 
