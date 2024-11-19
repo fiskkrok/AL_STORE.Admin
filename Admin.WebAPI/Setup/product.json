@@ -1,0 +1,188 @@
+{
+  "products": [
+    {
+      "genre": "Men's Grooming",
+      "subGenre": "Men's Grooming - Skin Care - Daily Care",
+      "items": [
+        {
+          "id": 1,
+          "name": "Hydrating Face Wash",
+          "description": "Gentle face wash with natural ingredients for daily use. Perfect for all skin types.",
+          "price": 19.99,
+          "brand": "UrbanGent",
+          "stock": 150
+        },
+        {
+          "id": 2,
+          "name": "SPF 30 Moisturizer",
+          "description": "Lightweight moisturizer with broad-spectrum sun protection for everyday use.",
+          "price": 29.99,
+          "brand": "Shield & Shine",
+          "stock": 100
+        },
+        {
+          "id": 3,
+          "name": "Charcoal Face Mask",
+          "description": "Deep cleansing mask with activated charcoal for clear, refreshed skin.",
+          "price": 24.99,
+          "brand": "PureGent",
+          "stock": 120
+        }
+      ]
+    },
+    {
+      "genre": "Men's Grooming",
+      "subGenre": "Men's Grooming - Skin Care - Anti-Aging",
+      "items": [
+        {
+          "id": 4,
+          "name": "Anti-Aging Night Cream",
+          "description": "Rich night cream with retinol and peptides for age-defying results.",
+          "price": 45.99,
+          "brand": "AgelessGent",
+          "stock": 75
+        },
+        {
+          "id": 5,
+          "name": "Firming Eye Serum",
+          "description": "Advanced eye serum to reduce fine lines and dark circles.",
+          "price": 39.99,
+          "brand": "AgelessGent",
+          "stock": 85
+        }
+      ]
+    },
+    {
+      "genre": "Men's Grooming",
+      "subGenre": "Men's Grooming - Hair Care - Shampoo & Conditioner",
+      "items": [
+        {
+          "id": 6,
+          "name": "Thickening Shampoo",
+          "description": "Premium shampoo for fuller, thicker-looking hair with biotin and keratin.",
+          "price": 22.99,
+          "brand": "ManeMan",
+          "stock": 200
+        },
+        {
+          "id": 7,
+          "name": "Scalp Treatment Conditioner",
+          "description": "Nourishing conditioner that promotes a healthy scalp and strong hair.",
+          "price": 24.99,
+          "brand": "HairCare",
+          "stock": 180
+        }
+      ]
+    },
+    {
+      "genre": "Men's Grooming",
+      "subGenre": "Men's Grooming - Shaving - Razors",
+      "items": [
+        {
+          "id": 8,
+          "name": "Premium Safety Razor",
+          "description": "Classic double-edge safety razor with chrome finish and precision engineering.",
+          "price": 89.99,
+          "brand": "ClassicShave",
+          "stock": 50
+        },
+        {
+          "id": 9,
+          "name": "Travel Safety Razor",
+          "description": "Compact safety razor perfect for travel, with protective case.",
+          "price": 49.99,
+          "brand": "ClassicShave",
+          "stock": 75
+        }
+      ]
+    },
+    {
+      "genre": "Accessories",
+      "subGenre": "Accessories - Watches",
+      "items": [
+        {
+          "id": 10,
+          "name": "Classic Automatic Watch",
+          "description": "Sophisticated automatic movement watch with genuine leather strap.",
+          "price": 499.99,
+          "brand": "TimePiece",
+          "stock": 25
+        },
+        {
+          "id": 11,
+          "name": "Minimalist Watch",
+          "description": "Clean, modern design with Swiss quartz movement and mesh bracelet.",
+          "price": 199.99,
+          "brand": "ModernTime",
+          "stock": 40
+        }
+      ]
+    },
+    {
+      "genre": "Accessories",
+      "subGenre": "Accessories - Leather Goods - Wallets",
+      "items": [
+        {
+          "id": 12,
+          "name": "Italian Leather Bifold",
+          "description": "Slim bifold wallet crafted from premium Italian leather with RFID protection.",
+          "price": 89.99,
+          "brand": "LeatherCraft",
+          "stock": 60
+        },
+        {
+          "id": 13,
+          "name": "Card Holder Wallet",
+          "description": "Minimalist card holder in full-grain leather with money clip.",
+          "price": 59.99,
+          "brand": "LeatherCraft",
+          "stock": 80
+        }
+      ]
+    },
+    {
+      "genre": "Lifestyle",
+      "subGenre": "Lifestyle - Bar & Wine - Bar Tools",
+      "items": [
+        {
+          "id": 14,
+          "name": "Professional Cocktail Set",
+          "description": "Complete bartending kit with shaker, jigger, muddler, and strainer.",
+          "price": 69.99,
+          "brand": "MixMaster",
+          "stock": 45
+        },
+        {
+          "id": 15,
+          "name": "Japanese Jigger",
+          "description": "Precision-crafted double-sided jigger in stainless steel.",
+          "price": 24.99,
+          "brand": "MixMaster",
+          "stock": 65
+        }
+      ]
+    },
+    {
+      "genre": "Lifestyle",
+      "subGenre": "Lifestyle - Coffee & Tea - Brewing Equipment",
+      "items": [
+        {
+          "id": 16,
+          "name": "Precision Pour-Over Set",
+          "description": "Complete pour-over coffee brewing kit with stand and filters.",
+          "price": 79.99,
+          "brand": "BrewMaster",
+          "stock": 40
+        },
+        {
+          "id": 17,
+          "name": "Electric Gooseneck Kettle",
+          "description": "Temperature-controlled kettle for precise coffee and tea brewing.",
+          "price": 129.99,
+          "brand": "PrecisionPour",
+          "stock": 35
+        }
+      ]
+    }
+  ]
+}

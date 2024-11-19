@@ -1,0 +1,122 @@
+{
+  "categories": [
+    {
+      "name": "Men's Grooming",
+      "description": "Essential grooming products for the modern gentleman",
+      "subCategories": [
+        {
+          "name": "Skin Care",
+          "description": "Premium skin care products for men",
+          "subCategories": [
+            {
+              "name": "Daily Care",
+              "description": "Essential daily skin care routines"
+            },
+            {
+              "name": "Anti-Aging",
+              "description": "Advanced anti-aging treatments"
+            },
+            {
+              "name": "Body Care",
+              "description": "Complete body care solutions"
+            }
+          ]
+        },
+        {
+          "name": "Hair Care",
+          "description": "Professional hair care products",
+          "subCategories": [
+            {
+              "name": "Shampoo & Conditioner",
+              "description": "Premium hair washing products"
+            },
+            {
+              "name": "Styling",
+              "description": "Hair styling products for every look"
+            }
+          ]
+        },
+        {
+          "name": "Shaving",
+          "description": "Traditional and modern shaving solutions",
+          "subCategories": [
+            {
+              "name": "Razors",
+              "description": "Quality razors for a clean shave"
+            },
+            {
+              "name": "Shaving Cream",
+              "description": "Luxury shaving creams and soaps"
+            },
+            {
+              "name": "After Shave",
+              "description": "Post-shave care products"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accessories",
+      "description": "Sophisticated accessories for the modern gentleman",
+      "subCategories": [
+        {
+          "name": "Watches",
+          "description": "Timeless timepieces for every occasion"
+        },
+        {
+          "name": "Leather Goods",
+          "description": "Premium leather accessories",
+          "subCategories": [
+            {
+              "name": "Wallets",
+              "description": "Elegant wallets and cardholders"
+            },
+            {
+              "name": "Belts",
+              "description": "Classic and modern belt designs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lifestyle",
+      "description": "Elevate your lifestyle with premium products",
+      "subCategories": [
+        {
+          "name": "Bar & Wine",
+          "description": "Essential tools for the home bar",
+          "subCategories": [
+            {
+              "name": "Bar Tools",
+              "description": "Professional grade bartending tools"
+            },
+            {
+              "name": "Glassware",
+              "description": "Premium glasses for every drink"
+            },
+            {
+              "name": "Wine Accessories",
+              "description": "Everything needed for wine appreciation"
+            }
+          ]
+        },
+        {
+          "name": "Coffee & Tea",
+          "description": "Refined coffee and tea accessories",
+          "subCategories": [
+            {
+              "name": "Brewing Equipment",
+              "description": "Professional brewing tools"
+            },
+            {
+              "name": "Accessories",
+              "description": "Essential coffee and tea accessories"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

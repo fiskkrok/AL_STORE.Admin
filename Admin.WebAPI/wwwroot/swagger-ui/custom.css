@@ -1,0 +1,22 @@
+﻿.swagger-ui .topbar {
+                          background-color: #1a365d;
+                      }
+
+.swagger-ui .info .title {
+    color: #2d3748;
+}
+
+.swagger-ui .opblock.opblock-post {
+    border-color: #48bb78;
+    background: rgba(72, 187, 120, 0.1);
+}
+
+.swagger-ui .opblock.opblock-put {
+    border-color: #ecc94b;
+    background: rgba(236, 201, 75, 0.1);
+}
+
+.swagger-ui .opblock.opblock-delete {
+    border-color: #f56565;
+    background: rgba(245, 101, 101, 0.1);
+}
