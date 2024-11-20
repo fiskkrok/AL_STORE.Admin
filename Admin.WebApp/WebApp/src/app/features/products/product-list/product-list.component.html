@@ -8,7 +8,7 @@
 
     <div class="card">
         <div class="table-responsive">
-            <table class="table">
+            <table class="table ">
                 <thead>
                     <tr>
                         <th>Image</th>
@@ -29,7 +29,8 @@
                     <tr>
                         <td class="product-image">
                             @if (product.images.length > 0) {
-                            <img src="{{ product.images[0].url }}" alt="{{ product.name }}" (click)="openImagePreview(product.images[0].url)" />
+                            <img src="{{ product.images[0].url }}" alt="{{ product.name }}"
+                                (click)="openImagePreview(product.images[0].url)" />
                             }
                         </td>
                         <td class="product-name">{{ product.name }}</td>
@@ -37,7 +38,8 @@
                         <td class="text-right">{{ product.price | currency:product.currency }}</td>
                         <td class="text-right">{{ product.stock }}</td>
                         <td class="text-center">
-                            <button title="editProduct" class="btn btn-icon" (click)="editProduct(product)">
+                            <button title="editProduct" class="btn btn-icon text-success"
+                                (click)="editProduct(product)">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button title="deleteProduct" class="btn btn-icon text-danger"

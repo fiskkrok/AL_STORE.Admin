@@ -35,7 +35,6 @@ interface ProductFormModel {
     FormlyModule,
     FormlyBootstrapModule,
     ReactiveFormsModule,
-    FormlyImageUploadTypeComponent
   ],
 })
 export class AddProductComponent implements OnInit {

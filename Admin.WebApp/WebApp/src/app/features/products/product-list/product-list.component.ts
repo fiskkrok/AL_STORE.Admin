@@ -6,8 +6,6 @@ import { ProductService } from '../../../core/services/product.service';
 import { CeilPipe } from '../../../shared/pipes/ceil-pipe';
 import { ErrorService } from '../../../core/services/error.service';
 import { DialogService } from '../../../core/services/dialog.service';
-import { MatDialog } from '@angular/material/dialog';
-import { ImagePreviewDialogComponent } from './image-preview-dialog.component';
 
 @Component({
     selector: 'app-product-list',
@@ -41,7 +39,6 @@ export class ProductListComponent implements OnInit {
         private readonly errorService: ErrorService,
         private readonly dialogService: DialogService,
         private readonly router: Router,
-        private readonly dialog: MatDialog
     ) { }
 
     ngOnInit() {
@@ -129,9 +126,11 @@ export class ProductListComponent implements OnInit {
         // Implementation coming in next phase
     }
 
-    openImagePreview(imageUrl: string) {
-        this.dialog.open(ImagePreviewDialogComponent, {
-            data: { url: imageUrl }
+    async openImagePreview(imageUrl: string) {
+        await this.dialogService.show({
+            title: 'Image Preview',
+            message: imageUrl,
+            type: 'preview'
         });
     }
 }

@@ -1,6 +1,6 @@
 // src/app/core/services/error.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 export interface ErrorState {
     message: string;
@@ -12,7 +12,7 @@ export interface ErrorState {
     providedIn: 'root'
 })
 export class ErrorService {
-    private errorSubject = new BehaviorSubject<ErrorState[]>([]);
+    private readonly errorSubject = new BehaviorSubject<ErrorState[]>([]);
     errors$ = this.errorSubject.asObservable();
 
     addError(error: Omit<ErrorState, 'timestamp'>) {
@@ -31,5 +31,19 @@ export class ErrorService {
         const currentErrors = this.errorSubject.value;
         currentErrors.splice(index, 1);
         this.errorSubject.next([...currentErrors]);
+    }
+
+    handleFormError(error: any) {
+        if (error instanceof TypeError) {
+            this.addError({
+                message: 'Form validation error occurred. Please check your input.',
+                type: 'error'
+            });
+        } else {
+            this.addError({
+                message: error.message || 'An unexpected error occurred',
+                type: 'error'
+            });
+        }
     }
 }
