@@ -12,6 +12,7 @@
                 <thead>
                     <tr>
                         <th>Image</th>
+                        <th>Image</th>
                         <th>Name</th>
                         <th>Category</th>
                         <th class="text-right">Price</th>
@@ -22,6 +23,7 @@
                 <tbody>
                     @if (products().length === 0) {
                     <tr>
+                        <td colspan="6" class="text-center py-4">No products available</td>
                         <td colspan="6" class="text-center py-4">No products available</td>
                     </tr>
                     }
