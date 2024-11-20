@@ -6,6 +6,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { CeilPipe } from '../../../shared/pipes/ceil-pipe';
 import { ErrorService } from '../../../core/services/error.service';
 import { DialogService } from '../../../core/services/dialog.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-product-list',
