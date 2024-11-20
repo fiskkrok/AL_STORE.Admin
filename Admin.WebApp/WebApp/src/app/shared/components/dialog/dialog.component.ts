@@ -1,16 +1,20 @@
 import { CommonModule } from "@angular/common";
-import { Component, signal } from "@angular/core";
+import { Component } from "@angular/core";
 import { DialogConfig, DialogService } from "../../../core/services/dialog.service";
 import { Observable } from "rxjs";
 
 @Component({
-    selector: 'app-dialog',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-dialog',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     @if (dialog$ | async; as dialog) {
       <div class="dialog-overlay" (click)="onOverlayClick($event)">
         <div class="dialog-container" [ngClass]="dialog.type">
+          @if (dialog.type === 'preview') {
+            <img [src]="dialog.message" alt="Preview" />
+          }
+          @else{
           <h2>{{ dialog.title }}</h2>
           <p>{{ dialog.message }}</p>
           <div class="dialog-actions">
@@ -28,11 +32,12 @@ import { Observable } from "rxjs";
               {{ dialog.confirmText || 'OK' }}
             </button>
           </div>
+          }
         </div>
       </div>
     }
   `,
-    styles: [`
+  styles: [`
     .dialog-overlay {
       position: fixed;
       top: 0;
@@ -90,23 +95,23 @@ import { Observable } from "rxjs";
   `]
 })
 export class DialogComponent {
-    dialog$ = new Observable<DialogConfig | null>();
+  dialog$ = new Observable<DialogConfig | null>();
 
-    constructor(private dialogService: DialogService) {
-        this.dialog$ = this.dialogService.dialog$;
-    }
+  constructor(private readonly dialogService: DialogService) {
+    this.dialog$ = this.dialogService.dialog$;
+  }
 
-    onConfirm() {
-        this.dialogService.handleAction(true);
-    }
+  onConfirm() {
+    this.dialogService.handleAction(true);
+  }
 
-    onCancel() {
-        this.dialogService.handleAction(false);
-    }
+  onCancel() {
+    this.dialogService.handleAction(false);
+  }
 
-    onOverlayClick(event: MouseEvent) {
-        if ((event.target as HTMLElement).classList.contains('dialog-overlay')) {
-            this.onCancel();
-        }
+  onOverlayClick(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('dialog-overlay')) {
+      this.onCancel();
     }
+  }
 }

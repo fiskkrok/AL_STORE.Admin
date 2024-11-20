@@ -8,9 +8,10 @@
 
     <div class="card">
         <div class="table-responsive">
-            <table class="table">
+            <table class="table ">
                 <thead>
                     <tr>
+                        <th>Image</th>
                         <th>Name</th>
                         <th>Category</th>
                         <th class="text-right">Price</th>
@@ -21,17 +22,24 @@
                 <tbody>
                     @if (products().length === 0) {
                     <tr>
-                        <td colspan="5" class="text-center py-4">No products available</td>
+                        <td colspan="6" class="text-center py-4">No products available</td>
                     </tr>
                     }
                     @for (product of products(); track product.id) {
                     <tr>
+                        <td class="product-image">
+                            @if (product.images.length > 0) {
+                            <img src="{{ product.images[0].url }}" alt="{{ product.name }}"
+                                (click)="openImagePreview(product.images[0].url)" />
+                            }
+                        </td>
                         <td class="product-name">{{ product.name }}</td>
                         <td>{{ product.category.name }}</td>
                         <td class="text-right">{{ product.price | currency:product.currency }}</td>
                         <td class="text-right">{{ product.stock }}</td>
                         <td class="text-center">
-                            <button title="editProduct" class="btn btn-icon" (click)="editProduct(product)">
+                            <button title="editProduct" class="btn btn-icon text-success"
+                                (click)="editProduct(product)">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button title="deleteProduct" class="btn btn-icon text-danger"

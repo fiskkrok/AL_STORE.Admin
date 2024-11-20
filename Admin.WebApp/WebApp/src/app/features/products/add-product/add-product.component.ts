@@ -9,6 +9,7 @@ import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { Product } from '../../../shared/models/product.model';
 import { FormlyImageUploadTypeComponent } from '../../../shared/formly/image-upload.type';
 import { FieldType, FieldTypeConfig } from '@ngx-formly/core';
+import { FileValueAccessor } from '../../../shared/formly/file-value-accessor';
 
 
 interface ProductFormModel {
@@ -34,7 +35,6 @@ interface ProductFormModel {
     FormlyModule,
     FormlyBootstrapModule,
     ReactiveFormsModule,
-    FormlyImageUploadTypeComponent
   ],
 })
 export class AddProductComponent implements OnInit {

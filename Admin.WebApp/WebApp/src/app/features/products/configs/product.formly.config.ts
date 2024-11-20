@@ -1,5 +1,6 @@
 // src/app/features/products/configs/product.formly.config.ts
 import { FormlyFieldConfig } from '@ngx-formly/core';
+import { FormlyImageUploadTypeComponent } from '../../../shared/formly/image-upload.type';
 
 export function getProductFormFields(categories: { id: string; name: string; }[]): FormlyFieldConfig[] {
     return [
@@ -123,7 +124,7 @@ export function getProductFormFields(categories: { id: string; name: string; }[]
                     fieldGroup: [
                         {
                             key: 'images',
-                            type: 'file',
+                            type: FormlyImageUploadTypeComponent,
                             templateOptions: {
                                 label: 'Product Images',
                                 multiple: true,

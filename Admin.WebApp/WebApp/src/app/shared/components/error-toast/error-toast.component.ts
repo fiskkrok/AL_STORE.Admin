@@ -33,7 +33,7 @@ import { ErrorService, ErrorState } from '../../../core/services/error.service';
 export class ErrorToastComponent implements OnInit {
   errors: ErrorState[] = [];
 
-  constructor(private errorService: ErrorService) { }
+  constructor(private readonly errorService: ErrorService) { }
 
   ngOnInit() {
     this.errorService.errors$.subscribe(errors => {

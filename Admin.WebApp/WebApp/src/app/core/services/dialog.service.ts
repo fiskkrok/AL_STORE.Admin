@@ -1,4 +1,4 @@
-import { Injectable, Component } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 export interface DialogConfig {
@@ -6,14 +6,14 @@ export interface DialogConfig {
     message: string;
     confirmText?: string;
     cancelText?: string;
-    type?: 'info' | 'warning' | 'error' | 'confirm';
+    type?: 'info' | 'warning' | 'error' | 'confirm' | 'preview';
 }
 
 @Injectable({
     providedIn: 'root'
 })
 export class DialogService {
-    private dialogSubject = new BehaviorSubject<DialogConfig | null>(null);
+    private readonly dialogSubject = new BehaviorSubject<DialogConfig | null>(null);
     dialog$ = this.dialogSubject.asObservable();
 
     private resolveRef: ((value: boolean) => void) | null = null;
