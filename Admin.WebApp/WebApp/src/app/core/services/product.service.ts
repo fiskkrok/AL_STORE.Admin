@@ -65,11 +65,11 @@ export class ProductService {
     }
 
     // Update existing product
-    updateProduct(id: string, product: Partial<Product>): Observable<Product> {
-        return this.http.put<Product>(`${this.apiUrl}/${id}`, product).pipe(
+    updateProduct(product: Product): Observable<Product> {
+        return this.http.put<Product>(`${this.apiUrl}/${product.id}`, product).pipe(
             tap(updatedProduct => {
                 const currentProducts = this.productsSubject.value;
-                const index = currentProducts.findIndex(p => p.id === id);
+                const index = currentProducts.findIndex(p => p.id === product.id);
                 if (index !== -1) {
                     currentProducts[index] = updatedProduct;
                     this.productsSubject.next([...currentProducts]);

@@ -7,6 +7,8 @@ import { CeilPipe } from '../../../shared/pipes/ceil-pipe';
 import { ErrorService } from '../../../core/services/error.service';
 import { DialogService } from '../../../core/services/dialog.service';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { EditProductDialogComponent } from '../../../shared/components/edit-product-dialog/edit-product-dialog.component';
 
 @Component({
     selector: 'app-product-list',
@@ -40,6 +42,8 @@ export class ProductListComponent implements OnInit {
         private readonly errorService: ErrorService,
         private readonly dialogService: DialogService,
         private readonly router: Router,
+        private readonly matDialog: MatDialog,
+        private readonly snackBar: MatSnackBar
     ) { }
 
     ngOnInit() {
@@ -67,8 +71,24 @@ export class ProductListComponent implements OnInit {
         });
     }
 
-    editProduct(product: Product) {
-        this.router.navigate(['/products/edit', product.id]);
+    openEditProductDialog(product: Product) {
+        const dialogRef = this.matDialog.open(EditProductDialogComponent, {
+            width: '600px',
+            data: product
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.snackBar.open('Product updated successfully', 'Close', { duration: 3000 });
+                this.loadProducts();
+            } else if (result === false) {
+                this.snackBar.open('Product update failed', 'Close', { duration: 3000 });
+            }
+        });
+    }
+
+    async editProduct(product: Product) {
+        this.openEditProductDialog(product);
     }
 
     async deleteProduct(product: Product) {

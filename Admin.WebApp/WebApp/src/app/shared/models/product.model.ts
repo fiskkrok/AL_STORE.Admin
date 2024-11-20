@@ -21,4 +21,5 @@ export interface Product {
     createdBy: any;
     lastModifiedAt: any;
     lastModifiedBy: any;
+    // Ensure all form fields are represented here
 }
