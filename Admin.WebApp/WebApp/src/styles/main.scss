@@ -1,0 +1,85 @@
+// src/styles/main.scss
+@use 'sass:map';
+@use 'material-theme';
+@use 'abstracts' as *;
+@use 'base' as *;
+@use 'themes' as *;
+
+// Bootstrap imports (if needed)
+@use 'bootstrap/scss/bootstrap' as bootstrap;
+
+// Custom styles that work with Material Design tokens
+.custom-container {
+    background: var(--mat-sys-color-surface);
+    color: var(--mat-sys-color-on-surface);
+    padding: get-spacing(3);
+    border-radius: 8px;
+    border: 1px solid var(--mat-sys-color-outline);
+}
+
+.form-control {
+    background: var(--mat-sys-color-surface-container);
+    color: var(--mat-sys-color-on-surface);
+    border: 1px solid var(--mat-sys-color-outline);
+    border-radius: 8px;
+    padding: $input-padding;
+    transition: all 0.2s ease;
+
+    &::placeholder {
+        color: var(--mat-sys-color-on-surface-variant);
+        opacity: 0.7;
+    }
+
+    &:focus {
+        border-color: var(--mat-sys-color-primary);
+        box-shadow: 0 0 0 2px var(--mat-sys-color-primary-container);
+        outline: none;
+    }
+}
+
+// Button styles using Material tokens
+.btn {
+    border-radius: 8px;
+    padding: $input-padding;
+    font-weight: $font-weight-bold;
+    transition: all 0.2s ease;
+
+    &.btn-primary {
+        background-color: var(--mat-sys-color-primary);
+        border: none;
+        color: var(--mat-sys-color-on-primary);
+
+        &:hover {
+            background-color: var(--mat-sys-color-primary-container);
+            color: var(--mat-sys-color-on-primary-container);
+        }
+    }
+
+    &.btn-outline-secondary {
+        border: 1px solid var(--mat-sys-color-outline);
+        color: var(--mat-sys-color-on-surface-variant);
+
+        &:hover {
+            background-color: var(--mat-sys-color-surface-container);
+        }
+    }
+}
+
+// Mobile improvements
+@include responsive('md') {
+    body {
+        font-size: 0.875rem;
+        margin-bottom: get-spacing(5);
+    }
+
+    .bottom-nav {
+        background: var(--mat-sys-color-surface);
+        border-top: 1px solid var(--mat-sys-color-outline);
+        padding: get-spacing(2);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+}

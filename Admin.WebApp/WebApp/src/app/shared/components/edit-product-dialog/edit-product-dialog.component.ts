@@ -1,12 +1,23 @@
-// filepath: /d:/AL_STORE/AL_STORE.Admin/src/Admin.WebApp/src/app/edit-product-dialog/edit-product-dialog.component.ts
+
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Product } from '../../models/product.model';
+
 import { ProductService } from '../../../core/services/product.service';
+import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { MatOptionModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-edit-product-dialog',
+  imports: [MatFormFieldModule, CommonModule, ReactiveFormsModule, MatButtonModule,
+    MatInputModule, MatOptionModule,
+    MatCardModule],
+  standalone: true,
   templateUrl: './edit-product-dialog.component.html',
   styleUrls: ['./edit-product-dialog.component.scss']
 })
@@ -21,7 +32,9 @@ export class EditProductDialogComponent {
     this.editProductForm = new FormGroup({
       name: new FormControl(data.name, Validators.required),
       price: new FormControl(data.price, [Validators.required, Validators.min(0)]),
-      // ...additional form controls...
+      description: new FormControl(data.description),
+      category: new FormControl(data.category, Validators.required),
+      imageUrl: new FormControl(data.images, Validators.required),
     });
   }
 

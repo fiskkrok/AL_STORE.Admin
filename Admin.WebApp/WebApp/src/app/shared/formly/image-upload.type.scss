@@ -1,25 +1,26 @@
-@import '../../../styles/variables';
+@use 'sass:map';
+@use '../../../styles/abstracts/variables' as vars;
 
 .file-container {
     .file-box {
-        border: 2px dashed map-get($theme-colors, "primary");
+        border: 2px dashed var(--primary);
         border-radius: 8px;
         padding: 1rem;
         text-align: center;
         cursor: pointer;
-        background-color: map-get($dark-theme, "bg-secondary");
+        background-color: var(--bg-secondary);
         transition: all 0.3s ease;
 
         &:hover {
-            background-color: rgba(map-get($theme-colors, "primary"), 0.1);
+            background-color: rgba(var(--primary-rgb), 0.1);
         }
 
         i {
-            color: map-get($theme-colors, "primary");
+            color: var(--primary);
         }
 
         p {
-            color: map-get($dark-theme, "text-primary");
+            color: var(--text-primary);
             margin: 0;
         }
     }
@@ -50,7 +51,7 @@
         width: 1.5rem;
         height: 1.5rem;
         border-radius: 50%;
-        background-color: map-get($theme-colors, "primary");
+        background-color: var(--primary);
         color: white;
         display: flex;
         align-items: center;
@@ -60,7 +61,7 @@
         padding: 0;
 
         &:hover {
-            background-color: darken(map-get($theme-colors, "primary"), 10%);
+            filter: brightness(90%);
         }
     }
 }

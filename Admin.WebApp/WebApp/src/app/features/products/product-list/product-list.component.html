@@ -1,28 +1,96 @@
-<div class="product-list-container ">
+<!-- src/app/features/products/product-list/product-list.component.html -->
+<div class="product-list-container">
+    <!-- Header with search -->
     <div class="header">
         <h1>Products</h1>
-        <button class="btn btn-primary" routerLink="/products/add">
-            <i class="bi bi-plus"></i> Add New Product
-        </button>
+        <div class="actions">
+            <div class="search-container">
+                <input [formControl]="searchControl" type="text" class="form-control"
+                    placeholder="Search products..." />
+            </div>
+            <button class="btn btn-primary" routerLink="/products/add">
+                <i class="bi bi-plus"></i> Add New Product
+            </button>
+        </div>
     </div>
 
+    <!-- Filters -->
+    <div class="filters">
+        <div class="filter-group">
+            <select [formControl]="categoryFilter" class="form-select">
+                <option value="">All Categories</option>
+                @for (category of categories(); track category.id) {
+                <option [value]="category.id">{{ category.name }}</option>
+                }
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <input [formControl]="minPriceFilter" type="number" class="form-control" placeholder="Min Price" />
+        </div>
+
+        <div class="filter-group">
+            <input [formControl]="maxPriceFilter" type="number" class="form-control" placeholder="Max Price" />
+        </div>
+
+        <div class="filter-group">
+            <label class="checkbox-container">
+                <input [formControl]="inStockFilter" type="checkbox" />
+                <span>In Stock Only</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Products Table -->
     <div class="card">
-        <div class="table-responsive rounded-1">
+        <div class="table-responsive">
             <table class="table">
-                <thead class="table-light ">
+                <thead>
                     <tr>
                         <th>Image</th>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th class="text-right">Price</th>
-                        <th class="text-right">Stock</th>
+                        <th (click)="sort('name')">
+                            Name
+                            @if (sortConfig().column === 'name') {
+                            <i class="bi" [class.bi-arrow-up]="sortConfig().direction === 'asc'"
+                                [class.bi-arrow-down]="sortConfig().direction === 'desc'"></i>
+                            }
+                        </th>
+                        <th (click)="sort('category')">
+                            Category
+                            @if (sortConfig().column === 'category') {
+                            <i class="bi" [class.bi-arrow-up]="sortConfig().direction === 'asc'"
+                                [class.bi-arrow-down]="sortConfig().direction === 'desc'"></i>
+                            }
+                        </th>
+                        <th (click)="sort('price')" class="text-right">
+                            Price
+                            @if (sortConfig().column === 'price') {
+                            <i class="bi" [class.bi-arrow-up]="sortConfig().direction === 'asc'"
+                                [class.bi-arrow-down]="sortConfig().direction === 'desc'"></i>
+                            }
+                        </th>
+                        <th (click)="sort('stock')" class="text-right">
+                            Stock
+                            @if (sortConfig().column === 'stock') {
+                            <i class="bi" [class.bi-arrow-up]="sortConfig().direction === 'asc'"
+                                [class.bi-arrow-down]="sortConfig().direction === 'desc'"></i>
+                            }
+                        </th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (products().length === 0) {
+                    @if (loading()) {
                     <tr>
-                        <td colspan="6" class="text-center py-4">No products available</td>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </td>
+                    </tr>
+                    } @else if (products().length === 0) {
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No products found</td>
                     </tr>
                     }
                     @for (product of products(); track product.id) {
@@ -33,17 +101,29 @@
                                 (click)="openImagePreview(product.images[0].url)" />
                             }
                         </td>
-                        <td class="product-name">{{ product.name }}</td>
+                        <td>{{ product.name }}</td>
                         <td>{{ product.category.name }}</td>
-                        <td class="text-right">{{ product.price | currency:product.currency }}</td>
-                        <td class="text-right">{{ product.stock }}</td>
-                        <td class="text-center">
-                            <button title="editProduct" class="btn btn-icon text-success"
-                                (click)="editProduct(product)">
+                        <td class="text-right" [ngClass]="{
+                            'text-danger': product.price < 50,
+                            'text-warning': product.price >= 50 && product.price < 100,
+                            'text-success': product.price >= 100
+                        }">
+                            {{ product.price | currency }}
+                        </td>
+                        <td class="text-right" [ngClass]="{
+                            'text-danger': product.stock === 0,
+                            'text-warning': product.stock > 0 && product.stock < 10,
+                            'text-success': product.stock >= 10
+                        }">
+                            {{ product.stock }}
+                        </td>
+                        <td class=" text-center">
+                            <button class="btn btn-sm 
+                                btn-primary" title="Edit Product" (click)="editProduct(product)">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button title="deleteProduct" class="btn btn-icon text-danger"
-                                (click)="deleteProduct(product)">
+                            <button class="btn btn-sm btn-danger" (click)="deleteProduct(product)"
+                                title="Delete Product">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
@@ -53,7 +133,6 @@
             </table>
         </div>
     </div>
-
     <div class="pagination">
         <button class="btn btn-outline-secondary" [disabled]="page() === 1" (click)="previousPage()">
             Previous

@@ -1,4 +1,9 @@
-@import '../../../styles/variables';
+@use 'sass:map';
+@use '../../../styles/abstracts/variables' as vars;
+@use '../../../styles/themes/theme-colors' as theme;
+@use '@angular/material' as mat;
+
+
 
 .layout-container {
   display: flex;
@@ -8,20 +13,15 @@
 }
 
 .main-content {
-  flex: 1;
+  flex: 0.5;
   padding: 2rem;
-  transition: $sidebar-transition;
-  
-  .sidebar.collapsed + & {
-    // margin-left: $sidebar-collapsed-width;
-  }
+  transition: vars.$sidebar-transition;
 }
 
-@media (max-width: map-get($breakpoints, 'md')) {
-  .main-content {
-    margin-left: 0;
-    padding: 1rem;
-    // Add bottom padding to prevent content overlap with bottom nav
-    padding-bottom: 80px;
-  }
-}
+// @media (max-width: map.get(vars.$breakpoints, 'md')) {
+//   .main-content {
+//     margin-left: 0;
+//     padding: 1rem;
+//     padding-bottom: 80px;
+//   }
+// }

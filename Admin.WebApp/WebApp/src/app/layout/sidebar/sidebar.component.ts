@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ThemeService } from '../../services/theme.service';
+import { ThemeService } from '../../core/services/theme.service';
 interface NavItem {
   path: string;
   icon: string;
@@ -75,7 +75,9 @@ export class SidebarComponent {
 
   toggleTheme() {
     this.isDarkTheme = !this.isDarkTheme;
-    this.themeService.setTheme(this.isDarkTheme ? 'dark' : 'light');
+    // this.themeService.setTheme(this.isDarkTheme ? 'dark' : 'light');
+    this.themeService.setTheme(this.isDarkTheme);
+
   }
 
   toggleSubmenu(item: NavItem) {

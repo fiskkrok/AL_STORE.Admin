@@ -1,0 +1,70 @@
+@use 'sass:map';
+
+// Theme colors
+$theme-colors: (
+  "primary": rgb(87, 30, 47),
+  "secondary": rgb(47, 4, 21),
+  "dark": rgb(18, 3, 6),
+  "light": rgb(255, 250, 252),
+  "border": rgba(87, 30, 47, 0.2)
+);
+
+// Breakpoints
+$breakpoints: (
+  'xs': 0,
+  'sm': 576px,
+  'md': 768px,
+  'lg': 992px,
+  'xl': 1200px
+);
+
+// Layout
+$sidebar-width: 250px;
+$sidebar-collapsed-width: 70px;
+$container-max-width: 1200px;
+// NavLinks
+$nav-link-border-left-active: 3px solid var(--primary);
+
+// Spacing
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * 0.25,
+  // 4px
+  2: $spacer * 0.5,
+  // 8px
+  3: $spacer,
+  // 16px
+  4: $spacer * 1.5,
+  // 24px
+  5: $spacer * 3 // 48px
+);
+
+// Typography
+$font-family-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-size-base: 1rem;
+$font-weight-normal: 400;
+$font-weight-bold: 700;
+$line-height-base: 1.5;
+
+// Animations
+$transition-base: all 0.2s ease-in-out;
+$transition-fade: opacity 0.15s linear;
+$transition-collapse: height 0.35s ease;
+$sidebar-transition: all 0.3s ease;
+
+// Forms
+$input-padding: 0.75rem 1rem;
+$input-border-radius: 8px;
+$input-border-width: 2px;
+$input-focus-border-color: var(--primary);
+$input-focus-box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+
+// Z-index
+$z-index: (
+  'modal': 1050,
+  'popover': 1030,
+  'tooltip': 1020,
+  'fixed': 1010,
+  'drawer': 1000
+);

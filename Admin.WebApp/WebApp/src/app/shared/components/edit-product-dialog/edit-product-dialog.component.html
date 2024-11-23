@@ -1,4 +1,3 @@
-<!-- filepath: /d:/AL_STORE/AL_STORE.Admin/src/Admin.WebApp/src/app/edit-product-dialog/edit-product-dialog.component.html -->
 <h1 mat-dialog-title>Edit Product</h1>
 <div mat-dialog-content>
 
@@ -6,21 +5,49 @@
         <mat-form-field>
             <mat-label>Product Name</mat-label>
             <input matInput formControlName="name">
-            <mat-error *ngIf="editProductForm.get('name').hasError('required')">
+            <mat-error *ngIf="editProductForm.get('name')?.hasError('required')">
                 Name is required
             </mat-error>
         </mat-form-field>
         <mat-form-field>
             <mat-label>Price</mat-label>
             <input matInput type="number" formControlName="price">
-            <mat-error *ngIf="editProductForm.get('price').hasError('required')">
+            <mat-error *ngIf="editProductForm.get('price')?.hasError('required')">
                 Price is required
             </mat-error>
-            <mat-error *ngIf="editProductForm.get('price').hasError('min')">
+            <mat-error *ngIf="editProductForm.get('price')?.hasError('min')">
                 Price must be positive
             </mat-error>
         </mat-form-field>
-        <!-- ...additional form fields... -->
+        <mat-form-field>
+            <mat-label>Quantity</mat-label>
+            <input matInput type="number" formControlName="quantity">
+            <mat-error *ngIf="editProductForm.get('quantity')?.hasError('required')">
+                Quantity is required
+            </mat-error>
+            <mat-error *ngIf="editProductForm.get('quantity')?.hasError('min')">
+                Quantity must be positive
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Category</mat-label>
+            <!-- <mat-select formControlName="category">
+                <mat-option *ngFor="let category of categories" [value]="category.id">
+                    {{category.name}}
+                </mat-option>
+            </mat-select> -->
+            <mat-error *ngIf="editProductForm.get('category')?.hasError('required')">
+                Category is required
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>Image</mat-label>
+            <input matInput formControlName="image">
+            <mat-error *ngIf="editProductForm.get('image')?.hasError('required')">
+                Image is required
+            </mat-error>
+        </mat-form-field>
     </form>
 </div>
 <div mat-dialog-actions>

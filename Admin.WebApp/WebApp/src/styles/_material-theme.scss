@@ -1,0 +1,81 @@
+// src/styles/_material-theme.scss
+@use '@angular/material' as mat;
+@use 'sass:map';
+@use './themes/theme-colors' as theme-colors;
+
+html {
+    // Must specify color-scheme for theme to automatically work
+    color-scheme: light dark;
+
+    @include mat.theme((color: (primary: theme-colors.$primary-palette,
+                tertiary: theme-colors.$tertiary-palette,
+            ),
+            typography: (plain-family: system-ui,
+                brand-family: system-ui,
+                bold-weight: 700,
+                medium-weight: 500,
+                regular-weight: 400,
+            ),
+            density: 0,
+        ));
+}
+
+// Use high contrast values when users prefer contrast
+// @media (prefers-contrast: more) {
+//     @include theme-colors.high-contrast-overrides(color-scheme);
+// }
+
+// Apply the base theme styles to the body
+body {
+    margin: 0;
+    background: var(--mat-sys-color-surface);
+    color: var(--mat-sys-color-on-surface);
+}
+
+// Custom Material component styles
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-unelevated-button {
+    --mat-mdc-button-persistent-ripple-color: var(--mat-sys-color-primary);
+    height: 40px;
+    border-radius: 8px;
+}
+
+.mat-mdc-form-field {
+    width: 100%;
+}
+
+// Dialog styles
+.mat-mdc-dialog-container {
+    --mdc-dialog-container-color: var(--mat-sys-color-surface);
+
+    .mat-mdc-dialog-surface {
+        border-radius: 12px;
+        padding: 24px;
+    }
+}
+
+// Snackbar styles
+.mat-mdc-snack-bar-container {
+    &.success-snackbar {
+        --mdc-snackbar-container-color: #4caf50;
+        --mdc-snackbar-supporting-text-color: #ffffff;
+    }
+
+    &.error-snackbar {
+        --mdc-snackbar-container-color: #f44336;
+        --mdc-snackbar-supporting-text-color: #ffffff;
+    }
+}
+
+// Menu styles
+.mat-mdc-menu-panel {
+    --mat-menu-container-color: var(--mat-sys-color-surface);
+}
+
+// Card styles
+.mat-mdc-card {
+    --mdc-elevated-card-container-color: var(--mat-sys-color-surface);
+    border-radius: 12px;
+}

@@ -1,0 +1,72 @@
+@use 'sass:color';
+@use '../abstracts' as *;
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body {
+    margin: 0;
+    font-family: $font-family-base;
+    font-size: $font-size-base;
+    font-weight: $font-weight-normal;
+    line-height: $line-height-base;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+// Remove list styles
+ul,
+ol {
+    list-style: none;
+}
+
+// Links
+a {
+    color: var(--primary);
+    text-decoration: none;
+    background-color: transparent;
+
+    &:hover {
+        filter: brightness(90%);
+        text-decoration: underline;
+    }
+}
+
+// Images
+img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+}
+
+// Forms
+button,
+input,
+optgroup,
+select,
+textarea {
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+    -webkit-appearance: button;
+}

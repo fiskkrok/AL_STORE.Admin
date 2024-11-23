@@ -1,4 +1,6 @@
-@import '../../../../styles/variables';
+@use '../../../../styles/abstracts/variables' as vars;
+@use '../../../../styles/abstracts/mixins' as mix;
+@use '../../../../styles/abstracts/functions' as fn;
 
 .add-product-container {
   max-width: 1200px;
@@ -38,7 +40,6 @@
   }
 }
 
-
 .form-group {
   margin-bottom: 1.5rem;
 
@@ -61,33 +62,28 @@
       outline: none;
     }
   }
-
 }
-
-$placeholder-color: white;
 
 .file-container {
   .file-box {
-    border: 2px dashed var(--border);
+    border: 2px dashed var(--primary);
     border-radius: 8px;
-    padding: 2rem;
+    padding: 1rem;
     text-align: center;
     cursor: pointer;
-    transition: $sidebar-transition;
+    background-color: var(--bg-secondary);
+    transition: all 0.3s ease;
 
     &:hover {
-      border-color: var(--primary);
+      background-color: rgba(var(--primary-rgb), 0.1);
     }
 
     i {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: var(--text-secondary);
+      color: var(--primary);
     }
 
     p {
-      color: var(--text-secondary);
-      margin: 0;
+      color: var(--text-primary);
     }
   }
 }
@@ -147,7 +143,7 @@ $placeholder-color: white;
       color: var(--text-primary);
 
       &:hover {
-        background-color: darken($color: rgb(87, 30, 47), $amount: 10%);
+        filter: brightness(90%);
       }
     }
 
@@ -163,7 +159,7 @@ $placeholder-color: white;
   }
 }
 
-@media (max-width: map-get($breakpoints, 'md')) {
+@media (max-width: fn.get-breakpoint('md')) {
   .form-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
