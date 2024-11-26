@@ -27,8 +27,8 @@ public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, IResult>
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("UpdateProduct")
             .WithOpenApi());
-        Version(1);
-        Claims("products.update");
+        //Claims("products.update", "api.full");
+        //Roles("SystemAdministrator");
     }
 
     public override async Task HandleAsync(UpdateProductRequest req, CancellationToken ct)

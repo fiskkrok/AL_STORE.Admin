@@ -1,11 +1,10 @@
-// src/app/app.config.ts
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { FormlyModule } from '@ngx-formly/core';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -17,9 +16,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withViewTransitions()),
     provideHttpClient(
       withInterceptors([
+        authInterceptor,
         errorInterceptor,
         loadingInterceptor,
-        authInterceptor
       ])
     ),
     importProvidersFrom(

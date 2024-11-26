@@ -1,31 +1,30 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+// auth.guard.ts
 import { inject } from '@angular/core';
+import { CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { map, tap } from 'rxjs';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
+export const authGuard: CanActivateFn = (route, state) => {
     const authService = inject(AuthService);
-    const token = authService.getToken();
 
-    if (token) {
-        const authReq = req.clone({
-            headers: req.headers.set('Authorization', `Bearer ${token}`)
-        });
-        return next(authReq);
-    }
-
-    return next(req);
+    return authService.isAuthenticated().pipe(
+        tap(isAuthenticated => {
+            if (!isAuthenticated) {
+                authService.login();
+            }
+        }),
+        map(isAuthenticated => isAuthenticated)
+    );
 };
 
-export const AuthGuard: HttpInterceptorFn = (req, next) => {
+// Optional: Permission-based guard
+export const permissionGuard: CanActivateFn = (route, state) => {
     const authService = inject(AuthService);
-    const token = authService.getToken();
+    const requiredPermission = route.data['permission'];
 
-    if (token) {
-        const authReq = req.clone({
-            headers: req.headers.set('Authorization', `Bearer ${token}`)
-        });
-        return next(authReq);
+    if (!requiredPermission) {
+        return true;
     }
 
-    return next(req);
+    return authService.hasPermission(requiredPermission);
 };

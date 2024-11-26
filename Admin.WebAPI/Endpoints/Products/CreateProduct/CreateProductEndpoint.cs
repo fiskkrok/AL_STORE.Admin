@@ -18,7 +18,6 @@ public class CreateProductEndpoint(IMediator mediator, ILogger<CreateProductEndp
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateProduct")
             .WithOpenApi());
-        Version(1);
         Claims("products.create");
     }
 

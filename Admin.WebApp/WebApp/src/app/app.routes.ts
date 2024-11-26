@@ -1,16 +1,22 @@
+// app.routes.ts
 import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
 import { LoginComponent } from './features/auth/login/login.component';
-import { AuthGuard } from './core/guards/auth.guard';
+import { CallbackComponent } from './features/auth/login/callback.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  {
+    path: 'callback',
+    component: CallbackComponent
+  },
   {
     path: 'login',
     component: LoginComponent
   },
   {
     path: '',
-    // canActivate: [AuthGuard],
+    canActivate: [authGuard],
     children: [
       {
         path: '',

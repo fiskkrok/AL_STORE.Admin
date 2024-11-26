@@ -4,6 +4,8 @@ using Admin.WebAPI.Models.Responses;
 using FastEndpoints;
 using MediatR;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Admin.WebAPI.Endpoints.Categories.GetCatefories;
 
 public class GetCategoriesEndpoint : EndpointWithoutRequest<List<CategoryResponse>>

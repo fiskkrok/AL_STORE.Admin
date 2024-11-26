@@ -1,6 +1,5 @@
 @use 'sass:map';
 @use '../../../styles/abstracts/variables' as vars;
-@use '../../../styles/themes/theme-colors' as theme;
 @use '@angular/material' as mat;
 
 
@@ -13,7 +12,7 @@
 }
 
 .main-content {
-  flex: 0.5;
+  flex: 1.5;
   padding: 2rem;
   transition: vars.$sidebar-transition;
 }

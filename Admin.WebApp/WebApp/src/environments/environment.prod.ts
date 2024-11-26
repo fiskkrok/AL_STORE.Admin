@@ -28,11 +28,13 @@ export const environment = {
         }
     },
 
-    auth: {
-        clientId: 'your-prod-client-id',
-        authority: 'https://login.microsoftonline.com/your-tenant-id',
-        redirectUri: 'https://admin.yourcompany.com',
-        postLogoutRedirectUri: 'https://admin.yourcompany.com/login'
+    identityServer: {
+        authority: 'https://identity.al_store.com',
+        clientId: 'admin-portal',
+        redirectUri: window.location.origin + '/callback',
+        postLogoutRedirectUri: window.location.origin,
+        responseType: 'code',
+        scope: 'openid profile email api.full'
     },
 
     features: {

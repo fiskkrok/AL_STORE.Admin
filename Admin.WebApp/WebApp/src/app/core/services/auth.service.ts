@@ -1,56 +1,108 @@
-import { Injectable } from '@angular/core';
+// auth.service.ts
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { User, LoginRequest, AuthResponse } from '../models/auth.models';
+import { BehaviorSubject, Observable, from, map, tap } from 'rxjs';
+import { User } from '../models/auth.models';
 import { Router } from '@angular/router';
+import { UserManager, User as OidcUser, UserManagerSettings } from 'oidc-client-ts';
+import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+
+  private readonly userManager: UserManager;
   private readonly currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-  private readonly TOKEN_KEY = 'auth_token';
 
-  constructor(
-    private readonly http: HttpClient,
-    private readonly router: Router
-  ) {
-    this.loadStoredUser();
+  constructor() {
+    const settings: UserManagerSettings = {
+      authority: environment.auth.authority,
+      client_id: environment.auth.clientId,
+      redirect_uri: environment.auth.redirectUri,
+      response_type: environment.auth.responseType,
+      scope: environment.auth.scope,
+      filterProtocolClaims: true,
+      loadUserInfo: true,
+      automaticSilentRenew: true,
+      includeIdTokenInSilentRenew: true
+    };
+
+    this.userManager = new UserManager(settings);
   }
 
-  private loadStoredUser() {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    if (token) {
-      // In a real app, you might want to validate the token here
-      // For now, we'll just check if we have stored user data
-      const userData = localStorage.getItem('user_data');
-      if (userData) {
-        this.currentUserSubject.next(JSON.parse(userData));
+  ngOnInit(): void {
+    this.initializeAuth();
+  }
+
+  private async initializeAuth() {
+    try {
+      const user = await this.userManager.getUser();
+      if (user?.access_token) {
+        this.processUserLogin(user);
       }
+    } catch (error) {
+      console.error('Error during auth initialization:', error);
     }
   }
 
-  login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>('/api/auth/login', credentials).pipe(
-      tap(response => {
-        localStorage.setItem(this.TOKEN_KEY, response.token);
-        localStorage.setItem('user_data', JSON.stringify(response.user));
-        this.currentUserSubject.next(response.user);
-      })
+  private processUserLogin(oidcUser: OidcUser) {
+    const user: User = {
+      id: oidcUser.profile.sub,
+      username: oidcUser.profile.preferred_username!,
+      email: oidcUser.profile.email!,
+      firstName: oidcUser.profile.given_name,
+      lastName: oidcUser.profile.family_name,
+      roles: (oidcUser.profile['role'] as string[]) || [],
+      permissions: (oidcUser.profile['permissions'] as string[]) || []
+    };
+
+    this.currentUserSubject.next(user);
+  }
+
+  login(): Promise<void> {
+    return this.userManager.signinRedirect();
+  }
+
+  async completeAuthentication(): Promise<void> {
+    try {
+      const user = await this.userManager.signinRedirectCallback();
+      this.processUserLogin(user);
+      this.router.navigate(['/']);
+    } catch (error) {
+      console.error('Error completing authentication:', error);
+      this.router.navigate(['/login']);
+    }
+  }
+
+  logout(): Promise<void> {
+    this.currentUserSubject.next(null);
+    return this.userManager.signoutRedirect();
+  }
+
+  isAuthenticated(): Observable<boolean> {
+    return from(this.userManager.getUser()).pipe(
+      map(user => !!user && !user.expired)
     );
   }
 
-  logout() {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem('user_data');
-    this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+  getAccessToken(): Observable<string | null> {
+    return from(this.userManager.getUser()).pipe(
+      tap(user => console.log('User:', user)), // Add debug logging
+      map(user => user?.access_token ?? null)
+    );
   }
 
-  isAuthenticated(): boolean {
-    return !!this.currentUserSubject.value;
+  hasPermission(permission: string): Observable<boolean> {
+    return this.currentUser$.pipe(
+      map(user => user?.permissions?.includes(permission) ?? false)
+    );
   }
 
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+  hasRole(role: string): Observable<boolean> {
+    return this.currentUser$.pipe(
+      map(user => user?.roles?.includes(role) ?? false)
+    );
   }
 }

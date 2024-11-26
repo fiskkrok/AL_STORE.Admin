@@ -1,7 +1,7 @@
-<div class="sidebar" [class.collapsed]="isCollapsed">
+<nav class="sidebar" [class.collapsed]="isCollapsed">
     <div class="sidebar-header">
         @if (!isCollapsed) {
-        <h1 class="title">Product Management</h1>
+        <h1 [routerLink]="['/']" class="title">Product Management</h1>
         }
         <button class="toggle-btn" (click)="toggleSidebar()" title="Toggle Sidebar">
             <i class="bi" [class.bi-chevron-double-left]="isCollapsed"
@@ -52,7 +52,7 @@
             }
         </button>
     </div>
-</div>
+</nav>
 
 <!-- Bottom Navigation for Mobile -->
 <div class="bottom-nav">

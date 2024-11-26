@@ -78,4 +78,6 @@ body {
 .mat-mdc-card {
     --mdc-elevated-card-container-color: var(--mat-sys-color-surface);
     border-radius: 12px;
+    box-shadow: var(--mat-sys-level5);
+
 }

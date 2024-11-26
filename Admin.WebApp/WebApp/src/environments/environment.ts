@@ -36,10 +36,13 @@ export const environment = {
 
     // Authentication
     auth: {
-        clientId: 'your-client-id',
-        authority: 'https://login.microsoftonline.com/your-tenant-id',
-        redirectUri: 'http://localhost:4200',
-        postLogoutRedirectUri: 'http://localhost:4200/login'
+        authority: 'https://localhost:5001',
+        clientId: 'admin_portal', // Note: Using the SPA client ID
+        redirectUri: window.location.origin + '/callback',
+        postLogoutRedirectUri: window.location.origin,
+        responseType: 'code',
+        scope: 'openid profile email api.full',
+        requireHttps: true
     },
 
     // Feature Flags

@@ -1,147 +1,112 @@
-<!-- src/app/features/products/product-list/product-list.component.html -->
 <div class="product-list-container">
-    <!-- Header with search -->
     <div class="header">
         <h1>Products</h1>
         <div class="actions">
-            <div class="search-container">
-                <input [formControl]="searchControl" type="text" class="form-control"
-                    placeholder="Search products..." />
-            </div>
-            <button class="btn btn-primary" routerLink="/products/add">
-                <i class="bi bi-plus"></i> Add New Product
+            <mat-form-field appearance="outline">
+                <mat-label>Search products</mat-label>
+                <input matInput [formControl]="searchControl" placeholder="Search...">
+            </mat-form-field>
+            <button mat-raised-button color="primary" routerLink="/products/add">
+                Add New Product
             </button>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters">
-        <div class="filter-group">
-            <select [formControl]="categoryFilter" class="form-select">
-                <option value="">All Categories</option>
-                @for (category of categories(); track category.id) {
-                <option [value]="category.id">{{ category.name }}</option>
-                }
-            </select>
-        </div>
+    <mat-card>
+        <mat-card-content>
+            <div class="filters">
+                <mat-form-field appearance="outline">
+                    <mat-label>Category</mat-label>
+                    <mat-select [formControl]="categoryFilter">
+                        <mat-option value="">All Categories</mat-option>
+                        <mat-option *ngFor="let category of categories()" [value]="category.id">
+                            {{category.name}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
 
-        <div class="filter-group">
-            <input [formControl]="minPriceFilter" type="number" class="form-control" placeholder="Min Price" />
-        </div>
+                <mat-form-field appearance="outline">
+                    <mat-label>Min Price</mat-label>
+                    <input matInput type="number" [formControl]="minPriceFilter">
+                </mat-form-field>
 
-        <div class="filter-group">
-            <input [formControl]="maxPriceFilter" type="number" class="form-control" placeholder="Max Price" />
-        </div>
+                <mat-form-field appearance="outline">
+                    <mat-label>Max Price</mat-label>
+                    <input matInput type="number" [formControl]="maxPriceFilter">
+                </mat-form-field>
 
-        <div class="filter-group">
-            <label class="checkbox-container">
-                <input [formControl]="inStockFilter" type="checkbox" />
-                <span>In Stock Only</span>
-            </label>
-        </div>
-    </div>
+                <mat-checkbox [formControl]="inStockFilter">
+                    In Stock Only
+                </mat-checkbox>
+            </div>
+        </mat-card-content>
+    </mat-card>
 
-    <!-- Products Table -->
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th (click)="sort('name')">
-                            Name
-                            @if (sortConfig().column === 'name') {
-                            <i class="bi" [class.bi-arrow-up]="sortConfig().direction === 'asc'"
-                                [class.bi-arrow-down]="sortConfig().direction === 'desc'"></i>
-                            }
-                        </th>
-                        <th (click)="sort('category')">
-                            Category
-                            @if (sortConfig().column === 'category') {
-                            <i class="bi" [class.bi-arrow-up]="sortConfig().direction === 'asc'"
-                                [class.bi-arrow-down]="sortConfig().direction === 'desc'"></i>
-                            }
-                        </th>
-                        <th (click)="sort('price')" class="text-right">
-                            Price
-                            @if (sortConfig().column === 'price') {
-                            <i class="bi" [class.bi-arrow-up]="sortConfig().direction === 'asc'"
-                                [class.bi-arrow-down]="sortConfig().direction === 'desc'"></i>
-                            }
-                        </th>
-                        <th (click)="sort('stock')" class="text-right">
-                            Stock
-                            @if (sortConfig().column === 'stock') {
-                            <i class="bi" [class.bi-arrow-up]="sortConfig().direction === 'asc'"
-                                [class.bi-arrow-down]="sortConfig().direction === 'desc'"></i>
-                            }
-                        </th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (loading()) {
-                    <tr>
-                        <td colspan="5" class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </td>
-                    </tr>
-                    } @else if (products().length === 0) {
-                    <tr>
-                        <td colspan="5" class="text-center py-4">No products found</td>
-                    </tr>
-                    }
-                    @for (product of products(); track product.id) {
-                    <tr>
-                        <td class="product-image">
-                            @if (product.images.length > 0) {
-                            <img src="{{ product.images[0].url }}" alt="{{ product.name }}"
-                                (click)="openImagePreview(product.images[0].url)" />
-                            }
-                        </td>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.category.name }}</td>
-                        <td class="text-right" [ngClass]="{
-                            'text-danger': product.price < 50,
-                            'text-warning': product.price >= 50 && product.price < 100,
-                            'text-success': product.price >= 100
-                        }">
-                            {{ product.price | currency }}
-                        </td>
-                        <td class="text-right" [ngClass]="{
-                            'text-danger': product.stock === 0,
-                            'text-warning': product.stock > 0 && product.stock < 10,
-                            'text-success': product.stock >= 10
-                        }">
-                            {{ product.stock }}
-                        </td>
-                        <td class=" text-center">
-                            <button class="btn btn-sm 
-                                btn-primary" title="Edit Product" (click)="editProduct(product)">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" (click)="deleteProduct(product)"
-                                title="Delete Product">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="pagination">
-        <button class="btn btn-outline-secondary" [disabled]="page() === 1" (click)="previousPage()">
-            Previous
-        </button>
-        <span class="mx-4">
-            Page {{ page() }} of {{ totalCount() / pageSize() | ceil }}
-        </span>
-        <button class="btn btn-outline-secondary" [disabled]="!hasNextPage()" (click)="nextPage()">
-            Next
-        </button>
+    <div class="mat-elevation-z8">
+        <table mat-table [dataSource]="products()" matSort>
+            <!-- Image Column -->
+            <ng-container matColumnDef="image">
+                <th mat-header-cell *matHeaderCellDef> Image </th>
+                <td mat-cell *matCellDef="let product">
+                    <img *ngIf="product.images?.length" [src]="product.images[0].url" [alt]="product.name"
+                        (click)="openImagePreview(product.images[0].url)" class="product-thumbnail" [style]="{ 
+                     'max-width': '40px', 
+                     'width': '40px', 
+                     'height': '40px',
+                     'object-fit': 'cover',
+                     'display': 'block'
+                   }">
+                </td>
+            </ng-container>
+
+            <!-- Name Column -->
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+                <td mat-cell *matCellDef="let product"> {{product.name}} </td>
+            </ng-container>
+
+            <!-- Category Column -->
+            <ng-container matColumnDef="category">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Category </th>
+                <td mat-cell *matCellDef="let product"> {{product.category.name}} </td>
+            </ng-container>
+
+            <!-- Price Column -->
+            <ng-container matColumnDef="price">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Price </th>
+                <td mat-cell *matCellDef="let product"> {{product.price | currency}} </td>
+            </ng-container>
+
+            <!-- Stock Column -->
+            <ng-container matColumnDef="stock">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Stock </th>
+                <td mat-cell *matCellDef="let product"> {{product.stock}} </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let product">
+                    <button mat-icon-button (click)="editProduct(product)">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteProduct(product)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- Row shown when there is no matching data. -->
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="6">No products found</td>
+            </tr>
+        </table>
+
+        <mat-paginator [length]="totalCount()" [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 25, 100]"
+            aria-label="Select page">
+        </mat-paginator>
     </div>
 </div>

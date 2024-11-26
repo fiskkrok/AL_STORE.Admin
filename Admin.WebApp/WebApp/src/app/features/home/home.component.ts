@@ -1,34 +1,36 @@
-
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatCardModule, RouterModule],
   template: `
-    <div class="home-container">
+    <div class="home-container container-lg">
       <h1>Welcome to Store Admin</h1>
-      <div class="card">
-        <h2>Quick Actions</h2>
+      <mat-card class="card d-flex"  >
+        <h2 style="color: white;">Quick Actions</h2>
         <div class="actions-grid">
-          <div class="action-card">
+          
+          <div class="action-card" [routerLink]="['/products/add']">
             <i class="bi bi-plus-circle"></i>
             <h3>Add Products</h3>
             <p>Add new products to your store</p>
           </div>
-          <div class="action-card">
+          <div class="action-card" [routerLink]="['/statistics']">
             <i class="bi bi-graph-up"></i>
             <h3>View Statistics</h3>
             <p>Check your store's performance</p>
           </div>
         </div>
-      </div>
+      </mat-card>
     </div>
   `,
   styles: [`
     .home-container {
-      max-width: 1200px;
+      // max-width: 1200px;
       margin: 0 auto;
       padding: 2rem;
     }
@@ -39,10 +41,11 @@ import { CommonModule } from '@angular/common';
     }
 
     .card {
+      // max-width: 800px;
       background-color: var(--bg-secondary);
       border-radius: 8px;
       padding: 2rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 20px 20px rgb(0 0 0 / 19%);
     }
 
     .actions-grid {
@@ -82,4 +85,4 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class HomeComponent {}
+export class HomeComponent { }
