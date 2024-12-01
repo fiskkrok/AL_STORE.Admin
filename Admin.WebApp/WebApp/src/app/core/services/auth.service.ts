@@ -89,8 +89,11 @@ export class AuthService {
 
   getAccessToken(): Observable<string | null> {
     return from(this.userManager.getUser()).pipe(
-      tap(user => console.log('User:', user)), // Add debug logging
-      map(user => user?.access_token ?? null)
+      // tap(user => console.log('User in getAccessToken:', user)), // Debug log
+      map(user => {
+        // console.log('Access token:', user?.access_token); // Debug log
+        return user?.access_token ?? null;
+      })
     );
   }
 
@@ -104,5 +107,11 @@ export class AuthService {
     return this.currentUser$.pipe(
       map(user => user?.roles?.includes(role) ?? false)
     );
+  }
+
+  getCurrentUserName(): string {
+    const user = this.currentUserSubject.value;
+    return user ? `${user.firstName} ${user.lastName}` : '';
+    // return user ? `${user.username}` : '';
   }
 }

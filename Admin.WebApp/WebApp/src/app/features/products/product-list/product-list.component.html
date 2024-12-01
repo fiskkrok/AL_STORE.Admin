@@ -27,12 +27,12 @@
 
                 <mat-form-field appearance="outline">
                     <mat-label>Min Price</mat-label>
-                    <input matInput type="number" [formControl]="minPriceFilter">
+                    <input matInput type="number" [formControl]="minPriceFilter" placeholder="Enter minimum price">
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
                     <mat-label>Max Price</mat-label>
-                    <input matInput type="number" [formControl]="maxPriceFilter">
+                    <input matInput type="number" [formControl]="maxPriceFilter" placeholder="Enter minimum price">
                 </mat-form-field>
 
                 <mat-checkbox [formControl]="inStockFilter">
@@ -49,13 +49,14 @@
                 <th mat-header-cell *matHeaderCellDef> Image </th>
                 <td mat-cell *matCellDef="let product">
                     <img *ngIf="product.images?.length" [src]="product.images[0].url" [alt]="product.name"
-                        (click)="openImagePreview(product.images[0].url)" class="product-thumbnail" [style]="{ 
-                     'max-width': '40px', 
-                     'width': '40px', 
-                     'height': '40px',
-                     'object-fit': 'cover',
-                     'display': 'block'
-                   }">
+                        alt="{{product.name}}" [title]="product.name" (click)="openImagePreview(product.images[0].url)"
+                        (keypress)="onKeyPress($event)" class="product-thumbnail" [style]="{ 
+                 'max-width': '40px', 
+                 'width': '40px', 
+                 'height': '40px',
+                 'object-fit': 'cover',
+                 'display': 'block'
+                }">
                 </td>
             </ng-container>
 
@@ -106,7 +107,7 @@
         </table>
 
         <mat-paginator [length]="totalCount()" [pageSize]="pageSize()" [pageSizeOptions]="[5, 10, 25, 100]"
-            aria-label="Select page">
+            [showFirstLastButtons]="true" (page)="onPageChange($event)" aria-label="Select page">
         </mat-paginator>
     </div>
 </div>

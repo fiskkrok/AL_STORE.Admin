@@ -15,7 +15,7 @@ public record UpdateProductCommand : IRequest<Result<Unit>>
     public string Currency { get; init; } = "USD";
     public Guid CategoryId { get; init; }
     public Guid? SubCategoryId { get; init; }
-    public List<FileUploadRequest> NewImages { get; init; } = new();
+    public List<FileUploadRequest> NewImages { get; set; } = new();
     public List<Guid> ImageIdsToRemove { get; init; } = new();
 }
 
@@ -61,7 +61,6 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                     return Result<Unit>.Failure(new Error("SubCategory.NotFound", $"SubCategory with ID {command.SubCategoryId} was not found"));
             }
 
-            // Update core product details
             product.Update(
                 command.Name,
                 command.Description,
@@ -70,23 +69,8 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                 subCategory,
                 _currentUser.Id);
 
-            // Handle image removals
-            foreach (var imageId in command.ImageIdsToRemove)
-            {
-                var image = product.Images.FirstOrDefault(i => i.Id == imageId);
-                if (image != null)
-                {
-                    await _fileStorage.DeleteAsync(image.Url, cancellationToken);
-                    product.RemoveImage(image, _currentUser.Id);
-                }
-            }
-
-            // Handle new images
-            foreach (var imageFile in command.NewImages)
-            {
-                var uploadResult = await _fileStorage.UploadAsync(imageFile, cancellationToken);
-                product.AddImage(uploadResult.Url, uploadResult.FileName, uploadResult.Size, _currentUser.Id);
-            }
+            // Add this line:
+            //_productRepository.Update(product);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result<Unit>.Success(Unit.Value);
@@ -96,5 +80,6 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             // Log the exception here
             return Result<Unit>.Failure(new Error("Product.UpdateFailed", "Failed to update product due to an unexpected error"));
         }
+
     }
 }

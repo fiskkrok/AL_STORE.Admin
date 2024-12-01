@@ -9,7 +9,7 @@ import { DialogService } from '../../../core/services/dialog.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { MatTableModule, MatTable } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -43,6 +43,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     styleUrls: ['./product-list.component.scss']
 })
 export class ProductListComponent implements OnInit {
+    onKeyPress($event: KeyboardEvent) {
+        throw new Error('Method not implemented.');
+    }
     // Column name to Product property mapping for sorting
     private readonly sortPropertyMap: { [key: string]: keyof Product } = {
         'name': 'name',
@@ -162,18 +165,31 @@ export class ProductListComponent implements OnInit {
         });
     }
 
-    editProduct(product: Product) {
-        const dialogRef = this.matDialog.open(EditProductDialogComponent, {
-            width: '600px',
-            data: product
-        });
+    onPageChange(event: PageEvent) {
+        this.pageSize.set(event.pageSize);
+        this.page.set(event.pageIndex + 1);
+        this.loadProducts();
+    }
 
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                this.snackBar.open('Product updated successfully', 'Close', { duration: 3000 });
-                this.loadProducts();
-            } else if (result === false) {
-                this.snackBar.open('Product update failed', 'Close', { duration: 3000 });
+    editProduct(product: Product) {
+        this.productService.getProduct(product.id).subscribe({
+            next: (completeProduct) => {
+                const dialogRef = this.matDialog.open(EditProductDialogComponent, {
+                    width: '600px',
+                    data: completeProduct
+                });
+
+                dialogRef.afterClosed().subscribe(result => {
+                    if (result) {
+                        this.snackBar.open('Product updated successfully', 'Close', { duration: 3000 });
+                        this.loadProducts();
+                    } else if (result === false) {
+                        this.snackBar.open('Product update failed', 'Close', { duration: 3000 });
+                    }
+                });
+            },
+            error: (error) => {
+                this.snackBar.open('Error loading product details', 'Close', { duration: 3000 });
             }
         });
     }

@@ -1,7 +1,8 @@
 ﻿using Admin.Application.Products.Queries;
+using Admin.WebAPI.Endpoints.Products.Responses;
 using FastEndpoints;
-using MediatR;
 using Admin.WebAPI.Models.Responses;
+using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Products.GetProductById;
 
@@ -43,7 +44,5 @@ public class GetProductEndpoint : Endpoint<GetProductByIdRequest, ProductDetails
             await SendNotFoundAsync(ct);
         }
     }
-
-
 
 }

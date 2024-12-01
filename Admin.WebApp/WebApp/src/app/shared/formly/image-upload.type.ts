@@ -10,14 +10,20 @@ import { FieldType, FieldTypeConfig } from '@ngx-formly/core';
 })
 export class FormlyImageUploadTypeComponent extends FieldType<FieldTypeConfig> {
   previewUrls: string[] = [];
-  // Add this getter
-  get isFormControlValid(): boolean {
-    return !!this.formControl && this.formControl.valid;
-  }
+  private files: File[] = [];  // Store actual File objects
 
   onFileInputClick(): void {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fileInput?.click();
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.multiple = true;
+    fileInput.accept = 'image/*';
+    fileInput.onchange = (e: Event) => {
+      const input = e.target as HTMLInputElement;
+      if (input.files) {
+        this.handleFiles(Array.from(input.files));
+      }
+    };
+    fileInput.click();
   }
 
   onDragOver(event: DragEvent): void {
@@ -34,46 +40,49 @@ export class FormlyImageUploadTypeComponent extends FieldType<FieldTypeConfig> {
     }
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.handleFiles(Array.from(input.files));
-    }
-  }
-
-  handleFiles(files: File[]): void {
+  handleFiles(newFiles: File[]): void {
     if (!this.formControl) {
       console.error('Form control is not initialized');
       return;
     }
 
-    const imageFiles = files.filter(file =>
+    const imageFiles = newFiles.filter(file =>
       file.type.startsWith('image/') &&
       file.size <= 5 * 1024 * 1024
     );
 
-    if (this.previewUrls.length + imageFiles.length > 5) {
+    if (this.files.length + imageFiles.length > 5) {
       this.formControl.setErrors({ maxFiles: true });
       return;
     }
 
     imageFiles.forEach(file => {
+      // Store the actual File object
+      this.files.push(file);
+
+      // Create preview URL
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const result = e.target?.result as string;
         if (result) {
           this.previewUrls = [...this.previewUrls, result];
-          this.formControl.setValue(this.previewUrls);
-          this.formControl.markAsTouched();
         }
       };
       reader.readAsDataURL(file);
     });
+
+    // Set the actual File objects as the form value
+    this.formControl.setValue(this.files);
+    this.formControl.markAsTouched();
   }
 
-  removeImage(url: string): void {
-    this.previewUrls = this.previewUrls.filter(u => u !== url);
-    this.formControl.setValue(this.previewUrls);
-    this.formControl.markAsTouched();
+  removeImage(previewUrl: string): void {
+    const index = this.previewUrls.indexOf(previewUrl);
+    if (index !== -1) {
+      this.previewUrls.splice(index, 1);
+      this.files.splice(index, 1);
+      this.formControl?.setValue(this.files);
+      this.formControl?.markAsTouched();
+    }
   }
 }

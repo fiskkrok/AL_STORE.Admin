@@ -43,6 +43,18 @@
         </div>
         }
     </nav>
+    <div class="user-info" (click)="toggleUserMenu()">
+        <i class="bi bi-person-circle"></i>
+        @if (!isCollapsed) {
+        <span>{{ currentUser.name }}</span>
+        <i class="bi" [class.bi-chevron-up]="isUserMenuOpen" [class.bi-chevron-down]="!isUserMenuOpen"></i>
+        }
+    </div>
+    @if (isUserMenuOpen && !isCollapsed) {
+    <div class="user-menu drop-up">
+        <a (click)="logout()">Logout</a>
+    </div>
+    }
 
     <div class="sidebar-footer">
         <button class="theme-toggle btn" (click)="toggleTheme()">

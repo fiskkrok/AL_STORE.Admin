@@ -1,5 +1,6 @@
 using Admin.Application;
 using Admin.Infrastructure;
+using Admin.Infrastructure.Services.FileStorage;
 using Admin.WebAPI.Infrastructure;
 using Microsoft.Extensions.Azure;
 using Admin.WebAPI.Extensions;
@@ -17,9 +18,18 @@ builder.Services.AddMessagingInfrastructure(builder.Configuration);
 
 builder.Services.AddAzureClients(clientBuilder =>
 {
-    clientBuilder.AddBlobServiceClient(
-            builder.Configuration["StorageConnection:blobServiceUri"])
-        .WithName("StorageConnection");
+    var blobStorageSettings = builder.Configuration.GetSection("AzureBlobStorageSettings").Get<AzureBlobStorageSettings>();
+
+    if (blobStorageSettings?.ConnectionString == "UseDevelopmentStorage=true")
+    {
+        clientBuilder.AddBlobServiceClient(
+            new Uri("http://127.0.0.1:10000/devstoreaccount1"));
+    }
+    else
+    {
+        clientBuilder.AddBlobServiceClient(blobStorageSettings?.ConnectionString ??
+                                           throw new InvalidOperationException("Blob storage connection string not configured."));
+    }
 });
 
 var app = builder.Build();

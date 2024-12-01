@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { AuthService } from 'src/app/core/services/auth.service';
+
 interface NavItem {
   path: string;
   icon: string;
@@ -22,6 +24,8 @@ export class SidebarComponent {
   isDarkTheme = true;
   logo = '../../../assets/dashboardadmin.png';
   openSubmenus = new Set<string>();
+  currentUser = { name: '' };
+  isUserMenuOpen = false;
 
   navItems: NavItem[] = [
     {
@@ -63,8 +67,12 @@ export class SidebarComponent {
     }, []);
   }
 
-  constructor(private themeService: ThemeService) {
+  constructor(
+    private readonly themeService: ThemeService,
+    private readonly authService: AuthService
+  ) {
     this.isDarkTheme = this.themeService.isDarkTheme();
+    this.currentUser.name = this.authService.getCurrentUserName();
   }
 
   toggleSidebar() {
@@ -97,5 +105,13 @@ export class SidebarComponent {
     return item.children?.some(child =>
       window.location.pathname.startsWith(child.path)
     ) ?? false;
+  }
+
+  toggleUserMenu() {
+    this.isUserMenuOpen = !this.isUserMenuOpen;
+  }
+
+  logout() {
+    this.authService.logout();
   }
 }

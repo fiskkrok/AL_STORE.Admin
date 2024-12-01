@@ -1,6 +1,10 @@
-﻿using Admin.Application.Products.Commands.UpdateProduct;
+﻿using System.Globalization;
+
+using Admin.Application.Common.Models;
+using Admin.Application.Products.Commands.UpdateProduct;
 using Admin.WebAPI.Endpoints.Products.Request;
 using FastEndpoints;
+using FastEndpoints.Security;
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Products.UpdateProduct;
@@ -19,7 +23,6 @@ public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, IResult>
     public override void Configure()
     {
         Put("/products/{Id}");
-        AllowFileUploads();
         Description(d => d
             .WithTags("Products")
             .Produces(StatusCodes.Status204NoContent)
@@ -27,8 +30,7 @@ public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, IResult>
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("UpdateProduct")
             .WithOpenApi());
-        //Claims("products.update", "api.full");
-        //Roles("SystemAdministrator");
+        Policies("ProductEdit", "FullAdminAccess");
     }
 
     public override async Task HandleAsync(UpdateProductRequest req, CancellationToken ct)
@@ -40,16 +42,16 @@ public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, IResult>
                 Id = req.Id,
                 Name = req.Name,
                 Description = req.Description,
-                Price = req.Price,
+                Price = decimal.Parse(req.Price.ToString(), CultureInfo.InvariantCulture),
                 Currency = req.Currency,
                 CategoryId = req.CategoryId,
-                SubCategoryId = req.SubCategoryId,
-                NewImages = req.NewImages,
-                ImageIdsToRemove = req.ImageIdsToRemove
+                SubCategoryId = req.SubCategoryId.Equals(Guid.Empty) ? req.CategoryId : req.SubCategoryId,
+                NewImages = req.NewImages ?? [],
+                ImageIdsToRemove = req.ImageIdsToRemove ?? []
             };
 
-            var result = await _mediator.Send(command, ct);
 
+            var result = await _mediator.Send(command, ct);
             if (result.IsSuccess)
             {
                 await SendNoContentAsync(ct);

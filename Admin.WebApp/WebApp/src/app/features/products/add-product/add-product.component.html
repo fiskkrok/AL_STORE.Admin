@@ -7,10 +7,10 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
         <formly-form [form]="form" [fields]="fields" [model]="model" [options]="options"></formly-form>
         <div class="form-actions">
-            <button type="button" class="btn btn-outline-secondary" (click)="reset()">
+            <button mat-stroked-button type="button" class="btn btn-outline-secondary" (click)="reset()">
                 Clear Form
             </button>
-            <button type="submit" class="btn btn-primary" (click)="submit()">
+            <button mat-button type="submit" class="btn btn-primary" (click)="submit()">
                 Add Product
             </button>
         </div>

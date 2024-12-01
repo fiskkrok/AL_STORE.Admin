@@ -7,10 +7,10 @@ import { getProductFormFields } from '../configs/product.formly.config';
 import { CommonModule } from '@angular/common';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { Product } from '../../../shared/models/product.model';
-import { FormlyImageUploadTypeComponent } from '../../../shared/formly/image-upload.type';
-import { FieldType, FieldTypeConfig } from '@ngx-formly/core';
-import { FileValueAccessor } from '../../../shared/formly/file-value-accessor';
-
+import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ErrorService } from 'src/app/core/services/error.service';
+import { finalize } from 'rxjs';
 
 interface ProductFormModel {
   basicInfo: {
@@ -35,6 +35,7 @@ interface ProductFormModel {
     FormlyModule,
     FormlyBootstrapModule,
     ReactiveFormsModule,
+    MatButtonModule
   ],
 })
 export class AddProductComponent implements OnInit {
@@ -53,14 +54,16 @@ export class AddProductComponent implements OnInit {
   };
   options: FormlyFormOptions = {};
   fields: FormlyFieldConfig[] = [];
+  isSubmitting = false;  // Add this flag
 
   constructor(
     private readonly productService: ProductService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly snackBar: MatSnackBar,
+    private readonly errorService: ErrorService
   ) { }
 
   ngOnInit(): void {
-    // Get categories and initialize form fields
     this.productService.getCategories().subscribe(
       categories => {
         this.fields = getProductFormFields(categories.map(category => ({
@@ -72,56 +75,68 @@ export class AddProductComponent implements OnInit {
   }
 
   submit(): void {
-    if (this.form.valid) {
-      const formValue = this.form.value as ProductFormModel;
-      const images = formValue.images;
-
-      // First upload images
-      this.productService.uploadImages(images).subscribe({
-        next: imageUrls => {
-          // Create product with uploaded image URLs
-          const product: Omit<Product, 'id'> = {
-            name: formValue.basicInfo.name,
-            description: formValue.basicInfo.description,
-            price: formValue.pricing.price,
-            currency: 'USD', // Assuming a default currency
-            stock: formValue.pricing.stock,
-            category: {
-              id: '', // Assuming category ID will be set later
-              name: formValue.basicInfo.category,
-              description: ''
-            },
-            subCategory: null,
-            images: imageUrls.map((url, index) => ({
-              id: index.toString(),
-              url,
-              fileName: '',
-              size: 0
-            })),
-            createdAt: new Date().toISOString(),
-            createdBy: null,
-            lastModifiedAt: null,
-            lastModifiedBy: null
-          };
-
-          // Save product
-          this.productService.addProduct(product).subscribe({
-            next: () => {
-              // Navigate to product list on success
-              this.router.navigate(['/products/list']);
-            },
-            error: error => {
-              console.error('Error creating product:', error);
-              // TODO: Show error message to user
-            }
-          });
-        },
-        error: error => {
-          console.error('Error uploading images:', error);
-          // TODO: Show error message to user
-        }
-      });
+    if (this.isSubmitting || !this.form.valid) {
+      return;
     }
+
+    this.isSubmitting = true;
+    const formValue = this.form.value as ProductFormModel;
+    const images = formValue.images;
+
+    this.productService.uploadImages(images).subscribe({
+      next: (imageResults) => {
+        const product: Omit<Product, 'id'> = {
+          name: formValue.basicInfo.name,
+          description: formValue.basicInfo.description,
+          price: formValue.pricing.price,
+          currency: 'USD',
+          stock: formValue.pricing.stock,
+          category: {
+            id: formValue.basicInfo.category,
+            name: '',
+            description: ''
+          },
+          subCategory: null,
+          images: imageResults.map(result => ({
+            id: '',
+            url: result.url,
+            fileName: result.fileName,
+            size: result.size
+          })),
+          createdAt: new Date().toISOString(),
+          createdBy: null,
+          lastModifiedAt: null,
+          lastModifiedBy: null
+        };
+
+        this.productService.addProduct(product).subscribe({
+          next: () => {
+            this.snackBar.open('Product created successfully', 'Close', {
+              duration: 3000
+            });
+            this.router.navigate(['/products/list']);
+          },
+          error: (error) => {
+            console.error('Error creating product:', error);
+            this.errorService.addError({
+              message: 'Failed to create product: ' + error.message,
+              type: 'error'
+            });
+          },
+          complete: () => {
+            this.isSubmitting = false;
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error uploading images:', error);
+        this.errorService.addError({
+          message: 'Failed to upload images: ' + error.message,
+          type: 'error'
+        });
+        this.isSubmitting = false;
+      }
+    });
   }
 
   reset(): void {

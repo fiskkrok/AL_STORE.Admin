@@ -10,8 +10,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return authService.getAccessToken().pipe(
         switchMap(token => {
             // Add logging to debug
-            console.log('Token:', token);
-            console.log('Request URL:', req.url);
+            // console.log('Token:', token); // Debug log
+            // console.log('Request URL:', req.url); // Debug log
 
             if (token) {
                 const authReq = req.clone({

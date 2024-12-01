@@ -1,7 +1,7 @@
 // src/app/core/services/product.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, tap, catchError, throwError, switchMap } from 'rxjs';
+import { HttpClient, HttpParams, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, map, tap, catchError, throwError, switchMap, filter, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Product } from "../../shared/models/product.model";
 import { PagedResponse } from '../../shared/models/paged-response.model';
@@ -36,9 +36,14 @@ export class ProductService {
 
     private getAuthHeaders(): Observable<HttpHeaders> {
         return this.authService.getAccessToken().pipe(
-            map(token => new HttpHeaders({
-                'Authorization': `Bearer ${token}`
-            }))
+            // tap(token => console.log('Token in getAuthHeaders:', token)), // log log
+            map(token => {
+                if (!token) {
+                    throw new Error('No authentication token available');
+                }
+                // Note: Don't set Content-Type for FormData requests
+                return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+            })
         );
     }
 
@@ -72,15 +77,38 @@ export class ProductService {
     }
 
     addProduct(product: Omit<Product, 'id'>): Observable<Product> {
-        return this.http.post<Product>(
-            this.apiUrl,
-            product
-        ).pipe(
-            tap(newProduct => {
-                const currentProducts = this.productsSubject.value;
-                this.productsSubject.next([...currentProducts, newProduct]);
-            }),
-            catchError(this.handleError)
+        return this.authService.getAccessToken().pipe(
+            switchMap(token => {
+                if (!token) {
+                    throw new Error('No authentication token available');
+                }
+
+                const headers = new HttpHeaders()
+                    .set('Authorization', `Bearer ${token}`)
+                    .set('Content-Type', 'application/json');
+
+                console.log('Final headers:', headers.keys());
+                console.log('Product being sent:', JSON.stringify(product, null, 2));
+
+                return this.http.post<Product>(
+                    `${this.apiUrl}`,
+                    product,
+                    { headers }
+                ).pipe(
+                    tap(newProduct => {
+                        console.log('Product added successfully:', newProduct);
+                        const currentProducts = this.productsSubject.value;
+                        this.productsSubject.next([...currentProducts, newProduct]);
+                    }),
+                    catchError(error => {
+                        console.error('Error adding product:', error);
+                        if (error.error) {
+                            console.error('Error details:', error.error);
+                        }
+                        return throwError(() => error);
+                    })
+                );
+            })
         );
     }
 
@@ -94,44 +122,101 @@ export class ProductService {
         newImages?: File[];
         imageIdsToRemove?: string[];
     }): Observable<void> {
-        const formData = new FormData();
-
-        // Add basic product data
-        formData.append('id', id);
-        formData.append('name', updateData.name);
-        formData.append('description', updateData.description);
-        formData.append('price', updateData.price.toString());
-        formData.append('currency', updateData.currency);
-        formData.append('categoryId', updateData.categoryId);
-
-        if (updateData.subCategoryId) {
-            formData.append('subCategoryId', updateData.subCategoryId);
-        }
-
-        // Add new images if any
+        // If there are new images, upload them first
         if (updateData.newImages?.length) {
-            updateData.newImages.forEach(file => {
-                formData.append('newImages', file);
-            });
+            return this.uploadImages(updateData.newImages).pipe(
+                switchMap(uploadResults => {
+                    // Create FormData with uploaded image results
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    formData.append('name', updateData.name);
+                    formData.append('description', updateData.description);
+                    formData.append('price', updateData.price.toFixed(2));
+                    formData.append('currency', updateData.currency);
+                    formData.append('categoryId', updateData.categoryId);
+
+                    if (updateData.subCategoryId) {
+                        formData.append('subCategoryId', updateData.subCategoryId);
+                    }
+
+                    // Add uploaded image URLs
+                    uploadResults.forEach(result => {
+                        formData.append('newImages', result.url);
+                    });
+
+                    if (updateData.imageIdsToRemove?.length) {
+                        updateData.imageIdsToRemove.forEach(imageId => {
+                            formData.append('imageIdsToRemove', imageId);
+                        });
+                    }
+
+                    return this.authService.getAccessToken().pipe(
+                        switchMap(token => {
+                            if (!token) {
+                                throw new Error('No authentication token available');
+                            }
+
+                            const headers = new HttpHeaders({
+                                'Authorization': `Bearer ${token}`
+                            });
+
+                            return this.http.put<void>(
+                                `${this.apiUrl}/${id}`,
+                                formData,
+                                {
+                                    headers,
+                                    reportProgress: true,
+                                    observe: 'events'
+                                }
+                            );
+                        })
+                    );
+                }),
+                filter(event => event instanceof HttpResponse),
+                map(() => void 0),
+                catchError(error => {
+                    console.error('Error in updateProduct:', error);
+                    return throwError(() => error);
+                })
+            );
         }
 
-        // Add image IDs to remove if any
-        if (updateData.imageIdsToRemove?.length) {
-            updateData.imageIdsToRemove.forEach(imageId => {
-                formData.append('imageIdsToRemove', imageId);
-            });
-        }
+        return this.authService.getAccessToken().pipe(
+            switchMap(token => {
+                if (!token) {
+                    throw new Error('No authentication token available');
+                }
 
-        return this.getAuthHeaders().pipe(
-            switchMap(headers => this.http.put<any>(
-                `${this.apiUrl}/${id}`,
-                formData,
-                { headers }
-            )),
-            catchError(this.handleError)
+                const headers = new HttpHeaders()
+                    .set('Authorization', `Bearer ${token}`)
+                    .set('Content-Type', 'application/json')
+                    .set('Accept', 'application/json');
+
+                const jsonData = {
+                    id,
+                    name: updateData.name,
+                    description: updateData.description,
+                    price: updateData.price,
+                    currency: updateData.currency,
+                    categoryId: updateData.categoryId,
+                    subCategoryId: updateData.subCategoryId,
+                    imageIdsToRemove: updateData.imageIdsToRemove || [],
+                    newImages: []
+                };
+
+                return this.http.put<void>(
+                    `https://localhost:7048/api/products/${id}`,
+                    jsonData,
+                    { headers }
+                );
+            }),
+            catchError(error => {
+                console.error('Error in updateProduct:', error);
+                return throwError(() => error);
+            })
         );
-    }
 
+    }
     deleteProduct(id: string): Observable<void> {
         return this.http.delete<void>(
             `${this.apiUrl}/${id}`
@@ -144,18 +229,45 @@ export class ProductService {
         );
     }
 
-    uploadImages(files: File[]): Observable<string[]> {
+    uploadImages(files: File[]): Observable<FileUploadResult[]> {
         const formData = new FormData();
-        files.forEach(file => formData.append('files', file));
 
-        return this.http.post<string[]>(
-            `${this.apiUrl}/upload-images`,
-            formData
-        ).pipe(
-            map(fileNames => fileNames.map(fileName =>
-                `${this.blobStorageUrl}/${this.productsContainer}/${fileName}`
-            )),
-            catchError(this.handleError)
+        files.forEach(file => {
+            formData.append('files', file);
+        });
+
+        return this.authService.getAccessToken().pipe(
+            switchMap(token => {
+                if (!token) {
+                    throw new Error('No authentication token available');
+                }
+
+                const headers = new HttpHeaders({
+                    'Authorization': `Bearer ${token}`
+                });
+
+                console.log('Files being uploaded:', files.map(f => ({
+                    name: f.name,
+                    type: f.type,
+                    size: f.size
+                })));
+
+                // Use shareReplay to prevent multiple HTTP requests
+                return this.http.post<FileUploadResult[]>(
+                    `${this.apiUrl}/upload-images`,
+                    formData,
+                    { headers }
+                ).pipe(
+                    tap(response => {
+                        console.log('Upload response:', response);
+                    }),
+                    catchError(error => {
+                        console.error('Error uploading images:', error);
+                        return throwError(() => error);
+                    }),
+                    shareReplay(1)  // Add this to prevent duplicate requests
+                );
+            })
         );
     }
 
@@ -184,4 +296,8 @@ export class ProductService {
     }
 }
 
-
+interface FileUploadResult {
+    url: string;
+    fileName: string;
+    size: number;
+}

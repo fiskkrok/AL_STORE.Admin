@@ -1,12 +1,15 @@
 ﻿using System.Reflection;
+
 using Admin.Application.Common.Interfaces;
 using Admin.Application.Products.Commands.CreateProduct;
 using Admin.Application.Products.Queries;
 using Admin.Infrastructure.Persistence.Seeder;
 using Admin.WebAPI.Infrastructure;
 using Admin.WebAPI.Services;
+
 using FastEndpoints;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,40 +20,78 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddWebAPI(this IServiceCollection services)
     {
+        // Add logging services
+        services.AddLogging(); // Added
+
         services.AddAuthentication("Bearer")
             .AddJwtBearer("Bearer", options =>
             {
-                options.Authority = "https://localhost:5001"; // Your IdentityServer URL
+                options.Authority = "https://localhost:5001";
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = true,
-                    //ValidAudience = "admin_api",
+                    ValidAudiences = new[] { "api" }, // Add both valid audiences
                     ValidateIssuer = true,
                     ValidIssuer = "https://localhost:5001",
                     ValidateLifetime = true
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
+                        logger.LogError(context.Exception, "Authentication failed"); // Modified
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
+                        logger.LogInformation("Token validated successfully"); // Modified
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
+                        logger.LogWarning("OnChallenge: {Error}", context.Error); // Modified
+                        return Task.CompletedTask;
+                    },
+                    OnMessageReceived = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
+                        logger.LogInformation("Token received: {Token}", context.Token); // Modified
+                        return Task.CompletedTask;
+                    }
+                };
             });
+        services.AddAuthorization();
         services.AddAuthorizationBuilder()
             .AddPolicy("FullAdminAccess", policy =>
-                policy.RequireClaim("scope", "api.full"))
-            .AddPolicy("ProductsCreate", policy =>
-                policy.RequireClaim("scope", "products.create"))
-            .AddPolicy("ProductsRead", policy =>
-                policy.RequireClaim("scope", "products.read"))
+                policy.RequireRole("SystemAdministrator")
+                    .RequireClaim("scope", "api.full"))
             .AddPolicy("ProductEdit", policy =>
-                policy.RequireClaim("scope", "product.edit"));
-
+                policy.RequireAssertion(context =>
+                        context.User.HasClaim(c =>
+                            (c.Type == "scope" && (c.Value == "products.update" || c.Value == "api.full")) ||
+                            context.User.IsInRole("SystemAdministrator")
+                        )))
+                    .AddPolicy("ProductsCreate", policy =>
+                        policy.RequireClaim("scope", "products.create"))
+                    .AddPolicy("ProductsRead", policy =>
+                        policy.RequireClaim("scope", "products.read"));
+        // Add FastEndpoints
+        services.AddFastEndpoints()
+            .AddOpenApi();
         // Configure CORS
         services.AddCors(options =>
         {
             options.AddDefaultPolicy(builder =>  // Note: AddDefaultPolicy instead of AddPolicy
             {
-                builder.WithOrigins(
-                        "http://localhost:4200",
-                        "http://localhost:5001")
-                    .AllowAnyHeader()
+                builder
+                    .WithOrigins("http://localhost:4200")
                     .AllowAnyMethod()
-                    .AllowCredentials();
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .WithExposedHeaders("Content-Disposition"); // Add if you need to expose headers
             });
         });
 
@@ -123,7 +164,8 @@ public static class ServiceCollectionExtensions
 
         // Add application services
         services.AddScoped<ICurrentUser, CurrentUserService>();
-        services.AddMediatR(cfg => {
+        services.AddMediatR(cfg =>
+        {
             cfg.RegisterServicesFromAssemblies(
                 typeof(Program).Assembly,                   // Web API Assembly
                 typeof(CreateProductCommand).Assembly,      // Application Assembly
@@ -132,29 +174,28 @@ public static class ServiceCollectionExtensions
         });
 
         // Also ensure AutoMapper is properly configured
-        services.AddAutoMapper(cfg => {
+        services.AddAutoMapper(cfg =>
+        {
             cfg.AddMaps(
                 typeof(Program).Assembly,                   // Web API Assembly
                 typeof(CreateProductCommand).Assembly       // Application Assembly
             );
         });
 
-        // Add FastEndpoints
-        services.AddFastEndpoints()
-            .AddOpenApi();
 
-       
+
+
 
         services.AddScoped<ICategorySeeder, CategoryDbSeeder>();
         services.AddScoped<IProductSeeder, ProductDbSeeder>();
         services.AddScoped<IDbSeeder, MainDbSeeder>();
         // Register AutoMapper
-        
+
 
         return services;
     }
 
-    public static async  Task<WebApplication> AddPipeline(this WebApplication app)
+    public static async Task<WebApplication> AddPipeline(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
         {
@@ -177,6 +218,15 @@ public static class ServiceCollectionExtensions
 
             });
         }
+
+        // Add logging middleware
+        app.Use(async (context, next) =>
+        {
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
+            logger.LogInformation("Handling request: {Method} {Path}", context.Request.Method, context.Request.Path); // Added
+            await next.Invoke();
+            logger.LogInformation("Finished handling request."); // Added
+        });
 
         app.UseCors();
         app.UseHttpsRedirection();

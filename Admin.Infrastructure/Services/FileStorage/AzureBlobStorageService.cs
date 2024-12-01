@@ -26,10 +26,11 @@ public class AzureBlobStorageService : IFileStorage
 
     public AzureBlobStorageService(
         IOptions<AzureBlobStorageSettings> settings,
+        BlobServiceClient blobServiceClient,
         ILogger<AzureBlobStorageService> logger)
     {
-        var blobServiceClient = new BlobServiceClient(settings.Value.ConnectionString);
-        _containerClient = blobServiceClient.GetBlobContainerClient(settings.Value.ContainerName);
+        _containerClient = blobServiceClient.GetBlobContainerClient(
+            settings.Value.ContainerName);
         _logger = logger;
     }
 
@@ -39,18 +40,19 @@ public class AzureBlobStorageService : IFileStorage
     {
         try
         {
-            // Create a unique file name
+            // Ensure container exists
+            await _containerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+
+            // Create a unique file name with original extension
             var extension = Path.GetExtension(file.FileName);
-            var blobName = $"{Guid.NewGuid()}{extension}";
+            var blobName = $"{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid()}{extension}";
             var blobClient = _containerClient.GetBlobClient(blobName);
 
-            // Set blob HTTP headers
             var headers = new BlobHttpHeaders
             {
                 ContentType = file.ContentType
             };
 
-            // Upload the file with retry policy
             var retryPolicy = Policy
                 .Handle<RequestFailedException>()
                 .WaitAndRetryAsync(3, retryAttempt =>

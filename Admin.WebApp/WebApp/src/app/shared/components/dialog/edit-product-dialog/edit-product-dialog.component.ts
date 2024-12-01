@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { Product } from 'src/app/shared/models/product.model';
 import { ProductService } from 'src/app/core/services/product.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 @Component({
   selector: 'app-edit-product-dialog',
@@ -229,6 +230,43 @@ import { ProductService } from 'src/app/core/services/product.service';
       }
     }
 
+    .user-info {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: var(--text-primary);
+
+      i {
+        margin-right: 0.5rem;
+      }
+
+      .bi-chevron-up,
+      .bi-chevron-down {
+        margin-left: auto;
+      }
+    }
+
+    .user-menu {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px 4px 0 0;
+      overflow: hidden;
+
+      a {
+        display: block;
+        padding: 0.5rem 1rem;
+        color: var(--text-primary);
+        text-decoration: none;
+
+        &:hover {
+          background: var(--bg-primary);
+        }
+      }
+    }
+
     ::ng-deep {
       .mat-mdc-dialog-container {
         --mdc-dialog-container-color: var(--bg-secondary);
@@ -287,11 +325,14 @@ export class EditProductDialogComponent {
   newImages: File[] = [];
   newImagePreviews: string[] = [];
   imagesToRemove: string[] = [];
+  currentUser = { name: '' };
+  isUserMenuOpen = false;
 
   constructor(
     public dialogRef: MatDialogRef<EditProductDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Product,
-    private productService: ProductService
+    private productService: ProductService,
+    private authService: AuthService
   ) {
     this.editProductForm = new FormGroup({
       name: new FormControl(data.name, [Validators.required, Validators.minLength(3)]),
@@ -300,6 +341,7 @@ export class EditProductDialogComponent {
       stock: new FormControl(data.stock, [Validators.required, Validators.min(0)]),
       category: new FormControl(data.category.id, [Validators.required])
     });
+    this.currentUser.name = this.authService.getCurrentUserName();
   }
 
   hasImageChanges(): boolean {
@@ -334,6 +376,15 @@ export class EditProductDialogComponent {
   removeNewImage(index: number) {
     this.newImages.splice(index, 1);
     this.newImagePreviews.splice(index, 1);
+  }
+
+  toggleUserMenu() {
+    this.isUserMenuOpen = !this.isUserMenuOpen;
+  }
+
+  logout() {
+    this.authService.logout();
+    this.dialogRef.close();
   }
 
   onSubmit() {
