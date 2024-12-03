@@ -1,10 +1,7 @@
 ﻿using System.Globalization;
-
-using Admin.Application.Common.Models;
 using Admin.Application.Products.Commands.UpdateProduct;
 using Admin.WebAPI.Endpoints.Products.Request;
 using FastEndpoints;
-using FastEndpoints.Security;
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Products.UpdateProduct;

@@ -30,6 +30,7 @@ export class AuthService {
     };
 
     this.userManager = new UserManager(settings);
+    this.initializeAuth();
   }
 
   ngOnInit(): void {
@@ -57,7 +58,7 @@ export class AuthService {
       roles: (oidcUser.profile['role'] as string[]) || [],
       permissions: (oidcUser.profile['permissions'] as string[]) || []
     };
-
+    // console.log('Setting currentUser:', user); // Debug log
     this.currentUserSubject.next(user);
   }
 
@@ -112,6 +113,6 @@ export class AuthService {
   getCurrentUserName(): string {
     const user = this.currentUserSubject.value;
     return user ? `${user.firstName} ${user.lastName}` : '';
-    // return user ? `${user.username}` : '';
+
   }
 }

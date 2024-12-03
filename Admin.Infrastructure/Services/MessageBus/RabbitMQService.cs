@@ -1,6 +1,9 @@
 ﻿using System.Text;
 
 using Admin.Application.Common.Interfaces;
+using Admin.Application.Products.Events;
+
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -10,7 +13,7 @@ using RabbitMQ.Client;
 
 namespace Admin.Infrastructure.Services.MessageBus;
 
-public class RabbitMQService : IMessageBusService, IDisposable
+public class RabbitMQService : IMessageBusService, IHostedService, IDisposable
 {
     private IConnection _connection;
     private IChannel _channel;
@@ -22,9 +25,20 @@ public class RabbitMQService : IMessageBusService, IDisposable
     {
         _logger = logger;
         _settings = options.Value;
+
+    }
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await InitializeAsync();
     }
 
-    public async Task InitializeAsync()
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        Dispose();
+        return Task.CompletedTask;
+    }
+
+    private async Task InitializeAsync()
     {
         try
         {
@@ -102,20 +116,20 @@ public class RabbitMQService : IMessageBusService, IDisposable
         }
     }
 
-    private string GetExchangeName(Type messageType)
+    private static string GetExchangeName(Type messageType)
     {
-        return messageType == typeof(ImageProcessingMessage) ? "image-processing" : "product-events";
+        return messageType == typeof(ImageProcessedIntegrationEvent) ? "image-processing" : "product-events";
     }
 
     private string GetRoutingKey(Type messageType)
     {
         return messageType.Name switch
         {
-            nameof(ProductCreatedMessage) => "product.created",
-            nameof(ProductUpdatedMessage) => "product.updated",
-            nameof(ProductDeletedMessage) => "product.deleted",
-            nameof(StockUpdatedMessage) => "stock.updated",
-            nameof(ImageProcessingMessage) => "image.process",
+            nameof(ProductCreatedIntegrationEvent) => "product.created",
+            nameof(ProductUpdatedIntegrationEvent) => "product.updated",
+            nameof(ProductDeletedIntegrationEvent) => "product.deleted",
+            nameof(ProductStockUpdatedIntegrationEvent) => "stock.updated",
+            nameof(ImageProcessedIntegrationEvent) => "image.process",
             _ => throw new ArgumentException($"Unknown message type: {messageType.Name}")
         };
     }
@@ -143,47 +157,3 @@ public class RabbitMQService : IMessageBusService, IDisposable
     }
 }
 
-
-public class ProductCreatedMessage : IMessage
-{
-    public Guid ProductId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-    public int Stock { get; set; }
-    public Guid EventId { get; }
-    public DateTime Timestamp { get; set; }
-}
-
-public class ProductUpdatedMessage : IMessage
-{
-    public Guid ProductId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-    public int Stock { get; set; }
-    public Guid EventId { get; }
-    public DateTime Timestamp { get; set; }
-}
-
-public class ProductDeletedMessage : IMessage
-{
-    public Guid ProductId { get; set; }
-    public Guid EventId { get; }
-    public DateTime Timestamp { get; set; }
-}
-
-public class StockUpdatedMessage : IMessage
-{
-    public Guid ProductId { get; set; }
-    public int NewStock { get; set; }
-    public Guid EventId { get; }
-    public DateTime Timestamp { get; set; }
-}
-
-public class ImageProcessingMessage : IMessage
-{
-    public Guid ProductId { get; set; }
-    public string ImageUrl { get; set; } = string.Empty;
-    public string OriginalFileName { get; set; } = string.Empty;
-    public Guid EventId { get; }
-    public DateTime Timestamp { get; set; }
-}

@@ -1,9 +1,9 @@
 ﻿using Admin.Application.Products.Queries;
-using Admin.WebAPI.Models.Responses;
-
+using Admin.WebAPI.Endpoints.Products.Responses;
 using FastEndpoints;
-
 using MediatR;
+
+namespace Admin.WebAPI.Endpoints.Products.GetProducts;
 
 public class GetProductsEndpoint : EndpointWithoutRequest<PagedResponse<ProductResponse>>
 {

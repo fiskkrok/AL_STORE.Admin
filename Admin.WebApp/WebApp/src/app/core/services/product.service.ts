@@ -82,17 +82,30 @@ export class ProductService {
                 if (!token) {
                     throw new Error('No authentication token available');
                 }
-
+                const command = {
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    currency: product.currency,
+                    stock: product.stock,
+                    categoryId: product.category.id,
+                    subCategoryId: product.subCategory?.id || null,
+                    images: product.images.map(img => ({
+                        fileName: img.fileName,
+                        url: img.url,
+                        size: img.size
+                    }))
+                };
                 const headers = new HttpHeaders()
                     .set('Authorization', `Bearer ${token}`)
                     .set('Content-Type', 'application/json');
 
-                console.log('Final headers:', headers.keys());
-                console.log('Product being sent:', JSON.stringify(product, null, 2));
+                // console.log('Final headers:', headers.keys()); // Debug log
+                // console.log('Product being sent:', JSON.stringify(product, null, 2)); // Debug log
 
                 return this.http.post<Product>(
                     `${this.apiUrl}`,
-                    product,
+                    command,
                     { headers }
                 ).pipe(
                     tap(newProduct => {

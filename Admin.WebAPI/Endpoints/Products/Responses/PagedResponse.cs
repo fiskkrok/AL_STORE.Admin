@@ -1,6 +1,6 @@
 ﻿using Admin.Application.Common.Models;
 
-namespace Admin.WebAPI.Models.Responses;
+namespace Admin.WebAPI.Endpoints.Products.Responses;
 
 public record PagedResponse<T>
 {

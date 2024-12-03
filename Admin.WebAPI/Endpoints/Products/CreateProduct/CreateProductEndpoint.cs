@@ -3,23 +3,23 @@ using Admin.WebAPI.Endpoints.Products.GetProductById;
 using FastEndpoints;
 
 using MediatR;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Admin.WebAPI.Endpoints.Products.CreateProduct;
 
-public class CreateProductEndpoint(IMediator mediator, ILogger<CreateProductEndpoint> logger)
+public class CreateProductEndpoint(IMediator mediator, ILogger<CreateProductEndpoint> logger, HybridCache cache)
     : Endpoint<CreateProductCommand, Guid>
 {
     public override void Configure()
     {
         Post("/products");
-        // Remove AllowFileUploads since we're accepting JSON
         Description(d => d
             .WithTags("Products")
             .Produces<Guid>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateProduct")
             .WithOpenApi());
-        //Claims("products.create");
+        Policies("ProductCreate", "FullAdminAccess");
     }
 
     public override async Task HandleAsync(CreateProductCommand req, CancellationToken ct)
@@ -31,6 +31,7 @@ public class CreateProductEndpoint(IMediator mediator, ILogger<CreateProductEndp
             var result = await mediator.Send(req, ct);
             if (result.IsSuccess)
             {
+                await cache.RemoveByTagAsync("products", ct);
                 await SendCreatedAtAsync<GetProductEndpoint>(
                     new { id = result.Value },
                     result.Value,

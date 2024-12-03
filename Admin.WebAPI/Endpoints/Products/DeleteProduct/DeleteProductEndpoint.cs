@@ -26,7 +26,7 @@ public class DeleteProductEndpoint : Endpoint<DeleteProductRequest>
             .Produces(StatusCodes.Status404NotFound)
             .WithName("DeleteProduct")
             .WithOpenApi());
-        Claims("products.delete");
+        Policies("ProductsDelete", "FullAdminAccess");
     }
 
     public override async Task HandleAsync(DeleteProductRequest req, CancellationToken ct)

@@ -1,7 +1,6 @@
 ﻿using Admin.Application.Products.Queries;
 using Admin.WebAPI.Endpoints.Products.Responses;
 using FastEndpoints;
-using Admin.WebAPI.Models.Responses;
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Products.GetProductById;

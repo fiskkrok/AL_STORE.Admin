@@ -1,77 +1,86 @@
-<nav class="sidebar" [class.collapsed]="isCollapsed">
-    <div class="sidebar-header">
-        @if (!isCollapsed) {
-        <h1 [routerLink]="['/']" class="title">Product Management</h1>
-        }
-        <button class="toggle-btn" (click)="toggleSidebar()" title="Toggle Sidebar">
-            <i class="bi" [class.bi-chevron-double-left]="isCollapsed"
-                [class.bi-chevron-double-right]="!isCollapsed"></i>
-        </button>
-    </div>
+<!-- Sidebar Header -->
+<div class="sidebar-header">
+    @if (!isCollapsed) {
+    <h1 class="title" routerLink="/">Product Management</h1>
+    }
+    <button class="toggle-btn" (click)="toggleSidebar()">
+        <i class="bi" [class.bi-chevron-left]="!isCollapsed" [class.bi-chevron-right]="isCollapsed"></i>
+    </button>
+</div>
 
-    <nav class="nav nav-tabs flex-column nav-menu">
-        @for (item of navItems; track item.path) {
-        <div class="nav-item">
-            @if (item.children) {
-            <div class="nav-link parent-link" [class.active]="isChildActive(item)" (click)="toggleSubmenu(item)">
-                <i class="bi {{ item.icon }} p-2"></i>
-                @if (!isCollapsed) {
-                <span>{{ item.label }}</span>
-                <i class="bi" [class.bi-chevron-down]="isSubmenuOpen(item)"
-                    [class.bi-chevron-right]="!isSubmenuOpen(item)">
-                </i>
-                }
-            </div>
-            @if (isSubmenuOpen(item) && !isCollapsed) {
-            <div class="submenu">
-                @for (child of item.children; track child.path) {
-                <a [routerLink]="child.path" routerLinkActive="active" class="nav-link child-link">
-                    <i class="bi {{ child.icon }} p-2"></i>
-                    <span>{{ child.label }}</span>
-                </a>
-                }
-            </div>
+<!-- Navigation Menu -->
+<nav class="nav nav-tabs flex-column nav-menu">
+    @for (item of navItems; track item.path) {
+    <div class="nav-item">
+        @if (item.children) {
+        <!-- Parent menu item with children -->
+        <div class="nav-link parent-link" [class.active]="isChildActive(item)" (click)="toggleSubmenu(item)">
+            <i class="bi p-2" [class]="item.icon"></i>
+            @if (!isCollapsed) {
+            <span>{{ item.label }}</span>
+            <i class="bi" [class.bi-chevron-down]="!isSubmenuOpen(item)"
+                [class.bi-chevron-up]="isSubmenuOpen(item)"></i>
             }
-            } @else {
-            <a [routerLink]="item.path" routerLinkActive="active" class="nav-link">
-                <i class="bi {{ item.icon }} p-2"></i>
-                @if (!isCollapsed) {
-                <span>{{ item.label }}</span>
-                }
+        </div>
+
+        <!-- Submenu -->
+        @if (isSubmenuOpen(item) && !isCollapsed) {
+        <div class="submenu">
+            @for (child of item.children; track child.path) {
+            <a class="nav-link child-link" [routerLink]="child.path" routerLinkActive="active">
+                <i class="bi p-2" [class]="child.icon"></i>
+                <span>{{ child.label }}</span>
             </a>
             }
         </div>
         }
-    </nav>
-    <div class="user-info" (click)="toggleUserMenu()">
-        <i class="bi bi-person-circle"></i>
-        @if (!isCollapsed) {
-        <span>{{ currentUser.name }}</span>
-        <i class="bi" [class.bi-chevron-up]="isUserMenuOpen" [class.bi-chevron-down]="!isUserMenuOpen"></i>
+        } @else {
+        <!-- Regular menu item -->
+        <a class="nav-link" [routerLink]="item.path" routerLinkActive="active">
+            <i [class]="item.icon"></i>
+            @if (!isCollapsed) {
+            <span>{{ item.label }}</span>
+            }
+        </a>
         }
     </div>
-    @if (isUserMenuOpen && !isCollapsed) {
-    <div class="user-menu drop-up">
-        <a (click)="logout()">Logout</a>
-    </div>
     }
-
-    <div class="sidebar-footer">
-        <button class="theme-toggle btn" (click)="toggleTheme()">
-            <i class="bi" [class.bi-moon]="isDarkTheme" [class.bi-sun]="!isDarkTheme"></i>
-            @if (!isCollapsed) {
-            <span>Toggle Theme</span>
-            }
-        </button>
-    </div>
 </nav>
 
-<!-- Bottom Navigation for Mobile -->
-<div class="bottom-nav">
+<!-- User Menu -->
+<div class="user-info" (click)="toggleUserMenu()">
+    <i class="bi bi-person-circle"></i>
+    @if (!isCollapsed) {
+    <span>{{ currentUser?.username || 'Guest' }}</span>
+    <i class="bi" [class.bi-chevron-up]="isUserMenuOpen" [class.bi-chevron-down]="!isUserMenuOpen"></i>
+    }
+</div>
+
+@if (isUserMenuOpen && !isCollapsed) {
+<div class="user-menu drop-up mb-0">
+    <a (click)="logout()">
+        <i class="bi bi-box-arrow-right pe-2"></i>
+        <span>Logout</span>
+    </a>
+</div>
+}
+
+<!-- Footer -->
+<div class="sidebar-footer mb-0">
+    <button class="theme-toggle btn" (click)="toggleTheme()">
+        <i class="bi" [class.bi-moon]="isDarkTheme" [class.bi-sun]="!isDarkTheme"></i>
+        @if (!isCollapsed) {
+        <span>Toggle Theme</span>
+        }
+    </button>
+</div>
+
+<!-- Mobile Navigation -->
+<nav class="bottom-nav">
     @for (item of mobileNavItems; track item.path) {
-    <a [routerLink]="item.path" routerLinkActive="active" class="nav-item nav-link">
-        <i class="bi {{ item.icon }}"></i>
+    <a class="nav-item" [routerLink]="item.path" routerLinkActive="active">
+        <i [class]="item.icon"></i>
         <span>{{ item.label }}</span>
     </a>
     }
-</div>
+</nav>

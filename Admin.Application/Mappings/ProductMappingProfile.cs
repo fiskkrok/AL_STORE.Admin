@@ -1,5 +1,4 @@
-﻿using Admin.Application.Common.Models;
-using Admin.Application.Products.DTOs;
+﻿using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 using AutoMapper;
 

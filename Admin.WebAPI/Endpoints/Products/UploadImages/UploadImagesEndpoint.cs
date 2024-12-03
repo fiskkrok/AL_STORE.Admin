@@ -2,6 +2,8 @@
 using Admin.Application.Common.Models;
 using FastEndpoints;
 
+namespace Admin.WebAPI.Endpoints.Products.UploadImages;
+
 public class UploadImagesEndpoint : EndpointWithoutRequest<List<FileUploadResult>>
 {
     private readonly IFileStorage _fileStorage;

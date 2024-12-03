@@ -1,6 +1,9 @@
-﻿using Admin.Infrastructure.Services.MessageBus;
+﻿using Admin.Application.Common.Interfaces;
+using Admin.Infrastructure.Services.MessageBus;
 using Admin.WebAPI.Messaging.Consumers;
+
 using FluentValidation;
+
 using MassTransit;
 
 namespace Admin.WebAPI.Infrastructure;
@@ -18,6 +21,12 @@ public static class MessagingConfiguration
             services.AddSignalR().AddStackExchangeRedis(redisConnection,
                 options => { options.Configuration.ChannelPrefix = "Admin_"; });
         }
+
+        // Configure RabbitMQ Settings and Service
+        services.Configure<RabbitMQSettings>(configuration.GetSection("RabbitMQ"));
+        services.AddSingleton<RabbitMQService>();
+        services.AddSingleton<IMessageBusService>(sp => sp.GetRequiredService<RabbitMQService>());
+        services.AddHostedService(sp => sp.GetRequiredService<RabbitMQService>());
 
         // Configure MassTransit
         services.AddMassTransit(x =>
@@ -52,4 +61,3 @@ public static class MessagingConfiguration
         return services;
     }
 }
-

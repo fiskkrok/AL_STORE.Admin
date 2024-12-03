@@ -1,5 +1,4 @@
 ﻿using Admin.Domain.Common;
-using MediatR;
 
 namespace Admin.Application.Common.Interfaces;
 public interface IDomainEventService

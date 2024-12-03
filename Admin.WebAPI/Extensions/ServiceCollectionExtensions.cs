@@ -70,14 +70,28 @@ public static class ServiceCollectionExtensions
                     .RequireClaim("scope", "api.full"))
             .AddPolicy("ProductEdit", policy =>
                 policy.RequireAssertion(context =>
-                        context.User.HasClaim(c =>
-                            (c.Type == "scope" && (c.Value == "products.update" || c.Value == "api.full")) ||
-                            context.User.IsInRole("SystemAdministrator")
-                        )))
-                    .AddPolicy("ProductsCreate", policy =>
-                        policy.RequireClaim("scope", "products.create"))
-                    .AddPolicy("ProductsRead", policy =>
-                        policy.RequireClaim("scope", "products.read"));
+                    context.User.HasClaim(c =>
+                        (c.Type == "scope" && (c.Value == "products.update" || c.Value == "api.full")) ||
+                        context.User.IsInRole("SystemAdministrator")
+                    )))
+            .AddPolicy("ProductsCreate", policy =>
+                policy.RequireAssertion(context =>
+                    context.User.HasClaim(c =>
+                        (c.Type == "scope" && (c.Value == "products.create" || c.Value == "api.full")) ||
+                        context.User.IsInRole("SystemAdministrator")
+                    )))
+            .AddPolicy("ProductsRead", policy =>
+                policy.RequireAssertion(context =>
+                    context.User.HasClaim(c =>
+                        (c.Type == "scope" && (c.Value == "products.read" || c.Value == "api.full")) ||
+                        context.User.IsInRole("SystemAdministrator")
+                    )))
+            .AddPolicy("ProductsDelete", policy =>
+                policy.RequireAssertion(context =>
+                    context.User.HasClaim(c =>
+                        (c.Type == "scope" && (c.Value == "products.delete" || c.Value == "api.full")) ||
+                        context.User.IsInRole("SystemAdministrator")
+                    )));
         // Add FastEndpoints
         services.AddFastEndpoints()
             .AddOpenApi();
@@ -181,11 +195,7 @@ public static class ServiceCollectionExtensions
                 typeof(CreateProductCommand).Assembly       // Application Assembly
             );
         });
-
-
-
-
-
+       
         services.AddScoped<ICategorySeeder, CategoryDbSeeder>();
         services.AddScoped<IProductSeeder, ProductDbSeeder>();
         services.AddScoped<IDbSeeder, MainDbSeeder>();

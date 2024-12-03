@@ -1,23 +1,17 @@
 ﻿using Admin.Application.Categories.Queries;
-using Admin.Application.Products.DTOs;
-using Admin.WebAPI.Models.Responses;
+using Admin.WebAPI.Endpoints.Products.Responses;
 using FastEndpoints;
 using MediatR;
 
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Hybrid;
 
-namespace Admin.WebAPI.Endpoints.Categories.GetCatefories;
+namespace Admin.WebAPI.Endpoints.Categories.GetCategories;
 
-public class GetCategoriesEndpoint : EndpointWithoutRequest<List<CategoryResponse>>
+public class GetCategoriesEndpoint(IMediator mediator, ILogger<GetCategoriesEndpoint> logger)
+    : EndpointWithoutRequest<List<CategoryResponse>>
 {
-    private readonly IMediator _mediator;
-    private readonly ILogger<GetCategoriesEndpoint> _logger;
-    public GetCategoriesEndpoint(IMediator mediator, ILogger<GetCategoriesEndpoint> logger)
-    {
-        _mediator = mediator;
-        _logger = logger;
-    }
-
+    private readonly ILogger<GetCategoriesEndpoint> _logger = logger;
+    private HybridCache _cache = cache;
     public override void Configure()
     {
         Get("/categories");
@@ -32,7 +26,7 @@ public class GetCategoriesEndpoint : EndpointWithoutRequest<List<CategoryRespons
     {
         List<CategoryResponse> response;
         var request = new GetCategoriesQuery();
-        var result = await _mediator.Send(request, ct);
+        var result = await mediator.Send(request, ct);
         if (result.IsSuccess)
         {
           response =  result.Value.Select(CategoryResponse.FromDto).ToList();

@@ -1,5 +1,6 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 using Admin.Domain.ValueObjects;
 
@@ -20,8 +21,9 @@ public record CreateProductCommand : IRequest<Result<Guid>>
     public int Stock { get; init; }
     public Guid CategoryId { get; init; }
     public Guid? SubCategoryId { get; init; }
-    public List<FileUploadRequest> Images { get; init; } = new();
+    public List<ProductImageDto> Images { get; init; } = new();
 }
+
 
 public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
 {
@@ -73,11 +75,10 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
                 subCategory,
                 _currentUser.Id);
 
-            // Handle images
-            foreach (var imageFile in command.Images)
+            //Handle images
+            foreach (var image in command.Images)
             {
-                var uploadResult = await _fileStorage.UploadAsync(imageFile, cancellationToken);
-                product.AddImage(uploadResult.Url, uploadResult.FileName, uploadResult.Size, _currentUser.Id);
+                product.AddImage(image.Url, image.FileName, image.Size, _currentUser.Id);
             }
 
             _productRepository.Add(product);

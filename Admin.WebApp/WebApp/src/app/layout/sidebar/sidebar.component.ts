@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { User } from 'src/app/core/models/auth.models';
 
 interface NavItem {
   path: string;
@@ -19,12 +20,12 @@ interface NavItem {
   styleUrls: ['./sidebar.component.scss']
 })
 
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   isCollapsed = false;
   isDarkTheme = true;
   logo = '../../../assets/dashboardadmin.png';
   openSubmenus = new Set<string>();
-  currentUser = { name: '' };
+  currentUser: User | null = null;
   isUserMenuOpen = false;
 
   navItems: NavItem[] = [
@@ -72,7 +73,22 @@ export class SidebarComponent {
     private readonly authService: AuthService
   ) {
     this.isDarkTheme = this.themeService.isDarkTheme();
-    this.currentUser.name = this.authService.getCurrentUserName();
+  }
+
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      console.log('Received currentUser:', user); // Debug log
+      this.currentUser = user;
+    });
+
+    // Ensure the current user is set if already authenticated
+    this.authService.isAuthenticated().subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.authService.currentUser$.subscribe(user => {
+          this.currentUser = user;
+        });
+      }
+    });
   }
 
   toggleSidebar() {

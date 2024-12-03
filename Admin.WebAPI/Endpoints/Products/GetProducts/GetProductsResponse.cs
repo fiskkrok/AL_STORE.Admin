@@ -1,5 +1,7 @@
 ﻿using Admin.Application.Products.DTOs;
 
+namespace Admin.WebAPI.Endpoints.Products.GetProducts;
+
 public class GetProductsResponse
 {
     public List<ProductDto> Products { get; set; } = new();

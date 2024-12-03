@@ -1,6 +1,5 @@
 ﻿using Admin.Application.Common.Interfaces;
-using Admin.Application.Common.Models;
-
+using Admin.Application.Products.DTOs;
 using FluentValidation;
 
 namespace Admin.Application.Products.Commands.CreateProduct;
@@ -45,8 +44,20 @@ public class CreateProductValidator : AbstractValidator<CreateProductCommand>
             .Must(x => x.Count <= 10).WithMessage("Maximum 10 images allowed");
 
         RuleForEach(v => v.Images)
-            .Must(BeValidImage).WithMessage("Invalid image format. Allowed formats: jpg, jpeg, png")
-            .Must(BeValidSize).WithMessage("Image size must be less than 5MB");
+            .Must(BeValidUrl).WithMessage("Invalid image URL")
+            .Must(BeValidSize).WithMessage("Image size must be less than 5MB")
+            .Must(BeValidImage).WithMessage("Non valid file format");
+    }
+
+    private static bool BeValidUrl(ProductImageDto image)
+    {
+        return Uri.TryCreate(image.Url, UriKind.Absolute, out _);
+    }
+
+    private static bool BeValidSize(ProductImageDto image)
+    {
+        const int maxSize = 5 * 1024 * 1024; // 5MB
+        return image.Size <= maxSize;
     }
 
     private async Task<bool> CategoryExists(Guid categoryId, CancellationToken cancellationToken)
@@ -60,16 +71,10 @@ public class CreateProductValidator : AbstractValidator<CreateProductCommand>
         return await _categoryRepository.ExistsAsync(subCategoryId.Value, cancellationToken);
     }
 
-    private bool BeValidImage(FileUploadRequest file)
+    private static bool BeValidImage(ProductImageDto file)
     {
-        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         return allowedExtensions.Contains(extension);
-    }
-
-    private bool BeValidSize(FileUploadRequest file)
-    {
-        const int maxSize = 5 * 1024 * 1024; // 5MB
-        return file.Length <= maxSize;
     }
 }

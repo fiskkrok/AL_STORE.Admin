@@ -14,15 +14,10 @@ import { ErrorService, ErrorState } from '../../../core/services/error.service';
           role="alert"
         >
           <span class="block sm:inline">{{ error.message }}</span>
-          <button style="max-width: 10px; max-height: 10px;"
+          <button mat-mini-fab style="max-width: 10px; max-height: 10px;"
             class="absolute top-0 right-0 px-4 py-3"
             (click)="removeError(error)"
           >
-          <svg class="h-4 w-4 fill-current" role="button" viewBox="0 0 20 20">
-            <path
-              d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"
-            />
-          </svg>
             <span class="sr-only ">Close</span>
           </button>
         </div>
