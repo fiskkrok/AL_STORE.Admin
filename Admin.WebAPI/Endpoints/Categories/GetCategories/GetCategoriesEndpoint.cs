@@ -11,7 +11,6 @@ public class GetCategoriesEndpoint(IMediator mediator, ILogger<GetCategoriesEndp
     : EndpointWithoutRequest<List<CategoryResponse>>
 {
     private readonly ILogger<GetCategoriesEndpoint> _logger = logger;
-    private HybridCache _cache = cache;
     public override void Configure()
     {
         Get("/categories");
