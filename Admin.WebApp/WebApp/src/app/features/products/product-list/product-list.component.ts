@@ -1,15 +1,25 @@
-import { Component, OnInit, signal, viewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Product } from '../../../shared/models/product.model';
-import { ProductService, ProductFilters } from '../../../core/services/product.service';
-import { ErrorService } from '../../../core/services/error.service';
+import { Store } from '@ngrx/store';
+import { Observable, Subject, combineLatest } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil, map, startWith } from 'rxjs/operators';
+import { Category, Product } from '../../../shared/models/product.model';
+import { ProductActions } from '../../../store/product/product.actions';
+import {
+    selectAllProducts,
+    selectProductsLoading,
+    selectProductsError,
+    selectProductPagination,
+    selectProductFilters
+} from '../../../store/product/product.selectors';
 import { DialogService } from '../../../core/services/dialog.service';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { MatTableModule, MatTable } from '@angular/material/table';
-import { MatSortModule, MatSort } from '@angular/material/sort';
-import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatDialog } from '@angular/material/dialog';
+import { EditProductDialogComponent } from '../../../shared/components/dialog/edit-product-dialog/edit-product-dialog.component';
+import { MatTable, MatTableModule } from '@angular/material/table';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,9 +27,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { EditProductDialogComponent } from 'src/app/shared/components/dialog/edit-product-dialog/edit-product-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ProductService, ProductFilters } from 'src/app/core/services/product.service';
+import { ErrorService } from 'src/app/core/services/error.service';
 
 @Component({
     selector: 'app-product-list',
@@ -37,33 +48,24 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         MatCheckboxModule,
         MatSelectModule,
         MatIconModule,
-        MatCardModule
+        MatCardModule,
+        MatProgressBarModule,
+        MatSnackBarModule
     ],
     templateUrl: './product-list.component.html',
     styleUrls: ['./product-list.component.scss']
 })
-export class ProductListComponent implements OnInit {
-    onKeyPress($event: KeyboardEvent) {
-        throw new Error('Method not implemented.');
-    }
-    // Column name to Product property mapping for sorting
-    private readonly sortPropertyMap: { [key: string]: keyof Product } = {
-        'name': 'name',
-        'category': 'category',
-        'price': 'price',
-        'stock': 'stock'
-    };
-    readonly sort = viewChild.required(MatSort);
-    readonly paginator = viewChild.required(MatPaginator);
-    readonly table = viewChild.required(MatTable);
+export class ProductListComponent implements OnInit, OnDestroy {
+    @ViewChild(MatSort) sort!: MatSort;
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
+    displayedColumns = ['image', 'name', 'category', 'price', 'stock', 'actions'];
+    private destroy$ = new Subject<void>();
 
-    // Signals
-    products = signal<Product[]>([]);
-    totalCount = signal<number>(0);
-    page = signal<number>(1);
-    pageSize = signal<number>(5);
-    loading = signal<boolean>(false);
-    categories = signal<{ id: string, name: string }[]>([]);
+    // Observables
+    products$: Observable<Product[]>;
+    loading$: Observable<boolean>;
+    error$: Observable<string | null>;
+    pagination$: Observable<any>;
 
     // Form Controls
     searchControl = new FormControl('');
@@ -72,56 +74,55 @@ export class ProductListComponent implements OnInit {
     maxPriceFilter = new FormControl<number | null>(null);
     inStockFilter = new FormControl(false);
 
-    // Table configuration
-    displayedColumns: string[] = ['image', 'name', 'category', 'price', 'stock', 'actions'];
-
-    constructor(
-        private readonly productService: ProductService,
-        private readonly errorService: ErrorService,
-        private readonly dialogService: DialogService,
-        private readonly matDialog: MatDialog,
-        private readonly snackBar: MatSnackBar
-    ) {
-        this.initializeFilters();
+    categories = signal<{ id: string, name: string }[]>([]);
+    constructor(private readonly store: Store, private readonly dialogService: DialogService, private readonly matDialog: MatDialog, private readonly productService: ProductService, private readonly errorService: ErrorService) {
+        this.products$ = this.store.select(selectAllProducts);
+        this.loading$ = this.store.select(selectProductsLoading);
+        this.error$ = this.store.select(selectProductsError);
+        this.pagination$ = this.store.select(selectProductPagination);
     }
 
     ngOnInit() {
+        this.initializeFilters();
+        // Initial load
         this.loadCategories();
         this.loadProducts();
     }
 
-    private initializeFilters() {
-        this.searchControl.valueChanges.pipe(
-            debounceTime(300),
-            distinctUntilChanged()
-        ).subscribe(() => {
-            this.page.set(1);
-            this.loadProducts();
-        });
-
-        this.categoryFilter.valueChanges.subscribe(() => {
-            this.page.set(1);
-            this.loadProducts();
-        });
-
-        this.minPriceFilter.valueChanges.pipe(debounceTime(300))
-            .subscribe(() => {
-                this.page.set(1);
-                this.loadProducts();
-            });
-
-        this.maxPriceFilter.valueChanges.pipe(debounceTime(300))
-            .subscribe(() => {
-                this.page.set(1);
-                this.loadProducts();
-            });
-
-        this.inStockFilter.valueChanges.subscribe(() => {
-            this.page.set(1);
-            this.loadProducts();
-        });
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
+    private initializeFilters() {
+        // Combine all filter changes
+        combineLatest([
+            this.searchControl.valueChanges.pipe(startWith('')),
+            this.categoryFilter.valueChanges.pipe(startWith('')),
+            this.minPriceFilter.valueChanges.pipe(startWith(null)),
+            this.maxPriceFilter.valueChanges.pipe(startWith(null)),
+            this.inStockFilter.valueChanges.pipe(startWith(false))
+        ]).pipe(
+            debounceTime(300),
+            distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+            takeUntil(this.destroy$)
+        ).subscribe(([search, category, minPrice, maxPrice, inStock]) => {
+            const filters = {
+                search: search || '',
+                categoryId: category || undefined,
+                minPrice: minPrice || undefined,
+                maxPrice: maxPrice || undefined,
+                inStock: inStock || undefined,
+                page: this.paginator?.pageIndex ? this.paginator.pageIndex + 1 : 1,
+                pageSize: this.paginator?.pageSize || 10,
+                sortColumn: this.sort?.active as keyof Product,
+                sortDirection: this.sort?.direction || undefined
+            };
+
+            this.store.dispatch(ProductActions.setFilters({ filters }));
+            this.loadProducts(filters);
+        });
+    }
     private loadCategories() {
         this.productService.getCategories().subscribe({
             next: (categories) => this.categories.set(categories),
@@ -133,93 +134,77 @@ export class ProductListComponent implements OnInit {
             }
         });
     }
-
-    loadProducts() {
-        this.loading.set(true);
-
-        const sort = this.sort();
-        const filters: ProductFilters = {
-            page: this.page(),
-            pageSize: this.pageSize(),
-            search: this.searchControl.value || undefined,
-            category: this.categoryFilter.value || undefined,
-            minPrice: this.minPriceFilter.value || undefined,
-            maxPrice: this.maxPriceFilter.value || undefined,
-            inStock: this.inStockFilter.value || undefined,
-            sortColumn: sort?.active as keyof Product | undefined,
-            sortDirection: sort?.direction || undefined
+    sortChange(sort: Sort) {
+        const filters = {
+            sortColumn: sort.active as keyof Product,
+            sortDirection: sort.direction || undefined
         };
 
-        this.productService.getProducts(filters).subscribe({
-            next: (response) => {
-                this.products.set(response.items);
-                this.totalCount.set(response.totalCount);
-                this.loading.set(false);
-            },
-            error: (error) => {
-                this.errorService.addError({
-                    message: 'Failed to load products',
-                    type: 'error'
-                });
-                this.loading.set(false);
-            }
+        this.store.dispatch(ProductActions.setFilters({ filters }));
+        this.loadProducts({
+            ...this.getCurrentFilters(),
+            ...filters
         });
     }
 
     onPageChange(event: PageEvent) {
-        this.pageSize.set(event.pageSize);
-        this.page.set(event.pageIndex + 1);
-        this.loadProducts();
-    }
+        const filters = {
+            page: event.pageIndex + 1,
+            pageSize: event.pageSize
+        };
 
-    editProduct(product: Product) {
-        this.productService.getProduct(product.id).subscribe({
-            next: (completeProduct) => {
-                const dialogRef = this.matDialog.open(EditProductDialogComponent, {
-                    width: '600px',
-                    data: completeProduct
-                });
-
-                dialogRef.afterClosed().subscribe(result => {
-                    if (result) {
-                        this.snackBar.open('Product updated successfully', 'Close', { duration: 3000 });
-                        this.loadProducts();
-                    } else if (result === false) {
-                        this.snackBar.open('Product update failed', 'Close', { duration: 3000 });
-                    }
-                });
-            },
-            error: (error) => {
-                this.snackBar.open('Error loading product details', 'Close', { duration: 3000 });
-            }
+        this.store.dispatch(ProductActions.setFilters({ filters }));
+        this.loadProducts({
+            ...this.getCurrentFilters(),
+            ...filters
         });
     }
 
-    async deleteProduct(product: Product) {
-        const confirmed = await this.dialogService.confirm(
-            `Are you sure you want to delete ${product.name}?`,
-            'Delete Product'
-        );
+    private getCurrentFilters() {
+        return {
+            search: this.searchControl.value || '',
+            categoryId: this.categoryFilter.value || undefined,
+            minPrice: this.minPriceFilter.value || undefined,
+            maxPrice: this.maxPriceFilter.value || undefined,
+            inStock: this.inStockFilter.value || undefined,
+            page: this.paginator?.pageIndex ? this.paginator.pageIndex + 1 : 1,
+            pageSize: this.paginator?.pageSize || 10,
+            sortColumn: this.sort?.active as keyof Product,
+            sortDirection: this.sort?.direction || undefined
+        };
+    }
 
-        if (confirmed) {
-            this.loading.set(true);
-            this.productService.deleteProduct(product.id).subscribe({
-                next: () => {
-                    this.errorService.addError({
-                        message: 'Product deleted successfully',
-                        type: 'info'
-                    });
-                    this.loadProducts();
-                },
-                error: (error) => {
-                    this.errorService.addError({
-                        message: 'Failed to delete product',
-                        type: 'error'
-                    });
-                    this.loading.set(false);
-                }
-            });
+    loadProducts(filters = this.getCurrentFilters()) {
+        this.store.dispatch(ProductActions.loadProducts({ filters }));
+    }
+
+    resetFilters() {
+        this.searchControl.reset();
+        this.categoryFilter.reset();
+        this.minPriceFilter.reset();
+        this.maxPriceFilter.reset();
+        this.inStockFilter.reset();
+        if (this.paginator) {
+            this.paginator.pageIndex = 0;
+            this.paginator.pageSize = 10;
         }
+        if (this.sort) {
+            this.sort.active = '';
+            this.sort.direction = '';
+        }
+
+        this.store.dispatch(ProductActions.resetFilters());
+        this.loadProducts({
+            page: 1,
+            pageSize: 10,
+            search: '',
+            categoryId: undefined,
+            minPrice: undefined,
+            maxPrice: undefined,
+            inStock: undefined,
+            sortColumn: 'category',
+            sortDirection: undefined
+        });
     }
 
     async openImagePreview(imageUrl: string) {
@@ -227,6 +212,35 @@ export class ProductListComponent implements OnInit {
             title: 'Image Preview',
             message: imageUrl,
             type: 'preview'
+        });
+    }
+    async deleteProduct(product: Product) {
+        const confirmed = await this.dialogService.confirm(
+            `Are you sure you want to delete ${product.name}?`,
+            'Delete Product'
+        );
+
+        if (confirmed) {
+            this.store.dispatch(ProductActions.deleteProduct({ id: product.id }));
+        }
+    }
+
+    editProduct(product: Product) {
+        this.store.dispatch(ProductActions.selectProduct({ product }));
+
+        const dialogRef = this.matDialog.open(EditProductDialogComponent, {
+            width: '600px',
+            data: product
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.store.dispatch(ProductActions.updateProduct({
+                    id: product.id,
+                    product: result
+                }));
+            }
+            this.store.dispatch(ProductActions.clearSelectedProduct());
         });
     }
 }

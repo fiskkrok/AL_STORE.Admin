@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, isDevMode } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
@@ -13,8 +13,11 @@ import { FileValueAccessor } from './shared/formly/file-value-accessor';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { reducers, metaReducers } from './store';
+import { environment } from '../environments/environment';
+import { productReducer } from './store/product/product.reducer';
 import { ProductEffects } from './store/product/product.effects';
+import { provideAnimations } from '@angular/platform-browser/animations';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withViewTransitions()),
@@ -25,6 +28,17 @@ export const appConfig: ApplicationConfig = {
         loadingInterceptor,
       ])
     ),
+    // Add NgRx Store configuration
+    provideStore({
+      products: productReducer
+    }),
+    provideEffects([ProductEffects]),
+    provideStoreDevtools({
+      maxAge: 25,
+      logOnly: environment.production,
+      autoPause: true,
+    }),
+    provideAnimations(), // Add animations provider
     importProvidersFrom(
       ReactiveFormsModule,
       FileValueAccessor,
@@ -54,13 +68,5 @@ export const appConfig: ApplicationConfig = {
       }),
       FormlyBootstrapModule,
     ),
-    provideStore(reducers, { metaReducers }),
-    provideEffects(ProductEffects),
-    provideStoreDevtools({
-      maxAge: 25,
-      logOnly: !isDevMode()
-    }),
   ]
 };
-
-

@@ -1,16 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FormlyFormOptions, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
-import { ProductService } from '../../../core/services/product.service';
 import { Router } from '@angular/router';
 import { getProductFormFields } from '../configs/product.formly.config';
 import { CommonModule } from '@angular/common';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
-import { Product } from '../../../shared/models/product.model';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorService } from 'src/app/core/services/error.service';
-import { finalize } from 'rxjs';
+import { ProductService, ProductCreateCommand } from '../../../core/services/product.service';
+import { Product, ProductStatus, ProductVisibility, Money } from '../../../shared/models/product.model';
 
 interface ProductFormModel {
   basicInfo: {
@@ -85,38 +84,38 @@ export class AddProductComponent implements OnInit {
 
     this.productService.uploadImages(images).subscribe({
       next: (imageResults) => {
-        const product: Omit<Product, 'id'> = {
+        const product: ProductCreateCommand = {
           name: formValue.basicInfo.name,
           description: formValue.basicInfo.description,
-          price: formValue.pricing.price,
-          currency: 'USD',
-          stock: formValue.pricing.stock,
-          category: {
-            id: formValue.basicInfo.category,
-            name: '',
-            description: ''
+          price: {
+            amount: formValue.pricing.price,
+            currency: 'USD'  // Or get from configuration
           },
-          subCategory: null,
+          categoryId: formValue.basicInfo.category,
+          stock: formValue.pricing.stock,
+          sku: this.generateSku(),
+          status: ProductStatus.Draft,
+          visibility: ProductVisibility.Hidden,
           images: imageResults.map(result => ({
-            id: '',
+            id: result.id,
             url: result.url,
             fileName: result.fileName,
-            size: result.size
+            size: result.size,
+            isPrimary: false,
+            sortOrder: 0,
+            alt: result.fileName
           })),
-          createdAt: new Date().toISOString(),
-          createdBy: null,
-          lastModifiedAt: null,
-          lastModifiedBy: null
+          tags: []
         };
 
-        this.productService.addProduct(product).subscribe({
+        this.productService.createProduct(product).subscribe({
           next: () => {
             this.snackBar.open('Product created successfully', 'Close', {
               duration: 3000
             });
             this.router.navigate(['/products/list']);
           },
-          error: (error) => {
+          error: (error: Error) => {
             console.error('Error creating product:', error);
             this.errorService.addError({
               message: 'Failed to create product: ' + error.message,
@@ -128,7 +127,7 @@ export class AddProductComponent implements OnInit {
           }
         });
       },
-      error: (error) => {
+      error: (error: Error) => {
         console.error('Error uploading images:', error);
         this.errorService.addError({
           message: 'Failed to upload images: ' + error.message,
@@ -138,6 +137,11 @@ export class AddProductComponent implements OnInit {
       }
     });
   }
+
+  private generateSku(): string {
+    return 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  }
+
 
   reset(): void {
     this.form.reset();

@@ -1,3 +1,4 @@
+import { createReducer, on } from '@ngrx/store';
 import { ProductActions } from './product.actions';
 import { ProductState, initialProductState } from './product.state';
 
@@ -19,6 +20,10 @@ export const productReducer = createReducer(
         pagination: {
             ...state.pagination,
             totalItems
+        },
+        cache: {
+            ...state.cache,
+            timestamp: Date.now()
         }
     })),
 
@@ -47,18 +52,51 @@ export const productReducer = createReducer(
         loading: false,
         error
     })),
-    // Update Product
-    on(ProductActions.updateProduct, (state) => ({
-        ...state,
-        loading: true,
-        error: null
-    })),
 
+    // Optimistic Update
+    on(ProductActions.optimisticUpdateProduct, (state, { id, changes }) => {
+        const productToUpdate = state.products.find(p => p.id === id);
+        if (!productToUpdate) return state;
+
+        return {
+            ...state,
+            optimisticUpdate: {
+                originalProduct: productToUpdate,
+                pending: true
+            },
+            products: state.products.map(p =>
+                p.id === id ? { ...p, ...changes } : p
+            )
+        };
+    }),
+
+    on(ProductActions.revertOptimisticUpdate, (state) => {
+        if (!state.optimisticUpdate.originalProduct) return state;
+
+        return {
+            ...state,
+            products: state.products.map(p =>
+                p.id === state.optimisticUpdate.originalProduct?.id
+                    ? state.optimisticUpdate.originalProduct
+                    : p
+            ),
+            optimisticUpdate: {
+                originalProduct: null,
+                pending: false
+            }
+        };
+    }),
+
+    // Update Product
     on(ProductActions.updateProductSuccess, (state, { product }) => ({
         ...state,
         products: state.products.map(p => p.id === product.id ? product : p),
         loading: false,
-        error: null
+        error: null,
+        optimisticUpdate: {
+            originalProduct: null,
+            pending: false
+        }
     })),
 
     on(ProductActions.updateProductFailure, (state, { error }) => ({
@@ -87,7 +125,7 @@ export const productReducer = createReducer(
         error
     })),
 
-    // Product Selection
+    // Selection
     on(ProductActions.selectProduct, (state, { product }) => ({
         ...state,
         selectedProduct: product
@@ -110,7 +148,19 @@ export const productReducer = createReducer(
     on(ProductActions.resetFilters, (state) => ({
         ...state,
         filters: initialProductState.filters
+    })),
+
+    // Cache
+    on(ProductActions.setCacheTimestamp, (state, { timestamp }) => ({
+        ...state,
+        cache: {
+            ...state.cache,
+            timestamp
+        }
+    })),
+
+    on(ProductActions.clearCache, (state) => ({
+        ...state,
+        cache: initialProductState.cache
     }))
 );
-
-

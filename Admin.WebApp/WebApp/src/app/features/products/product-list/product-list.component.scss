@@ -1,144 +1,41 @@
-:host {
-  display: block;
-  color: var(--text-primary);
-}
+ .product-list-container {
+   padding: 20px;
 
-::ng-deep .product-list-container {
-  padding: 24px;
+   .loading-bar {
+     margin-bottom: 20px;
+   }
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+   .error-alert {
+     margin-bottom: 20px;
+     background-color: #ffebee;
+     color: #c62828;
+   }
 
-    .actions {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-    }
-  }
+   .filters-section {
+     margin-bottom: 20px;
 
-  .filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    padding: 16px;
-    margin-bottom: 24px;
-  }
+     .filters-grid {
+       display: grid;
+       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+       gap: 16px;
+       margin-bottom: 16px;
+     }
+   }
 
-  // Material table overrides
-  .mat-mdc-table {
-    background-color: var(--bg-secondary);
-    width: 100%;
-    border-radius: 8px;
-    overflow: hidden;
-  }
+   .products-table {
+     overflow: auto;
 
-  .mat-mdc-header-cell {
-    background-color: var(--bg-secondary);
-    color: var(--text-secondary);
-    font-weight: 500;
-    border-bottom: 1px solid var(--border);
-  }
+     .product-thumbnail {
+       width: 50px;
+       height: 50px;
+       object-fit: cover;
+       border-radius: 4px;
+       cursor: pointer;
 
-  .mat-mdc-cell {
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 8px;
-  }
-
-  .mat-mdc-row {
-    background-color: var(--bg-secondary);
-    transition: background-color 0.2s;
-
-    &:hover {
-      background-color: rgba(var(--primary-rgb), 0.1);
-    }
-  }
-
-  .mat-mdc-paginator {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-  }
-
-  // Form field overrides
-  .mat-mdc-form-field {
-    .mat-mdc-text-field-wrapper {
-      background-color: var(--bg-secondary);
-    }
-
-    .mat-mdc-input-element {
-      color: var(--text-primary);
-    }
-
-    .mat-mdc-select-value {
-      color: var(--text-primary);
-    }
-
-    .mat-mdc-select-arrow {
-      color: var(--text-primary);
-    }
-  }
-
-  // Card overrides
-  .mat-mdc-card {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-  }
-
-  // Image styling
-  .mat-column-image img.product-thumbnail {
-    display: block !important;
-    max-width: 40px !important;
-    width: 40px !important;
-    height: 40px !important;
-    object-fit: cover !important;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s;
-
-    &:hover {
-      transform: scale(1.1);
-    }
-  }
-
-  // Column widths
-  .mat-column-actions {
-    width: 100px;
-    text-align: center;
-  }
-
-  .mat-column-image {
-    width: 60px;
-    padding: 8px;
-    box-sizing: content-box;
-  }
-
-  // Icon button colors
-  .mat-mdc-icon-button {
-    color: var(--text-primary);
-  }
-}
-
-@media (max-width: 768px) {
-  .product-list-container {
-    padding: 16px;
-
-    .header {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 16px;
-
-      .actions {
-        flex-direction: column;
-      }
-    }
-
-    .mat-column-category,
-    .mat-column-stock {
-      display: none;
-    }
-  }
-}
+       &:hover {
+         transform: scale(1.1);
+         transition: transform 0.2s;
+       }
+     }
+   }
+ }

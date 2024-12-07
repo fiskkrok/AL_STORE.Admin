@@ -1,22 +1,74 @@
-// src/app/core/services/product.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, tap, catchError, throwError, switchMap, filter, shareReplay } from 'rxjs';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { map, tap, catchError, switchMap, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Product } from "../../shared/models/product.model";
-import { PagedResponse } from '../../shared/models/paged-response.model';
 import { AuthService } from './auth.service';
+import {
+    Product,
+    ProductStatus,
+    ProductVisibility,
+    ProductImage,
+    Category,
+    ProductVariant,
+    Money
+} from '../../shared/models/product.model';
+import { PagedResponse } from '../../shared/models/paged-response.model';
 
+// Enhanced filter options
 export interface ProductFilters {
-    category?: string;
     search?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    inStock?: boolean;
+    categoryId?: string;
+    subCategoryId?: string;
+    minPrice?: number | null;  // Allow null
+    maxPrice?: number | null;  // Allow null
+    status?: ProductStatus;
+    visibility?: ProductVisibility;
+    inStock?: boolean | null;  // Allow null
+    tags?: string[];
     page?: number;
     pageSize?: number;
     sortColumn?: keyof Product;
     sortDirection?: 'asc' | 'desc';
+}
+
+export interface ProductCreateCommand {
+    name: string;
+    slug?: string;
+    description: string;
+    shortDescription?: string;
+    sku: string;
+    price: Money;
+    compareAtPrice?: Money;
+    categoryId: string;
+    subCategoryId?: string;
+    stock: number;
+    lowStockThreshold?: number;
+    barcode?: string;
+    images: ProductImage[];
+    status: ProductStatus;
+    visibility: ProductVisibility;
+    attributes?: Array<{ name: string; value: string; type: string }>;
+    tags?: string[];
+    seo?: {
+        title?: string;
+        description?: string;
+        keywords?: string[];
+    };
+    dimensions?: {
+        weight: number;
+        width: number;
+        height: number;
+        length: number;
+        unit: 'cm' | 'inch';
+    };
+}
+
+export interface ProductUpdateCommand extends Partial<ProductCreateCommand> {
+    id: string;
+    newImages?: File[];
+    imageIdsToRemove?: string[];
+    imageUpdates?: Array<{ id: string; isPrimary?: boolean; sortOrder?: number; alt?: string }>;
 }
 
 @Injectable({
@@ -25,7 +77,7 @@ export interface ProductFilters {
 export class ProductService {
     private readonly productsSubject = new BehaviorSubject<Product[]>([]);
     private readonly apiUrl = environment.apiUrls.admin.products;
-    private readonly apiUrlcategories = environment.apiUrls.admin.categories;
+    private readonly categoriesUrl = environment.apiUrls.admin.categories;
     private readonly blobStorageUrl = environment.azure.blobStorage.containerUrl;
     private readonly productsContainer = environment.azure.blobStorage.productsContainer;
 
@@ -34,206 +86,104 @@ export class ProductService {
         private readonly authService: AuthService
     ) { }
 
-    private getAuthHeaders(): Observable<HttpHeaders> {
-        return this.authService.getAccessToken().pipe(
-            // tap(token => console.log('Token in getAuthHeaders:', token)), // log log
-            map(token => {
-                if (!token) {
-                    throw new Error('No authentication token available');
-                }
-                // Note: Don't set Content-Type for FormData requests
-                return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-            })
-        );
-    }
-
+    // Main CRUD operations
     getProducts(filters?: ProductFilters): Observable<PagedResponse<Product>> {
         let params = new HttpParams();
 
         if (filters) {
-            Object.keys(filters).forEach(key => {
-                const value = filters[key as keyof ProductFilters];
+            Object.entries(filters).forEach(([key, value]) => {
                 if (value !== undefined && value !== null) {
-                    params = params.set(key, value.toString());
+                    if (Array.isArray(value)) {
+                        value.forEach(v => params = params.append(key, v));
+                    } else {
+                        params = params.set(key, value.toString());
+                    }
                 }
             });
         }
 
-        return this.http.get<PagedResponse<Product>>(
-            this.apiUrl,
-            { params }
-        ).pipe(
+        return this.http.get<PagedResponse<Product>>(this.apiUrl, { params }).pipe(
             tap(response => this.productsSubject.next(response.items)),
             catchError(this.handleError)
         );
     }
 
     getProduct(id: string): Observable<Product> {
-        return this.http.get<Product>(
-            `${this.apiUrl}/${id}`
-        ).pipe(
+        return this.http.get<Product>(`${this.apiUrl}/${id}`).pipe(
             catchError(this.handleError)
         );
     }
 
-    addProduct(product: Omit<Product, 'id'>): Observable<Product> {
+    createProduct(command: ProductCreateCommand): Observable<Product> {
         return this.authService.getAccessToken().pipe(
             switchMap(token => {
-                if (!token) {
-                    throw new Error('No authentication token available');
-                }
-                const command = {
-                    name: product.name,
-                    description: product.description,
-                    price: product.price,
-                    currency: product.currency,
-                    stock: product.stock,
-                    categoryId: product.category.id,
-                    subCategoryId: product.subCategory?.id || null,
-                    images: product.images.map(img => ({
-                        fileName: img.fileName,
-                        url: img.url,
-                        size: img.size
-                    }))
-                };
+                if (!token) throw new Error('No authentication token available');
+
                 const headers = new HttpHeaders()
                     .set('Authorization', `Bearer ${token}`)
                     .set('Content-Type', 'application/json');
 
-                // console.log('Final headers:', headers.keys()); // Debug log
-                // console.log('Product being sent:', JSON.stringify(product, null, 2)); // Debug log
+                // Generate slug if not provided
+                if (!command.slug) {
+                    command.slug = this.generateSlug(command.name);
+                }
 
-                return this.http.post<Product>(
-                    `${this.apiUrl}`,
-                    command,
-                    { headers }
-                ).pipe(
-                    tap(newProduct => {
-                        console.log('Product added successfully:', newProduct);
-                        const currentProducts = this.productsSubject.value;
-                        this.productsSubject.next([...currentProducts, newProduct]);
-                    }),
-                    catchError(error => {
-                        console.error('Error adding product:', error);
-                        if (error.error) {
-                            console.error('Error details:', error.error);
-                        }
-                        return throwError(() => error);
-                    })
-                );
-            })
+                return this.http.post<Product>(this.apiUrl, command, { headers });
+            }),
+            tap(product => {
+                const currentProducts = this.productsSubject.value;
+                this.productsSubject.next([...currentProducts, product]);
+            }),
+            catchError(this.handleError)
         );
     }
 
-    updateProduct(id: string, updateData: {
-        name: string;
-        description: string;
-        price: number;
-        currency: string;
-        categoryId: string;
-        subCategoryId?: string;
-        newImages?: File[];
-        imageIdsToRemove?: string[];
-    }): Observable<void> {
-        // If there are new images, upload them first
-        if (updateData.newImages?.length) {
-            return this.uploadImages(updateData.newImages).pipe(
-                switchMap(uploadResults => {
-                    // Create FormData with uploaded image results
-                    const formData = new FormData();
-                    formData.append('id', id);
-                    formData.append('name', updateData.name);
-                    formData.append('description', updateData.description);
-                    formData.append('price', updateData.price.toFixed(2));
-                    formData.append('currency', updateData.currency);
-                    formData.append('categoryId', updateData.categoryId);
+    updateProduct(command: ProductUpdateCommand): Observable<Product> {
+        const formData = new FormData();
 
-                    if (updateData.subCategoryId) {
-                        formData.append('subCategoryId', updateData.subCategoryId);
-                    }
+        // Append basic product data
+        Object.entries(command).forEach(([key, value]) => {
+            if (value !== undefined && !['newImages', 'imageIdsToRemove', 'imageUpdates'].includes(key)) {
+                formData.append(key, typeof value === 'object' ? JSON.stringify(value) : value.toString());
+            }
+        });
 
-                    // Add uploaded image URLs
-                    uploadResults.forEach(result => {
-                        formData.append('newImages', result.url);
-                    });
+        // Handle image updates
+        if (command.newImages?.length) {
+            command.newImages.forEach(file => formData.append('newImages', file));
+        }
 
-                    if (updateData.imageIdsToRemove?.length) {
-                        updateData.imageIdsToRemove.forEach(imageId => {
-                            formData.append('imageIdsToRemove', imageId);
-                        });
-                    }
+        if (command.imageIdsToRemove?.length) {
+            command.imageIdsToRemove.forEach(id => formData.append('imageIdsToRemove', id));
+        }
 
-                    return this.authService.getAccessToken().pipe(
-                        switchMap(token => {
-                            if (!token) {
-                                throw new Error('No authentication token available');
-                            }
-
-                            const headers = new HttpHeaders({
-                                'Authorization': `Bearer ${token}`
-                            });
-
-                            return this.http.put<void>(
-                                `${this.apiUrl}/${id}`,
-                                formData,
-                                {
-                                    headers,
-                                    reportProgress: true,
-                                    observe: 'events'
-                                }
-                            );
-                        })
-                    );
-                }),
-                filter(event => event instanceof HttpResponse),
-                map(() => void 0),
-                catchError(error => {
-                    console.error('Error in updateProduct:', error);
-                    return throwError(() => error);
-                })
-            );
+        if (command.imageUpdates?.length) {
+            formData.append('imageUpdates', JSON.stringify(command.imageUpdates));
         }
 
         return this.authService.getAccessToken().pipe(
             switchMap(token => {
-                if (!token) {
-                    throw new Error('No authentication token available');
-                }
+                if (!token) throw new Error('No authentication token available');
 
                 const headers = new HttpHeaders()
-                    .set('Authorization', `Bearer ${token}`)
-                    .set('Content-Type', 'application/json')
-                    .set('Accept', 'application/json');
+                    .set('Authorization', `Bearer ${token}`);
 
-                const jsonData = {
-                    id,
-                    name: updateData.name,
-                    description: updateData.description,
-                    price: updateData.price,
-                    currency: updateData.currency,
-                    categoryId: updateData.categoryId,
-                    subCategoryId: updateData.subCategoryId,
-                    imageIdsToRemove: updateData.imageIdsToRemove || [],
-                    newImages: []
-                };
-
-                return this.http.put<void>(
-                    `https://localhost:7048/api/products/${id}`,
-                    jsonData,
-                    { headers }
-                );
+                return this.http.put<Product>(`${this.apiUrl}/${command.id}`, formData, { headers });
             }),
-            catchError(error => {
-                console.error('Error in updateProduct:', error);
-                return throwError(() => error);
-            })
+            tap(updatedProduct => {
+                const currentProducts = this.productsSubject.value;
+                const index = currentProducts.findIndex(p => p.id === updatedProduct.id);
+                if (index !== -1) {
+                    currentProducts[index] = updatedProduct;
+                    this.productsSubject.next([...currentProducts]);
+                }
+            }),
+            catchError(this.handleError)
         );
-
     }
+
     deleteProduct(id: string): Observable<void> {
-        return this.http.delete<void>(
-            `${this.apiUrl}/${id}`
-        ).pipe(
+        return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
             tap(() => {
                 const currentProducts = this.productsSubject.value;
                 this.productsSubject.next(currentProducts.filter(p => p.id !== id));
@@ -242,75 +192,69 @@ export class ProductService {
         );
     }
 
-    uploadImages(files: File[]): Observable<FileUploadResult[]> {
+    // Image handling
+    uploadImages(files: File[]): Observable<ProductImage[]> {
         const formData = new FormData();
-
-        files.forEach(file => {
-            formData.append('files', file);
-        });
+        files.forEach(file => formData.append('files', file));
 
         return this.authService.getAccessToken().pipe(
             switchMap(token => {
-                if (!token) {
-                    throw new Error('No authentication token available');
-                }
+                if (!token) throw new Error('No authentication token available');
 
-                const headers = new HttpHeaders({
-                    'Authorization': `Bearer ${token}`
-                });
+                const headers = new HttpHeaders()
+                    .set('Authorization', `Bearer ${token}`);
 
-                console.log('Files being uploaded:', files.map(f => ({
-                    name: f.name,
-                    type: f.type,
-                    size: f.size
-                })));
-
-                // Use shareReplay to prevent multiple HTTP requests
-                return this.http.post<FileUploadResult[]>(
+                return this.http.post<ProductImage[]>(
                     `${this.apiUrl}/upload-images`,
                     formData,
                     { headers }
-                ).pipe(
-                    tap(response => {
-                        console.log('Upload response:', response);
-                    }),
-                    catchError(error => {
-                        console.error('Error uploading images:', error);
-                        return throwError(() => error);
-                    }),
-                    shareReplay(1)  // Add this to prevent duplicate requests
-                );
-            })
+                ).pipe(shareReplay(1));
+            }),
+            catchError(this.handleError)
         );
     }
 
-    getCategories(): Observable<{ id: string, name: string, description: string }[]> {
-        return this.http.get<{ id: string, name: string, description: string }[]>(
-            `${this.apiUrlcategories}`
+    // Category management
+    getCategories(): Observable<Category[]> {
+        return this.http.get<Category[]>(this.categoriesUrl).pipe(
+            catchError(this.handleError)
+        );
+    }
+
+    // Variant management
+    addVariant(productId: string, variant: Omit<ProductVariant, 'id'>): Observable<ProductVariant> {
+        return this.http.post<ProductVariant>(
+            `${this.apiUrl}/${productId}/variants`,
+            variant
         ).pipe(
             catchError(this.handleError)
         );
     }
 
+    updateVariant(productId: string, variantId: string, updates: Partial<ProductVariant>): Observable<ProductVariant> {
+        return this.http.put<ProductVariant>(
+            `${this.apiUrl}/${productId}/variants/${variantId}`,
+            updates
+        ).pipe(
+            catchError(this.handleError)
+        );
+    }
+
+    // Utility methods
+    private generateSlug(name: string): string {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+    }
+
     private handleError(error: any): Observable<never> {
         console.error('An error occurred:', error);
-
-        if (error.status === 401) {
-            // Unauthorized - redirect to login or refresh token
-            this.authService.login();
-            return throwError(() => new Error('Unauthorized'));
-        }
-
         return throwError(() => error);
     }
 
+    // Observable for components to subscribe to
     get products$(): Observable<Product[]> {
         return this.productsSubject.asObservable();
     }
-}
-
-interface FileUploadResult {
-    url: string;
-    fileName: string;
-    size: number;
 }

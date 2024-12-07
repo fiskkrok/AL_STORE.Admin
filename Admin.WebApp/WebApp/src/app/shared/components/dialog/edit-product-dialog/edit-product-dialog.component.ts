@@ -7,8 +7,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { Product } from 'src/app/shared/models/product.model';
-import { ProductService } from 'src/app/core/services/product.service';
+import { Product, ProductStatus, ProductVisibility } from 'src/app/shared/models/product.model';
+import { ProductService, ProductUpdateCommand } from 'src/app/core/services/product.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 
 @Component({
@@ -391,23 +391,33 @@ export class EditProductDialogComponent {
     if (this.editProductForm.valid && (this.editProductForm.dirty || this.hasImageChanges())) {
       const formValue = this.editProductForm.value;
 
-      const updateData = {
+      const updateCommand: ProductUpdateCommand = {
+        id: this.data.id,
         name: formValue.name,
         description: formValue.description,
-        price: formValue.price,
-        currency: this.data.currency,
+        price: {
+          amount: formValue.price,
+          currency: 'USD'  // Or get from configuration
+        },
         categoryId: formValue.category,
-        subCategoryId: this.data.subCategory?.id,
         stock: formValue.stock,
+        status: this.data.status || ProductStatus.Draft,
+        visibility: this.data.visibility || ProductVisibility.Hidden,
         newImages: this.newImages,
-        imageIdsToRemove: this.imagesToRemove
+        imageIdsToRemove: this.imagesToRemove,
+        imageUpdates: this.data.images.map((img, index) => ({
+          id: img.id,
+          isPrimary: index === 0,
+          sortOrder: index,
+          alt: img.fileName
+        }))
       };
 
-      this.productService.updateProduct(this.data.id, updateData).subscribe({
+      this.productService.updateProduct(updateCommand).subscribe({
         next: () => {
           this.dialogRef.close(true);
         },
-        error: (error: any) => {
+        error: (error: Error) => {
           console.error('Error updating product:', error);
           this.dialogRef.close(false);
         }
