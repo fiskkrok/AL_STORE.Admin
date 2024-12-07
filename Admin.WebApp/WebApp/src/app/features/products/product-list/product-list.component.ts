@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -53,9 +53,9 @@ export class ProductListComponent implements OnInit {
         'price': 'price',
         'stock': 'stock'
     };
-    @ViewChild(MatSort) sort!: MatSort;
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
-    @ViewChild(MatTable) table!: MatTable<Product>;
+    readonly sort = viewChild.required(MatSort);
+    readonly paginator = viewChild.required(MatPaginator);
+    readonly table = viewChild.required(MatTable);
 
     // Signals
     products = signal<Product[]>([]);
@@ -137,6 +137,7 @@ export class ProductListComponent implements OnInit {
     loadProducts() {
         this.loading.set(true);
 
+        const sort = this.sort();
         const filters: ProductFilters = {
             page: this.page(),
             pageSize: this.pageSize(),
@@ -145,8 +146,8 @@ export class ProductListComponent implements OnInit {
             minPrice: this.minPriceFilter.value || undefined,
             maxPrice: this.maxPriceFilter.value || undefined,
             inStock: this.inStockFilter.value || undefined,
-            sortColumn: this.sort?.active as keyof Product | undefined,
-            sortDirection: this.sort?.direction || undefined
+            sortColumn: sort?.active as keyof Product | undefined,
+            sortDirection: sort?.direction || undefined
         };
 
         this.productService.getProducts(filters).subscribe({

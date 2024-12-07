@@ -20,6 +20,6 @@ bootstrapApplication(AppComponent, {
       ])
     ),
     SignalRService,
-    provideAnimationsAsync()
+    provideAnimationsAsync(), provideAnimationsAsync()
   ]
 }).catch(err => console.error(err));

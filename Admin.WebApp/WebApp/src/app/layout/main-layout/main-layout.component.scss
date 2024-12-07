@@ -1,26 +1,26 @@
-// @use 'sass:map';
-// @use '../../../styles/abstracts/variables' as vars;
-// @use '@angular/material' as mat;
+@use 'sass:map';
+@use '../../../styles/variables' as vars;
+@use '@angular/material' as mat;
 
 
 
-// .layout-container {
-//   display: flex;
-//   min-height: 100vh;
-//   background-color: var(--bg-primary);
-//   color: var(--text-primary);
+.layout-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.main-content {
+    flex: 1.5;
+    padding: 2rem;
+    transition: vars.$sidebar-transition;
+}
+
+// @media (max-width: map.get(vars.$breakpoints, 'md')) {
+//   .main-content {
+//     margin-left: 0;
+//     padding: 1rem;
+//     padding-bottom: 80px;
+//   }
 // }
-
-// .main-content {
-//   flex: 1.5;
-//   padding: 2rem;
-//   transition: vars.$sidebar-transition;
-// }
-
-// // @media (max-width: map.get(vars.$breakpoints, 'md')) {
-// //   .main-content {
-// //     margin-left: 0;
-// //     padding: 1rem;
-// //     padding-bottom: 80px;
-// //   }
-// // }

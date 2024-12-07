@@ -1,67 +1,66 @@
-// @use 'sass:map';
-// @use '../../../styles/abstracts/variables' as vars;
+@use 'sass:map';
 
-// .file-container {
-//     .file-box {
-//         border: 2px dashed var(--primary);
-//         border-radius: 8px;
-//         padding: 1rem;
-//         text-align: center;
-//         cursor: pointer;
-//         background-color: var(--bg-secondary);
-//         transition: all 0.3s ease;
+.file-container {
+    .file-box {
+        border: 2px dashed var(--primary);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        background-color: var(--bg-secondary);
+        transition: all 0.3s ease;
 
-//         &:hover {
-//             background-color: rgba(var(--primary-rgb), 0.1);
-//         }
+        &:hover {
+            background-color: rgba(var(--primary-rgb), 0.1);
+        }
 
-//         i {
-//             color: var(--primary);
-//         }
+        i {
+            color: var(--primary);
+        }
 
-//         p {
-//             color: var(--text-primary);
-//             margin: 0;
-//         }
-//     }
-// }
+        p {
+            color: var(--text-primary);
+            margin: 0;
+        }
+    }
+}
 
-// .image-preview-grid {
-//     display: grid;
-//     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-//     gap: 1rem;
-//     margin-top: 1rem;
-// }
+.image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
 
-// .image-preview {
-//     aspect-ratio: 1;
-//     position: relative;
+.image-preview {
+    aspect-ratio: 1;
+    position: relative;
 
-//     img {
-//         width: 100%;
-//         height: 100%;
-//         object-fit: cover;
-//         border-radius: 4px;
-//     }
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
 
-//     .remove-image {
-//         position: absolute;
-//         top: -0.5rem;
-//         right: -0.5rem;
-//         width: 1.5rem;
-//         height: 1.5rem;
-//         border-radius: 50%;
-//         background-color: var(--primary);
-//         color: white;
-//         display: flex;
-//         align-items: center;
-//         justify-content: center;
-//         cursor: pointer;
-//         border: none;
-//         padding: 0;
+    .remove-image {
+        position: absolute;
+        top: -0.5rem;
+        right: -0.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        padding: 0;
 
-//         &:hover {
-//             filter: brightness(90%);
-//         }
-//     }
-// }
+        &:hover {
+            filter: brightness(90%);
+        }
+    }
+}
