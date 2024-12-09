@@ -44,9 +44,12 @@ public class CreateProductValidator : AbstractValidator<CreateProductCommand>
             .Must(x => x.Count <= 10).WithMessage("Maximum 10 images allowed");
 
         RuleForEach(v => v.Images)
-            .Must(BeValidUrl).WithMessage("Invalid image URL")
-            .Must(BeValidSize).WithMessage("Image size must be less than 5MB")
-            .Must(BeValidImage).WithMessage("Non valid file format");
+            .Must(image => BeValidUrl(new ProductImageDto { Url = image.FileName })) // Convert FileUploadRequest to ProductImageDto
+            .WithMessage("Invalid image URL")
+            .Must(image => BeValidSize(new ProductImageDto { Size = image.Length })) // Convert FileUploadRequest to ProductImageDto
+            .WithMessage("Image size must be less than 5MB")
+            .Must(image => BeValidImage(new ProductImageDto { FileName = image.FileName })) // Convert FileUploadRequest to ProductImageDto
+            .WithMessage("Non valid file format");
     }
 
     private static bool BeValidUrl(ProductImageDto image)
@@ -58,6 +61,7 @@ public class CreateProductValidator : AbstractValidator<CreateProductCommand>
     {
         const int maxSize = 5 * 1024 * 1024; // 5MB
         return image.Size <= maxSize;
+  
     }
 
     private async Task<bool> CategoryExists(Guid categoryId, CancellationToken cancellationToken)

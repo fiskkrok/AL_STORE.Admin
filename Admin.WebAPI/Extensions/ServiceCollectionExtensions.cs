@@ -3,6 +3,7 @@
 using Admin.Application.Common.Interfaces;
 using Admin.Application.Products.Commands.CreateProduct;
 using Admin.Application.Products.Queries;
+using Admin.Infrastructure.Persistence;
 using Admin.Infrastructure.Persistence.Seeder;
 using Admin.WebAPI.Infrastructure;
 using Admin.WebAPI.Services;
@@ -11,6 +12,7 @@ using FastEndpoints;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -277,4 +279,38 @@ public static class ServiceCollectionExtensions
 
         return app;
     }
-}
+
+        public static IServiceCollection AddCustomHealthChecks(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
+            var rabbitHost = configuration["RabbitMQ:Host"];
+            var rabbitUsername = configuration["RabbitMQ:Username"];
+            var rabbitPassword = configuration["RabbitMQ:Password"];
+            var rabbitVirtualHost = configuration["RabbitMQ:VirtualHost"];
+
+            var rabbitConnectionString = $"amqp://{rabbitUsername}:{rabbitPassword}@{rabbitHost}/{rabbitVirtualHost}";
+
+            if (string.IsNullOrEmpty(rabbitConnectionString))
+            {
+                throw new ArgumentNullException(nameof(rabbitConnectionString), "RabbitMQ connection string is not configured.");
+            }
+        services.AddHealthChecks()
+                .AddCheck<RedisHealthCheck>(
+                    "redis_health_check",
+                    failureStatus: HealthStatus.Degraded,
+                    tags: new[] { "cache", "redis" })
+                .AddDbContextCheck<AdminDbContext>(
+                    "database_health_check",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: new[] { "database", "sql" })
+                .AddRabbitMQ(
+                    rabbitConnectionString: rabbitConnectionString!,
+                    name: "rabbitmq_health_check",
+                    failureStatus: HealthStatus.Degraded,
+                    tags: new[] { "messaging", "rabbitmq" });
+
+            return services;
+        }
+    }
+   

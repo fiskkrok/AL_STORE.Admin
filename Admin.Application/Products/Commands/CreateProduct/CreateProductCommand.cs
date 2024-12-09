@@ -1,6 +1,5 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
-using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 using Admin.Domain.ValueObjects;
 
@@ -16,12 +15,24 @@ public record CreateProductCommand : IRequest<Result<Guid>>
 {
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
+    public string? ShortDescription { get; init; }
+    public string Sku { get; init; } = string.Empty;
+    public string? Barcode { get; init; }
     public decimal Price { get; init; }
     public string Currency { get; init; } = "USD";
+    public decimal? CompareAtPrice { get; init; }
     public int Stock { get; init; }
+    public int? LowStockThreshold { get; init; }
+    public string Status { get; init; } = "Draft";
+    public string Visibility { get; init; } = "Hidden";
     public Guid CategoryId { get; init; }
     public Guid? SubCategoryId { get; init; }
-    public List<ProductImageDto> Images { get; init; } = new();
+    public List<FileUploadRequest> Images { get; init; } = new();
+    public List<CreateProductVariantRequest> Variants { get; init; } = new();
+    public List<ProductAttributeRequest> Attributes { get; init; } = new();
+    public ProductSeoRequest? Seo { get; init; }
+    public ProductDimensionsRequest? Dimensions { get; init; }
+    public List<string> Tags { get; init; } = new();
 }
 
 
@@ -69,16 +80,18 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             var product = new Product(
                 command.Name,
                 command.Description,
-                Money.From(command.Price, command.Currency),
+                Money.From(command.Price),
+                currency: command.Currency,
+                command.Sku,
                 command.Stock,
-                category,
-                subCategory,
+                command.CategoryId,
+                command.SubCategoryId,
                 _currentUser.Id);
 
             //Handle images
             foreach (var image in command.Images)
             {
-                product.AddImage(image.Url, image.FileName, image.Size, _currentUser.Id);
+                product.AddImage(image.Url, image.FileName, image.Length, _currentUser.Id);
             }
 
             _productRepository.Add(product);

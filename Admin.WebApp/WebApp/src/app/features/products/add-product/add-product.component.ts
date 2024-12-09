@@ -118,8 +118,9 @@ export class AddProductComponent implements OnInit {
           error: (error: Error) => {
             console.error('Error creating product:', error);
             this.errorService.addError({
+              code: '',
               message: 'Failed to create product: ' + error.message,
-              type: 'error'
+              severity: 'error'
             });
           },
           complete: () => {
@@ -130,8 +131,9 @@ export class AddProductComponent implements OnInit {
       error: (error: Error) => {
         console.error('Error uploading images:', error);
         this.errorService.addError({
+          code: '',
           message: 'Failed to upload images: ' + error.message,
-          type: 'error'
+          severity: 'error'
         });
         this.isSubmitting = false;
       }

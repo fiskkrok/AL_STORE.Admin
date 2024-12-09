@@ -15,12 +15,21 @@ public static class MessagingConfiguration
         IConfiguration configuration)
     {
         // Add SignalR with Redis backplane
-        var redisConnection = configuration.GetConnectionString("Redis");
-        if (!string.IsNullOrEmpty(redisConnection))
-        {
-            services.AddSignalR().AddStackExchangeRedis(redisConnection,
-                options => { options.Configuration.ChannelPrefix = "Admin_"; });
-        }
+        
+            var redisConnection = configuration.GetConnectionString("Redis");
+
+            services.AddSignalR(options =>
+                {
+                    options.EnableDetailedErrors = true;
+                    options.MaximumReceiveMessageSize = 102400; // 100 KB
+                    options.KeepAliveInterval = TimeSpan.FromSeconds(10);
+                    options.ClientTimeoutInterval = TimeSpan.FromSeconds(20);
+                })
+                .AddStackExchangeRedis(redisConnection!, options =>
+                {
+                    options.Configuration.ChannelPrefix = "Admin_";
+                });
+        
 
         // Configure RabbitMQ Settings and Service
         services.Configure<RabbitMQSettings>(configuration.GetSection("RabbitMQ"));

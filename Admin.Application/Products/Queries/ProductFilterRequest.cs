@@ -11,4 +11,6 @@ public record ProductFilterRequest
     public bool SortDescending { get; init; }
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 10;
+    public string? Status { get; set; }
+    public string? Visibility { get; set; }
 }

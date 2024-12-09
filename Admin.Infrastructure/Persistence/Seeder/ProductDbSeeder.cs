@@ -93,9 +93,11 @@ public class ProductDbSeeder : IProductSeeder
                                     name: item.Name,
                                     description: item.Description,
                                     price: Money.From(item.Price, "USD"),
+                                    currency: "USD",
+                                    item.Sku,
                                     stock: item.Stock,
-                                    category: categoryPair.Main,
-                                    subCategory: categoryPair.Sub);
+                                    categoryId: categoryPair.Main.Id,
+                                     categoryPair.Sub.Id);
 
                                 var fileInfo = new FileInfo(imagePath);
                                 product.AddImage(
@@ -158,4 +160,5 @@ public class ProductItem
     public decimal Price { get; set; }
     public string Brand { get; set; } = string.Empty;
     public int Stock { get; set; }
+    public string Sku { get; set; } = string.Empty;
 }

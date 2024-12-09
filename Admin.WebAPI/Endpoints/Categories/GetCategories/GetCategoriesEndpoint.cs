@@ -3,8 +3,6 @@ using Admin.WebAPI.Endpoints.Products.Responses;
 using FastEndpoints;
 using MediatR;
 
-using Microsoft.Extensions.Caching.Hybrid;
-
 namespace Admin.WebAPI.Endpoints.Categories.GetCategories;
 
 public class GetCategoriesEndpoint(IMediator mediator, ILogger<GetCategoriesEndpoint> logger)

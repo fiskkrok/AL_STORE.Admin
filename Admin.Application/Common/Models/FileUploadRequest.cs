@@ -5,4 +5,5 @@ public class FileUploadRequest
     public long Length { get; init; }
     public string ContentType { get; init; } = string.Empty;
     public Stream Content { get; init; } = Stream.Null;
+    public string Url { get; set; } = string.Empty;
 }

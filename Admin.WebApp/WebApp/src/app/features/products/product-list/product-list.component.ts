@@ -1,23 +1,23 @@
+// src/app/features/products/product-list/product-list.component.ts
 import { Component, OnInit, OnDestroy, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, combineLatest } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil, map, startWith } from 'rxjs/operators';
-import { Category, Product } from '../../../shared/models/product.model';
+import { debounceTime, distinctUntilChanged, takeUntil, startWith } from 'rxjs/operators';
+import { Product } from '../../../shared/models/product.model';
 import { ProductActions } from '../../../store/product/product.actions';
 import {
     selectAllProducts,
     selectProductsLoading,
     selectProductsError,
-    selectProductPagination,
-    selectProductFilters
+    selectProductPagination
 } from '../../../store/product/product.selectors';
 import { DialogService } from '../../../core/services/dialog.service';
 import { MatDialog } from '@angular/material/dialog';
 import { EditProductDialogComponent } from '../../../shared/components/dialog/edit-product-dialog/edit-product-dialog.component';
-import { MatTable, MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,19 +25,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { ProductService, ProductFilters } from 'src/app/core/services/product.service';
+import { ProductService } from 'src/app/core/services/product.service';
 import { ErrorService } from 'src/app/core/services/error.service';
 
 @Component({
     selector: 'app-product-list',
+    templateUrl: './product-list.component.html',
+    styleUrls: ['./product-list.component.scss'],
     standalone: true,
     imports: [
         CommonModule,
-        RouterLink,
         ReactiveFormsModule,
         MatTableModule,
         MatSortModule,
@@ -46,26 +43,21 @@ import { ErrorService } from 'src/app/core/services/error.service';
         MatInputModule,
         MatButtonModule,
         MatCheckboxModule,
-        MatSelectModule,
-        MatIconModule,
-        MatCardModule,
-        MatProgressBarModule,
-        MatSnackBarModule
-    ],
-    templateUrl: './product-list.component.html',
-    styleUrls: ['./product-list.component.scss']
+        MatSelectModule
+    ]
 })
 export class ProductListComponent implements OnInit, OnDestroy {
     @ViewChild(MatSort) sort!: MatSort;
     @ViewChild(MatPaginator) paginator!: MatPaginator;
+
     displayedColumns = ['image', 'name', 'category', 'price', 'stock', 'actions'];
     private destroy$ = new Subject<void>();
 
-    // Observables
     products$: Observable<Product[]>;
     loading$: Observable<boolean>;
     error$: Observable<string | null>;
     pagination$: Observable<any>;
+
 
     // Form Controls
     searchControl = new FormControl('');
@@ -75,7 +67,14 @@ export class ProductListComponent implements OnInit, OnDestroy {
     inStockFilter = new FormControl(false);
 
     categories = signal<{ id: string, name: string }[]>([]);
-    constructor(private readonly store: Store, private readonly dialogService: DialogService, private readonly matDialog: MatDialog, private readonly productService: ProductService, private readonly errorService: ErrorService) {
+
+    constructor(
+        private readonly store: Store,
+        private readonly dialogService: DialogService,
+        private readonly matDialog: MatDialog,
+        private readonly productService: ProductService,
+        private readonly errorService: ErrorService
+    ) {
         this.products$ = this.store.select(selectAllProducts);
         this.loading$ = this.store.select(selectProductsLoading);
         this.error$ = this.store.select(selectProductsError);
@@ -84,7 +83,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.initializeFilters();
-        // Initial load
         this.loadCategories();
         this.loadProducts();
     }
@@ -95,7 +93,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
     }
 
     private initializeFilters() {
-        // Combine all filter changes
         combineLatest([
             this.searchControl.valueChanges.pipe(startWith('')),
             this.categoryFilter.valueChanges.pipe(startWith('')),
@@ -123,17 +120,20 @@ export class ProductListComponent implements OnInit, OnDestroy {
             this.loadProducts(filters);
         });
     }
+
     private loadCategories() {
         this.productService.getCategories().subscribe({
             next: (categories) => this.categories.set(categories),
             error: (error) => {
                 this.errorService.addError({
+                    code: '',
                     message: 'Failed to load categories',
-                    type: 'error'
+                    severity: 'error'
                 });
             }
         });
     }
+
     sortChange(sort: Sort) {
         const filters = {
             sortColumn: sort.active as keyof Product,
@@ -184,10 +184,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
         this.minPriceFilter.reset();
         this.maxPriceFilter.reset();
         this.inStockFilter.reset();
+
         if (this.paginator) {
             this.paginator.pageIndex = 0;
             this.paginator.pageSize = 10;
         }
+
         if (this.sort) {
             this.sort.active = '';
             this.sort.direction = '';
@@ -202,7 +204,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
             minPrice: undefined,
             maxPrice: undefined,
             inStock: undefined,
-            sortColumn: 'category',
+            sortColumn: 'name' as keyof Product,  // Provide valid default
             sortDirection: undefined
         });
     }
@@ -214,6 +216,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
             type: 'preview'
         });
     }
+
     async deleteProduct(product: Product) {
         const confirmed = await this.dialogService.confirm(
             `Are you sure you want to delete ${product.name}?`,

@@ -44,11 +44,6 @@ export class SidebarComponent implements OnInit {
           icon: 'bi-plus-circle',
           label: 'Add Product'
         },
-        {
-          path: '/products/remove',
-          icon: 'bi-trash',
-          label: 'Remove Products'
-        }
       ]
     },
     {

@@ -20,7 +20,39 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Category)
             .Include(p => p.SubCategory)
             .Include(p => p.Images)
-            .FirstOrDefaultAsync(p => p.Id == id && p.IsActive, cancellationToken);
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.Attributes)
+            .Include(p => p.Attributes)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsArchived, cancellationToken);
+    }
+
+    public async Task<Product?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        return await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.SubCategory)
+            .Include(p => p.Images)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.Attributes)
+            .Include(p => p.Attributes)
+            .FirstOrDefaultAsync(p => p.Slug == slug && !p.IsArchived, cancellationToken);
+    }
+
+    public async Task<ProductVariant?> GetVariantByIdAsync(Guid variantId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<ProductVariant>()
+            .Include(v => v.Attributes)
+            .FirstOrDefaultAsync(v => v.Id == variantId, cancellationToken);
+    }
+
+    public async Task<IEnumerable<ProductVariant>> GetVariantsByProductIdAsync(
+        Guid productId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<ProductVariant>()
+            .Include(v => v.Attributes)
+            .Where(v => v.ProductId == productId)
+            .ToListAsync(cancellationToken);
     }
 
     public void Add(Product product)
@@ -35,7 +67,20 @@ public class ProductRepository : IProductRepository
 
     public void Remove(Product product)
     {
-       _context.Products.Remove(product);
+        _context.Products.Remove(product);
+    }
+
+    public async Task<bool> SlugExistsAsync(
+        string slug,
+        Guid? excludeProductId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Products.Where(p => p.Slug == slug && !p.IsArchived);
+
+        if (excludeProductId.HasValue)
+            query = query.Where(p => p.Id != excludeProductId.Value);
+
+        return await query.AnyAsync(cancellationToken);
     }
 
     public async Task<(IEnumerable<Product> Products, int TotalCount)> GetProductsAsync(
@@ -46,7 +91,8 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Category)
             .Include(p => p.SubCategory)
             .Include(p => p.Images)
-            .Where(p => p.IsActive)
+            .Include(p => p.Variants)
+            .Where(p => !p.IsArchived)
             .AsQueryable();
 
         // Apply filters
@@ -55,7 +101,9 @@ public class ProductRepository : IProductRepository
             var searchTerm = filter.SearchTerm.ToLower();
             query = query.Where(p =>
                 p.Name.ToLower().Contains(searchTerm) ||
-                p.Description.ToLower().Contains(searchTerm));
+                p.Description.ToLower().Contains(searchTerm) ||
+                p.ShortDescription.ToLower().Contains(searchTerm) ||
+                p.Sku.ToLower().Contains(searchTerm));
         }
 
         if (filter.CategoryId.HasValue)
@@ -73,6 +121,12 @@ public class ProductRepository : IProductRepository
         if (filter.InStock.HasValue)
             query = query.Where(p => filter.InStock.Value ? p.Stock > 0 : p.Stock == 0);
 
+        if (!string.IsNullOrEmpty(filter.Status))
+            query = query.Where(p => p.Status.ToString() == filter.Status);
+
+        if (!string.IsNullOrEmpty(filter.Visibility))
+            query = query.Where(p => p.Visibility.ToString() == filter.Visibility);
+
         // Apply sorting
         query = filter.SortBy?.ToLower() switch
         {
@@ -85,6 +139,9 @@ public class ProductRepository : IProductRepository
             "stock" => filter.SortDescending ?
                 query.OrderByDescending(p => p.Stock) :
                 query.OrderBy(p => p.Stock),
+            "status" => filter.SortDescending ?
+                query.OrderByDescending(p => p.Status) :
+                query.OrderBy(p => p.Status),
             _ => query.OrderByDescending(p => p.CreatedAt)
         };
 

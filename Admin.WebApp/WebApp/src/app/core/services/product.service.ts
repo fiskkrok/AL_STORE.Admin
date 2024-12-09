@@ -14,6 +14,7 @@ import {
     Money
 } from '../../shared/models/product.model';
 import { PagedResponse } from '../../shared/models/paged-response.model';
+import { DashboardStats } from 'src/app/features/statistics/statistics.component';
 
 // Enhanced filter options
 export interface ProductFilters {
@@ -75,6 +76,7 @@ export interface ProductUpdateCommand extends Partial<ProductCreateCommand> {
     providedIn: 'root'
 })
 export class ProductService {
+
     private readonly productsSubject = new BehaviorSubject<Product[]>([]);
     private readonly apiUrl = environment.apiUrls.admin.products;
     private readonly categoriesUrl = environment.apiUrls.admin.categories;
@@ -113,7 +115,9 @@ export class ProductService {
             catchError(this.handleError)
         );
     }
-
+    getStats(): Observable<DashboardStats> {
+        return this.http.get<DashboardStats>(`${this.apiUrl}/stats`);
+    }
     createProduct(command: ProductCreateCommand): Observable<Product> {
         return this.authService.getAccessToken().pipe(
             switchMap(token => {

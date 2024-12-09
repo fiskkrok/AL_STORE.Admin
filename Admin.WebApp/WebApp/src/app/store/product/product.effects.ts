@@ -35,8 +35,9 @@ export class ProductEffects {
                     catchError(error => {
                         this.loadingService.hide();
                         this.errorService.addError({
+                            code: '',
                             message: 'Failed to load products: ' + error.message,
-                            type: 'error'
+                            severity: 'error'
                         });
                         return of(ProductActions.loadProductsFailure({ error: error.message }));
                     })
@@ -58,8 +59,9 @@ export class ProductEffects {
                     catchError(error => {
                         this.loadingService.hide();
                         this.errorService.addError({
+                            code: '',
                             message: 'Failed to add product: ' + error.message,
-                            type: 'error'
+                            severity: 'error'
                         });
                         return of(ProductActions.addProductFailure({ error: error.message }));
                     })
@@ -87,8 +89,9 @@ export class ProductEffects {
                         this.loadingService.hide();
                         this.store.dispatch(ProductActions.revertOptimisticUpdate());
                         this.errorService.addError({
+                            code: '',
                             message: 'Failed to update product: ' + error.message,
-                            type: 'error'
+                            severity: 'error'
                         });
                         return of(ProductActions.updateProductFailure({ error: error.message }));
                     })
@@ -110,8 +113,9 @@ export class ProductEffects {
                     catchError(error => {
                         this.loadingService.hide();
                         this.errorService.addError({
+                            code: '',
                             message: 'Failed to delete product: ' + error.message,
-                            type: 'error'
+                            severity: 'error'
                         });
                         return of(ProductActions.deleteProductFailure({ error: error.message }));
                     })

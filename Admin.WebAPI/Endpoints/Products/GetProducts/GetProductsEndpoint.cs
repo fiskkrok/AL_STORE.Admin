@@ -36,6 +36,8 @@ public class GetProductsEndpoint : EndpointWithoutRequest<PagedResponse<ProductR
             MinPrice = Query<decimal?>("minPrice", isRequired: false),
             MaxPrice = Query<decimal?>("maxPrice", isRequired: false),
             InStock = Query<bool?>("inStock", isRequired: false),
+            Status = Query<string>("status", isRequired: false),
+            Visibility = Query<string>("visibility", isRequired: false),
             SortBy = Query<string>("sortBy", isRequired: false) ?? "name",
             SortDescending = Query<bool>("sortDescending", isRequired: false),
             Page = Query<int>("page", isRequired: false) <= 0 ? 1 : Query<int>("page", isRequired: false),
@@ -48,7 +50,7 @@ public class GetProductsEndpoint : EndpointWithoutRequest<PagedResponse<ProductR
         {
             var response = PagedResponse<ProductResponse>.FromPagedList(
                 result.Value,
-                dto => ProductResponse.Summary(dto));
+                dto => ProductResponse.FromDto(dto));
 
             await SendOkAsync(response, ct);
         }
