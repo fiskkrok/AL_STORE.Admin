@@ -34,33 +34,32 @@ public class CategoryDbSeeder : ICategorySeeder
                 var seedData = JsonSerializer.Deserialize<CategorySeedData>(sourceJson,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                var categoryTracker = new Dictionary<string, Category>();
-
                 foreach (var categoryData in seedData.Categories)
                 {
                     // Create main category
                     var mainCategory = new Category(categoryData.Name, categoryData.Description);
                     _context.Categories.Add(mainCategory);
-                    categoryTracker[categoryData.Name] = mainCategory;
 
                     if (categoryData.SubCategories != null)
                     {
                         foreach (var subData in categoryData.SubCategories)
                         {
-                            var subCategory = new Category($"{categoryData.Name} - {subData.Name}", subData.Description);
+                            var subCategory = new Category(subData.Name, subData.Description)
+                            {
+                                ParentCategoryId = mainCategory.Id
+                            };
                             _context.Categories.Add(subCategory);
-                            categoryTracker[subData.Name] = subCategory;
 
-                            // Create nested subcategories if any
+                            // Handle nested subcategories if any
                             if (subData.SubCategories != null)
                             {
                                 foreach (var nestedSub in subData.SubCategories)
                                 {
-                                    var nestedCategory = new Category(
-                                        $"{categoryData.Name} - {subData.Name} - {nestedSub.Name}",
-                                        nestedSub.Description);
+                                    var nestedCategory = new Category(nestedSub.Name, nestedSub.Description)
+                                    {
+                                        ParentCategoryId = subCategory.Id
+                                    };
                                     _context.Categories.Add(nestedCategory);
-                                    categoryTracker[nestedSub.Name] = nestedCategory;
                                 }
                             }
                         }

@@ -73,25 +73,25 @@ public static class ServiceCollectionExtensions
             .AddPolicy("ProductEdit", policy =>
                 policy.RequireAssertion(context =>
                     context.User.HasClaim(c =>
-                        (c.Type == "scope" && (c.Value == "products.update" || c.Value == "api.full")) ||
+                        c is { Type: "scope", Value: "products.update" or "api.full" } ||
                         context.User.IsInRole("SystemAdministrator")
                     )))
             .AddPolicy("ProductsCreate", policy =>
                 policy.RequireAssertion(context =>
                     context.User.HasClaim(c =>
-                        (c.Type == "scope" && (c.Value == "products.create" || c.Value == "api.full")) ||
+                        c is { Type: "scope", Value: "products.create" or "api.full" } ||
                         context.User.IsInRole("SystemAdministrator")
                     )))
             .AddPolicy("ProductsRead", policy =>
                 policy.RequireAssertion(context =>
                     context.User.HasClaim(c =>
-                        (c.Type == "scope" && (c.Value == "products.read" || c.Value == "api.full")) ||
+                        c is { Type: "scope", Value: "products.read" or "api.full" } ||
                         context.User.IsInRole("SystemAdministrator")
                     )))
             .AddPolicy("ProductsDelete", policy =>
                 policy.RequireAssertion(context =>
                     context.User.HasClaim(c =>
-                        (c.Type == "scope" && (c.Value == "products.delete" || c.Value == "api.full")) ||
+                        c is { Type: "scope", Value: "products.delete" or "api.full" } ||
                         context.User.IsInRole("SystemAdministrator")
                     )));
         // Add FastEndpoints

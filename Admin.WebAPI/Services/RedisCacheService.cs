@@ -35,7 +35,7 @@ public class RedisCacheService : ICacheService
             if (!value.HasValue)
                 return null;
 
-            return JsonSerializer.Deserialize<T>(value!, _jsonOptions);
+            return JsonSerializer.Deserialize<T>(value.ToString(), _jsonOptions);
         }
         catch (Exception ex)
         {

@@ -13,6 +13,7 @@
 	<PropertyGroup>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
+		<LangVersion>preview</LangVersion>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Content Remove="Setup\product.json" />
@@ -21,6 +22,8 @@
 	  <None Include="Setup\product.json" />
 	</ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.0.0" />
+    <PackageReference Include="Aspire.StackExchange.Redis" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.2" />
     <PackageReference Include="Azure.Data.Tables" Version="12.9.1" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
@@ -55,6 +58,7 @@
     <ProjectReference Include="..\Admin.Application\Admin.Application.csproj" />
     <ProjectReference Include="..\Admin.Domain\Admin.Domain.csproj" />
     <ProjectReference Include="..\Admin.Infrastructure\Admin.Infrastructure.csproj" />
+    <ProjectReference Include="..\Admin.ServiceDefaults\Admin.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

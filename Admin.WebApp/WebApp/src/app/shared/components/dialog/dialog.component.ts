@@ -12,7 +12,7 @@ import { Observable } from "rxjs";
       <div class="dialog-overlay" (click)="onOverlayClick($event)">
         <div class="dialog-container" [ngClass]="dialog.type">
           @if (dialog.type === 'preview') {
-            <img [src]="dialog.message" alt="Preview" />
+            <img style="max-width: 500px;max-height: 500px;" [src]="dialog.message" alt="Preview" />
           }
           @else{
           <h2>{{ dialog.title }}</h2>

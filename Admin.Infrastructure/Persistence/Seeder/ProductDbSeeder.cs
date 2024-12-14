@@ -60,31 +60,23 @@ public class ProductDbSeeder : IProductSeeder
                     .Include(c => c.SubCategories)
                     .ToListAsync();
 
-                // Create lookup dictionaries
-                var categoryMap = new Dictionary<(string MainCategory, string SubCategory), (Category Main, Category Sub)>();
-
-                foreach (var mainCategory in categories)
-                {
-                    // Get all subcategories for this main category
-                    var subCategories = await _context.Categories
-                        .Where(c => c.Name != mainCategory.Name &&
-                               EF.Property<string>(c, "Name").Contains(mainCategory.Name))
-                        .ToListAsync();
-
-                    foreach (var subCategory in subCategories)
-                    {
-                        categoryMap[(mainCategory.Name, subCategory.Name)] = (mainCategory, subCategory);
-                    }
-                }
-
                 foreach (var productGroup in seedData.Products)
                 {
-                    if (categoryMap.TryGetValue((productGroup.Genre, productGroup.SubGenre), out var categoryPair))
+                    // Find the main category and subcategory
+                    var mainCategory = categories.FirstOrDefault(c => c.Name == productGroup.Genre);
+                    var subCategory = categories.FirstOrDefault(c => c.Name == productGroup.SubGenre);
+
+                    if (mainCategory != null)
                     {
                         foreach (var item in productGroup.Items)
                         {
                             var imageFileName = $"{_currentImageIndex}.webp";
                             var imagePath = GetFullPath(_env.ContentRootPath, imageFileName);
+
+                            // Generate a SKU if one is not provided
+                            var sku = string.IsNullOrEmpty(item.Sku)
+                                ? $"{item.Brand}-{Guid.NewGuid().ToString().Substring(0, 8)}"
+                                : item.Sku;
 
                             // Only add image if file exists
                             if (File.Exists(imagePath))
@@ -92,12 +84,12 @@ public class ProductDbSeeder : IProductSeeder
                                 var product = new Product(
                                     name: item.Name,
                                     description: item.Description,
-                                    price: Money.From(item.Price, "USD"),
+                                    price: item.Price,
                                     currency: "USD",
-                                    item.Sku,
+                                    sku: sku,  // Using the generated or provided SKU
                                     stock: item.Stock,
-                                    categoryId: categoryPair.Main.Id,
-                                     categoryPair.Sub.Id);
+                                    categoryId: mainCategory.Id,
+                                    subCategoryId: subCategory?.Id);
 
                                 var fileInfo = new FileInfo(imagePath);
                                 product.AddImage(
@@ -119,7 +111,7 @@ public class ProductDbSeeder : IProductSeeder
                     }
                     else
                     {
-                        _logger.LogWarning($"Category pair not found for {productGroup.Genre} - {productGroup.SubGenre}");
+                        _logger.LogWarning($"Category not found for {productGroup.Genre}");
                     }
                 }
 

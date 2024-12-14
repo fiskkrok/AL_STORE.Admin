@@ -269,7 +269,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
     ::ng-deep {
       .mat-mdc-dialog-container {
-        --mdc-dialog-container-color: var(--bg-secondary);
+        // --mdc-dialog-container-color: var(--bg-secondary);
       }
 
       .mat-mdc-form-field {

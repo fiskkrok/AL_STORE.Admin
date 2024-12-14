@@ -20,7 +20,6 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
     public override void Configure()
     {
         Post("/products");
-        AllowFileUploads();
         Description(d => d
             .WithTags("Products")
             .Produces<Guid>(StatusCodes.Status201Created)
@@ -28,7 +27,8 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
             .WithName("CreateProduct")
             .WithOpenApi());
         Version(1);
-        Claims("products.create");
+        //Claims("products.create");
+        ////Policies("ProductCreate", "FullAdminAccess");
     }
 
     public override async Task HandleAsync(CreateProductCommand req, CancellationToken ct)

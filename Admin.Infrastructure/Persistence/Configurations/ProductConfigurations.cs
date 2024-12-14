@@ -1,6 +1,7 @@
 ﻿using Admin.Domain.Entities;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Admin.Infrastructure.Persistence.Configurations;
@@ -9,26 +10,23 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-
-
         builder.HasKey(x => x.Id);
         builder.Ignore(x => x.DomainEvents);
 
-        builder.Property<string>("_name")
-            .HasColumnName("Name")
+        // Simple properties using field keyword
+        builder.Property(x => x.Name)
             .HasMaxLength(200)
             .IsRequired();
 
-        builder.Property<string>("_description")
-            .HasColumnName("Description")
+        builder.Property(x => x.Description)
             .HasMaxLength(2000)
             .IsRequired();
 
-        builder.Property<string>("_sku")
-            .HasColumnName("Sku")
+        builder.Property(x => x.Sku)
             .HasMaxLength(50)
             .IsRequired();
 
+        // Money-related properties still using backing fields
         builder.Property<decimal>("_price")
             .HasColumnName("Price")
             .HasColumnType("decimal(18,2)")
@@ -43,8 +41,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasColumnName("CompareAtPrice")
             .HasColumnType("decimal(18,2)");
 
-        builder.Property<int>("_stock")
-            .HasColumnName("Stock")
+        builder.Property(x => x.Stock)
             .IsRequired();
 
         builder.Property(x => x.Status)
@@ -57,17 +54,19 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.HasOne(x => x.Category)
+        builder.HasOne(p => p.Category)
             .WithMany()
-            .HasForeignKey(x => x.CategoryId)
+            .HasForeignKey(p => p.CategoryId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.SubCategory)
+        builder.HasOne(p => p.SubCategory)
             .WithMany()
-            .HasForeignKey(x => x.SubCategoryId)
+            .HasForeignKey(p => p.SubCategoryId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Configure collections
+        // Collections
         builder.HasMany(x => x.Images)
             .WithOne(x => x.Product)
             .HasForeignKey(x => x.ProductId)
@@ -78,24 +77,74 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure owned types if any
         builder.OwnsMany(p => p.Attributes, attr =>
         {
             attr.WithOwner().HasForeignKey("ProductId");
             attr.Property<int>("Id").ValueGeneratedOnAdd();
             attr.HasKey("Id");
         });
+        builder.OwnsOne(p => p.Dimensions, dimensions =>
+        {
+            dimensions.Property(d => d.Weight)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
 
-        // Configure value conversions for collections
+            dimensions.Property(d => d.Width)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            dimensions.Property(d => d.Height)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            dimensions.Property(d => d.Length)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            dimensions.Property(d => d.Unit)
+                .HasMaxLength(10)
+                .IsRequired();
+
+            // Optional: customize the table column names if desired
+            dimensions.Property(d => d.Weight).HasColumnName("DimensionWeight");
+            dimensions.Property(d => d.Width).HasColumnName("DimensionWidth");
+            dimensions.Property(d => d.Height).HasColumnName("DimensionHeight");
+            dimensions.Property(d => d.Length).HasColumnName("DimensionLength");
+            dimensions.Property(d => d.Unit).HasColumnName("DimensionUnit");
+        });
+        builder.OwnsOne(p => p.Seo, seo =>
+        {
+            seo.Property(s => s.Title)
+                .HasMaxLength(200);
+
+            seo.Property(s => s.Description)
+                .HasMaxLength(500);
+
+            seo.Property<List<string>>("_keywords")
+                .HasColumnName("SeoKeywords")
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+                    new ValueComparer<List<string>>(
+                        (c1, c2) => c1.SequenceEqual(c2),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()))
+                .HasMaxLength(1000);
+        });
+
         builder.Property<List<string>>("_tags")
             .HasColumnName("Tags")
             .HasConversion(
                 v => string.Join(',', v),
-                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList())
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+                new ValueComparer<List<string>>(
+                    (c1, c2) => c1.SequenceEqual(c2),
+                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    c => c.ToList()))
             .HasMaxLength(1000);
 
 
-        // Audit properties
+        // Audit properties handled by base configuration
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 

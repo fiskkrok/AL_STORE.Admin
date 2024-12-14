@@ -2,25 +2,18 @@
 using Admin.Domain.ValueObjects;
 using Ardalis.GuardClauses;
 
-namespace Admin.Domain.Entities;
 public class ProductDimensions : ValueObject
 {
+    // Private parameterless constructor for EF Core
+    private ProductDimensions() { }
+
     public decimal Weight { get; private set; }
     public decimal Width { get; private set; }
     public decimal Height { get; private set; }
     public decimal Length { get; private set; }
-    public string Unit { get; private set; }
+    public string Unit { get; private set; } = "cm";
 
-    private ProductDimensions(decimal weight, decimal width, decimal height, decimal length, string unit)
-    {
-        Weight = weight;
-        Width = width;
-        Height = height;
-        Length = length;
-        Unit = unit;
-    }
-
-    public static ProductDimensions Create(decimal weight, decimal width, decimal height, decimal length, string unit)
+    public static ProductDimensions Create(decimal weight, decimal width, decimal height, decimal length, string unit = "cm")
     {
         Guard.Against.NegativeOrZero(weight, nameof(weight));
         Guard.Against.NegativeOrZero(width, nameof(width));
@@ -31,7 +24,14 @@ public class ProductDimensions : ValueObject
         if (unit != "cm" && unit != "inch")
             throw new DomainException("Unit must be either 'cm' or 'inch'");
 
-        return new ProductDimensions(weight, width, height, length, unit);
+        return new ProductDimensions
+        {
+            Weight = weight,
+            Width = width,
+            Height = height,
+            Length = length,
+            Unit = unit
+        };
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

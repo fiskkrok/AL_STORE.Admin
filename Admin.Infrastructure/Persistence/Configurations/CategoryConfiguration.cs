@@ -9,18 +9,31 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
         builder.HasKey(x => x.Id);
         builder.Ignore(x => x.DomainEvents);
-        builder.Property(x => x.Name)
+
+        builder.Property<string>("_name")
+            .HasColumnName("Name")
             .HasMaxLength(200)
             .IsRequired();
 
-        builder.Property(x => x.Description)
-            .HasMaxLength(2000)
+        builder.Property<string>("_description")
+            .HasColumnName("Description")
+            .HasMaxLength(1000)
             .IsRequired();
 
+        // Configure the self-referencing relationship correctly
         builder.HasMany(x => x.SubCategories)
-            .WithMany()
-            .UsingEntity(j => j.ToTable("CategorySubCategories"));
+            .WithOne(x => x.ParentCategory)
+            .HasForeignKey(x => x.ParentCategoryId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
 
+        // Configure products relationship
+        builder.HasMany(x => x.Products)
+            .WithOne(x => x.Category)
+            .HasForeignKey(x => x.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Audit properties
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 

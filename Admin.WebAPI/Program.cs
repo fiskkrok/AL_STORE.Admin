@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
 
@@ -38,6 +40,11 @@ builder.Services.AddAzureClients(clientBuilder =>
                                            throw new InvalidOperationException("Blob storage connection string not configured."));
     }
 });
+
+// For Aspire
+//builder.AddAzureBlobClient("alstoreblob");
+//builder.AddRedisClient("redis");
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
@@ -68,6 +75,8 @@ builder.Services.AddCustomHealthChecks(builder.Configuration);
 
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 await app.AddPipeline();
 

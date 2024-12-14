@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Admin.AppHost/Admin.AppHost.csproj
+/Admin.ServiceDefaults/Admin.ServiceDefaults.csproj

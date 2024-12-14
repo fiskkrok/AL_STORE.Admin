@@ -11,7 +11,7 @@ public class Category : AuditableEntity
     private string _name = string.Empty;
     private string _description = string.Empty;
 
-    private Category() { }
+    private Category() { }  // For EF Core
 
     public Category(string name, string description)
     {
@@ -23,6 +23,10 @@ public class Category : AuditableEntity
     public string Description => _description;
     public IReadOnlyCollection<Category> SubCategories => _subCategories.AsReadOnly();
     public IReadOnlyCollection<Product> Products => _products.AsReadOnly();
+
+    // Add this property for the parent category relationship
+    public Guid? ParentCategoryId { get; set; }
+    public Category? ParentCategory { get; private set; }
 
     public void Update(string name, string description, string? modifiedBy = null)
     {

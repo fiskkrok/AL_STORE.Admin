@@ -8,29 +8,19 @@ namespace Admin.Domain.Entities;
 
 public class Product : AuditableEntity
 {
+    // Collections still need explicit backing fields as they're initialized
     private readonly List<ProductImage> _images = [];
     private readonly List<ProductVariant> _variants = [];
     private readonly List<ProductAttribute> _attributes = [];
     private readonly List<string> _tags = [];
 
-    private string _name = string.Empty;
-    private string _slug = string.Empty;
-    private string _description = string.Empty;
-    private string? _shortDescription;
-    private string _sku = string.Empty;
-    private string? _barcode;
+    // Money-related fields need to stay as backing fields due to the value object pattern
     private decimal _price;
     private string _currency = "USD";
     private decimal? _compareAtPrice;
-    private int _stock;
-    private int? _lowStockThreshold;
-    private ProductStatus _status = ProductStatus.Draft;
-    private ProductVisibility _visibility = ProductVisibility.Hidden;
-    private ProductSeo? _seo;
-    private ProductDimensions? _dimensions;
-    private Product()
-    {
-    }
+
+    private Product() { }
+
     public Product(
         string name,
         string description,
@@ -51,14 +41,12 @@ public class Product : AuditableEntity
         Guard.Against.InvalidInput(currency, nameof(currency), c => c.Length == 3);
         Guard.Against.Null(categoryId, nameof(categoryId));
 
-        _name = name;
-        _description = description;
+        Name = name;
+        Description = description;
         _price = price;
         _currency = currency;
-        _sku = sku;
-        _stock = stock;
-        _slug = GenerateSlug(name);
-
+        Sku = sku;
+        Stock = stock;
         CategoryId = categoryId;
         SubCategoryId = subCategoryId;
 
@@ -66,27 +54,62 @@ public class Product : AuditableEntity
         AddDomainEvent(new ProductCreatedDomainEvent(this));
     }
 
-    public string Name => _name;
-    public string Slug => _slug;
-    public string Description => _description;
-    public string? ShortDescription => _shortDescription;
-    public string Sku => _sku;
-    public string? Barcode => _barcode;
+    // Using new field keyword for simple properties
+    public string Name
+    {
+        get => field;
+        private set
+        {
+            field = value;
+            Slug = GenerateSlug(value); // Update slug when name changes
+        }
+    }
+
+    public string Slug { get; private set; }
+
+    public string Description
+    {
+        get => field;
+        private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(Description));
+    }
+
+    public string? ShortDescription { get; private set; }
+
+    public string Sku
+    {
+        get => field;
+        private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(Sku));
+    }
+
+    public string? Barcode { get; private set; }
+
+    // Complex properties still using explicit backing fields
     public Money Price => Money.From(_price, _currency);
     public Money? CompareAtPrice => _compareAtPrice.HasValue ? Money.From(_compareAtPrice.Value, _currency) : null;
-    public int Stock => _stock;
-    public int? LowStockThreshold => _lowStockThreshold;
-    public ProductStatus Status => _status;
-    public ProductVisibility Visibility => _visibility;
+
+    public int Stock
+    {
+        get => field;
+        private set => field = Guard.Against.Negative(value, nameof(Stock));
+    }
+
+    public int? LowStockThreshold { get; private set; }
+    public ProductStatus Status { get; private set; } = ProductStatus.Draft;
+    public ProductVisibility Visibility { get; private set; } = ProductVisibility.Hidden;
     public Guid CategoryId { get; private set; }
     public Category Category { get; private set; } = null!;
     public Guid? SubCategoryId { get; private set; }
     public Category? SubCategory { get; private set; }
+    public ProductSeo? Seo { get; private set; }
+    public ProductDimensions? Dimensions { get; private set; }
+
+    // Collection properties
     public IReadOnlyCollection<ProductImage> Images => _images.AsReadOnly();
     public IReadOnlyCollection<ProductVariant> Variants => _variants.AsReadOnly();
     public IReadOnlyCollection<ProductAttribute> Attributes => _attributes.AsReadOnly();
     public IReadOnlyCollection<string> Tags => _tags.AsReadOnly();
     public bool IsArchived { get; private set; }
+
     public void UpdatePrice(Money newPrice, string? modifiedBy = null)
     {
         if (_price == newPrice.Amount && _currency == newPrice.Currency)
@@ -97,6 +120,7 @@ public class Product : AuditableEntity
         SetModified(modifiedBy);
         AddDomainEvent(new ProductUpdatedDomainEvent(this));
     }
+
     public void Update(
         string name,
         string description,
@@ -110,15 +134,16 @@ public class Product : AuditableEntity
         Guard.Against.Null(price, nameof(price));
         Guard.Against.Null(category, nameof(category));
 
-        if (_name == name &&
-            _description == description &&
-            _price == price &&
+        if (Name == name &&
+            Description == description &&
+            _price == price.Amount &&
             CategoryId == category.Id &&
             SubCategoryId == subCategory?.Id) return;
 
-        _name = name;
-        _description = description;
-        _price = price;
+        Name = name;
+        Description = description;
+        _price = price.Amount;
+        _currency = price.Currency;
         Category = category;
         CategoryId = category.Id;
 
@@ -141,10 +166,10 @@ public class Product : AuditableEntity
     {
         Guard.Against.Negative(newStock, nameof(newStock));
 
-        if (_stock == newStock) return;
+        if (Stock == newStock) return;
 
-        var oldStock = _stock;
-        _stock = newStock;
+        var oldStock = Stock;
+        Stock = newStock;
         SetModified(modifiedBy);
 
         AddDomainEvent(new ProductStockUpdatedDomainEvent(this, oldStock, newStock));
@@ -220,8 +245,8 @@ public class Product : AuditableEntity
     public void UpdateSeo(ProductSeo seo, string? modifiedBy = null)
     {
         Guard.Against.Null(seo, nameof(seo));
-        if (_seo == seo) return;
-        _seo = seo;
+        if (Seo == seo) return;
+        Seo = seo;
         SetModified(modifiedBy);
         AddDomainEvent(new ProductSeoUpdatedDomainEvent(this, seo));
     }
@@ -229,32 +254,31 @@ public class Product : AuditableEntity
     public void UpdateDimensions(ProductDimensions dimensions, string? modifiedBy = null)
     {
         Guard.Against.Null(dimensions, nameof(dimensions));
-        if (_dimensions == dimensions) return;
-        _dimensions = dimensions;
+        if (Dimensions == dimensions) return;
+        Dimensions = dimensions;
         SetModified(modifiedBy);
         AddDomainEvent(new ProductDimensionsUpdatedDomainEvent(this, dimensions));
     }
 
     public void UpdateStatus(ProductStatus status, string? modifiedBy = null)
     {
-        if (_status == status) return;
-        _status = status;
+        if (Status == status) return;
+        Status = status;
         SetModified(modifiedBy);
         AddDomainEvent(new ProductStatusUpdatedDomainEvent(this, status));
     }
 
     public void UpdateVisibility(ProductVisibility visibility, string? modifiedBy = null)
     {
-        if (_visibility == visibility) return;
-        _visibility = visibility;
+        if (Visibility == visibility) return;
+        Visibility = visibility;
         SetModified(modifiedBy);
         AddDomainEvent(new ProductVisibilityUpdatedDomainEvent(this, visibility));
     }
-    private static string GenerateSlug(string name)
-    {
-        // Simple slug generation logic
-        return name.ToLower().Replace(" ", "-");
-    }
+
+
+    private static string GenerateSlug(string name) =>
+        name.ToLower().Replace(" ", "-");
 
 
     public void AddVariant(ProductVariant variant)

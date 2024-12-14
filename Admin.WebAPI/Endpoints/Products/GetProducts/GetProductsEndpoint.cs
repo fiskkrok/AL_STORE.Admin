@@ -28,9 +28,10 @@ public class GetProductsEndpoint : EndpointWithoutRequest<PagedResponse<ProductR
 
     public override async Task HandleAsync(CancellationToken ct)
     {
+        
         var request = new GetProductsQuery
         {
-            SearchTerm = Query<string>("searchTerm", isRequired: false),
+            SearchTerm = Query<string>("search", isRequired: false),
             CategoryId = Query<Guid?>("categoryId", isRequired: false),
             SubCategoryId = Query<Guid?>("subCategoryId", isRequired: false),
             MinPrice = Query<decimal?>("minPrice", isRequired: false),
