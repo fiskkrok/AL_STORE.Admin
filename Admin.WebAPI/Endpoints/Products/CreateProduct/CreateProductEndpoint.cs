@@ -39,6 +39,7 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
 
             if (result.IsSuccess)
             {
+                _logger.LogInformation("Product created successfully with ID: {ProductId}", result.Value);
                 await SendCreatedAtAsync<GetProductEndpoint>(
                     new { id = result.Value },
                     result.Value,
@@ -47,6 +48,7 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
             }
             else
             {
+                _logger.LogWarning("Failed to create product: {Errors}", string.Join(", ", result.Errors.Select(e => e.Message)));
                 await SendErrorsAsync(400, ct);
             }
         }

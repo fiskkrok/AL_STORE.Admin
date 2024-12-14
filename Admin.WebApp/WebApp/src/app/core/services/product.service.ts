@@ -138,7 +138,10 @@ export class ProductService {
                 const currentProducts = this.productsSubject.value;
                 this.productsSubject.next([...currentProducts, product]);
             }),
-            catchError(this.handleError)
+            catchError(error => {
+                console.error('Error creating product:', error);
+                return throwError(() => new Error('Failed to create product: ' + error.message));
+            })
         );
     }
 
