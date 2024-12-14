@@ -122,6 +122,7 @@ export class AddProductComponent implements OnInit {
               message: 'Failed to create product: ' + error.message,
               severity: 'error'
             });
+            this.isSubmitting = false; // Ensure the flag is reset on error
           },
           complete: () => {
             this.isSubmitting = false;
@@ -143,7 +144,6 @@ export class AddProductComponent implements OnInit {
   private generateSku(): string {
     return 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase();
   }
-
 
   reset(): void {
     this.form.reset();
