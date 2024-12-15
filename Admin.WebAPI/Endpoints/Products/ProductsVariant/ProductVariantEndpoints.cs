@@ -1,4 +1,5 @@
-﻿using Admin.Application.ProductVariants.Commands;
+﻿using Admin.Application.Common.Models;
+using Admin.Application.ProductVariants.Commands;
 using FastEndpoints;
 using MediatR;
 

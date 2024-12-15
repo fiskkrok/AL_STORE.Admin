@@ -1,10 +1,10 @@
 // Base interfaces for common properties
-interface AuditableEntity {
-    createdAt: string;
-    createdBy: UserRef | null;
-    lastModifiedAt: string | null;
-    lastModifiedBy: UserRef | null;
-}
+// interface AuditableEntity {
+//     createdAt: string;
+//     createdBy: UserRef | null;
+//     lastModifiedAt: string | null;
+//     lastModifiedBy: UserRef | null;
+// }
 
 interface UserRef {
     id: string;
@@ -55,7 +55,7 @@ export interface Money {
     currency: string;
 }
 
-export interface Product extends AuditableEntity {
+export interface Product { // extends AuditableEntity
     id: string;
     name: string;
     slug: string;
@@ -64,8 +64,9 @@ export interface Product extends AuditableEntity {
     sku: string;
     barcode?: string;
 
-    price: Money;
-    compareAtPrice?: Money;
+    price: number;  // Change to number
+    currency: string;  // Add currency field
+    compareAtPrice?: number;
 
     category: Category;
     subCategory?: SubCategory;
@@ -121,7 +122,7 @@ interface OrderItem {
     variantId?: string;
 }
 
-interface Order extends AuditableEntity {
+interface Order { // extends AuditableEntity
     id: string;
     orderNumber: string;
     customerId: string;
@@ -169,7 +170,7 @@ interface Address {
 }
 
 // Customer related interfaces
-interface Customer extends AuditableEntity {
+interface Customer { // extends AuditableEntity
     id: string;
     email: string;
     firstName: string;

@@ -245,6 +245,7 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Variants)
                 .ThenInclude(v => v.Attributes)
             .Include(p => p.Attributes)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsArchived, cancellationToken);
     }
 
@@ -315,6 +316,7 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Images)
             .Include(p => p.Variants)
             .Where(p => !p.IsArchived)
+            .AsSplitQuery()
             .AsQueryable();
 
         // Apply filters

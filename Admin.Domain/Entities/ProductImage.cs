@@ -1,4 +1,6 @@
-﻿using Admin.Domain.Common;
+﻿using System.Text.Json.Serialization;
+
+using Admin.Domain.Common;
 using Ardalis.GuardClauses;
 
 namespace Admin.Domain.Entities;
@@ -45,6 +47,7 @@ public class ProductImage : AuditableEntity
     public int SortOrder => _sortOrder;
     public bool IsPrimary => _isPrimary;
     public Guid ProductId { get; private set; }
+    [JsonIgnore]
     public Product Product { get; private set; } = null!;
 
     public void UpdateSortOrder(int sortOrder)

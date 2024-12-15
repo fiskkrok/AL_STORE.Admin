@@ -1,4 +1,6 @@
-﻿namespace Admin.WebAPI.Endpoints.Products.ProductsVariant;
+﻿using Admin.Application.Common.Models;
+
+namespace Admin.WebAPI.Endpoints.Products.ProductsVariant;
 
 public record UpdateProductVariantRequest
 {

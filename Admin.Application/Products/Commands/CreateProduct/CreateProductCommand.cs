@@ -1,5 +1,6 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 using Admin.Domain.ValueObjects;
 
@@ -27,7 +28,7 @@ public record CreateProductCommand : IRequest<Result<Guid>>
     public string Visibility { get; init; } = "Hidden";
     public Guid CategoryId { get; init; }
     public Guid? SubCategoryId { get; init; }
-    public List<FileUploadRequest> Images { get; init; } = new();
+    public List<ProductImageDto> Images { get; init; } = new();
     public List<CreateProductVariantRequest> Variants { get; init; } = new();
     public List<ProductAttributeRequest> Attributes { get; init; } = new();
     public ProductSeoRequest? Seo { get; init; }
@@ -40,7 +41,6 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
 {
     private readonly IProductRepository _productRepository;
     private readonly ICategoryRepository _categoryRepository;
-    private readonly IFileStorage _fileStorage;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUser _currentUser;
 
@@ -53,7 +53,6 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
     {
         _productRepository = productRepository;
         _categoryRepository = categoryRepository;
-        _fileStorage = fileStorage;
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
     }
@@ -91,7 +90,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             //Handle images
             foreach (var image in command.Images)
             {
-                product.AddImage(image.Url, image.FileName, image.Length, _currentUser.Id);
+                product.AddImage(image.Url, image.FileName, image.Size, _currentUser.Id);
             }
 
             _productRepository.Add(product);

@@ -26,9 +26,9 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateProduct")
             .WithOpenApi());
-        Version(1);
+
         //Claims("products.create");
-        ////Policies("ProductCreate", "FullAdminAccess");
+        Policies("ProductsCreate", "FullAdminAccess");
     }
 
     public override async Task HandleAsync(CreateProductCommand req, CancellationToken ct)
@@ -48,8 +48,8 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
             }
             else
             {
-                _logger.LogWarning("Failed to create product: {Errors}", string.Join(", ", result.Errors.Select(e => e.Message)));
-                await SendErrorsAsync(400, ct);
+                _logger.LogWarning("Failed to create product: {Errors}", string.Join(", ", result.Error?.Message));
+                await SendErrorsAsync(int.TryParse(result.Error?.Code, default, out _) ? int.Parse(result.Error?.Code) : 400, ct);
             }
         }
         catch (Exception ex)

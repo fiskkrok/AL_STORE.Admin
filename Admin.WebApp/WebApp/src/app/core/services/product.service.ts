@@ -39,8 +39,9 @@ export interface ProductCreateCommand {
     description: string;
     shortDescription?: string;
     sku: string;
-    price: Money;
-    compareAtPrice?: Money;
+    price: number;  // Change to number
+    currency: string;  // Add currency field
+    compareAtPrice?: number;
     categoryId: string;
     subCategoryId?: string;
     stock: number;
@@ -123,16 +124,16 @@ export class ProductService {
             switchMap(token => {
                 if (!token) throw new Error('No authentication token available');
 
-                const headers = new HttpHeaders()
-                    .set('Authorization', `Bearer ${token}`)
-                    .set('Content-Type', 'application/json');
+                // const headers = new HttpHeaders()
+                //     .set('Authorization', `Bearer ${token}`)
+                //     .set('Content-Type', 'application/json');
 
                 // Generate slug if not provided
                 if (!command.slug) {
                     command.slug = this.generateSlug(command.name);
                 }
 
-                return this.http.post<Product>(this.apiUrl, command, { headers });
+                return this.http.post<Product>(this.apiUrl, command); // , { headers }
             }),
             tap(product => {
                 const currentProducts = this.productsSubject.value;
@@ -155,27 +156,18 @@ export class ProductService {
             }
         });
 
-        // Handle image updates
-        if (command.newImages?.length) {
-            command.newImages.forEach(file => formData.append('newImages', file));
-        }
-
-        if (command.imageIdsToRemove?.length) {
-            command.imageIdsToRemove.forEach(id => formData.append('imageIdsToRemove', id));
-        }
-
-        if (command.imageUpdates?.length) {
-            formData.append('imageUpdates', JSON.stringify(command.imageUpdates));
-        }
-
         return this.authService.getAccessToken().pipe(
             switchMap(token => {
                 if (!token) throw new Error('No authentication token available');
 
-                const headers = new HttpHeaders()
-                    .set('Authorization', `Bearer ${token}`);
+                // const headers = new HttpHeaders()
+                //     .set('Authorization', `Bearer ${token}`)
+                //     .set('Content-Type', 'application/json');
 
-                return this.http.put<Product>(`${this.apiUrl}/${command.id}`, formData, { headers });
+                return this.http.put<Product>(
+                    `${this.apiUrl}/${command.id}`,
+                    command
+                );
             }),
             tap(updatedProduct => {
                 const currentProducts = this.productsSubject.value;
@@ -220,7 +212,12 @@ export class ProductService {
             catchError(this.handleError)
         );
     }
-
+    deleteImages(imageIds: string[]): Observable<void> {
+        return this.http.post<void>(
+            `${this.apiUrl}/delete-images`,
+            { imageIds }
+        );
+    }
     // Category management
     getCategories(): Observable<Category[]> {
         return this.http.get<Category[]>(this.categoriesUrl).pipe(

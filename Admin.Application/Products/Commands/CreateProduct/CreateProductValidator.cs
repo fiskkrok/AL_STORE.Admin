@@ -44,11 +44,11 @@ public class CreateProductValidator : AbstractValidator<CreateProductCommand>
             .Must(x => x.Count <= 10).WithMessage("Maximum 10 images allowed");
 
         RuleForEach(v => v.Images)
-            .Must(image => BeValidUrl(new ProductImageDto { Url = image.FileName })) // Convert FileUploadRequest to ProductImageDto
+            .Must(BeValidUrl) 
             .WithMessage("Invalid image URL")
-            .Must(image => BeValidSize(new ProductImageDto { Size = image.Length })) // Convert FileUploadRequest to ProductImageDto
+            .Must(BeValidSize) 
             .WithMessage("Image size must be less than 5MB")
-            .Must(image => BeValidImage(new ProductImageDto { FileName = image.FileName })) // Convert FileUploadRequest to ProductImageDto
+            .Must( BeValidImage) 
             .WithMessage("Non valid file format");
     }
 

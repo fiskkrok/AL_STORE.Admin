@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+//builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
@@ -76,7 +76,7 @@ builder.Services.AddCustomHealthChecks(builder.Configuration);
 
 var app = builder.Build();
 
-app.MapDefaultEndpoints();
+//app.MapDefaultEndpoints();
 
 await app.AddPipeline();
 

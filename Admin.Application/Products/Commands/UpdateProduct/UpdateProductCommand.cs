@@ -4,6 +4,7 @@ using Admin.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
 using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
 
 namespace Admin.Application.Products.Commands.UpdateProduct;
 public record UpdateProductCommand : IRequest<Result<Unit>>
@@ -15,7 +16,7 @@ public record UpdateProductCommand : IRequest<Result<Unit>>
     public string Currency { get; init; } = "USD";
     public Guid CategoryId { get; init; }
     public Guid? SubCategoryId { get; init; }
-    public List<FileUploadRequest> NewImages { get; set; } = new();
+    public List<ProductImageDto> NewImages { get; set; } = new();
     public List<Guid> ImageIdsToRemove { get; init; } = new();
 }
 
@@ -54,12 +55,12 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                 return Result<Unit>.Failure(new Error("Category.NotFound", $"Category with ID {command.CategoryId} was not found"));
 
             Category? subCategory = null;
-            if (command.SubCategoryId.HasValue)
-            {
-                subCategory = await _categoryRepository.GetByIdAsync(command.SubCategoryId.Value, cancellationToken);
-                if (subCategory == null)
-                    return Result<Unit>.Failure(new Error("SubCategory.NotFound", $"SubCategory with ID {command.SubCategoryId} was not found"));
-            }
+            //if (command.SubCategoryId.HasValue)
+            //{
+            //    subCategory = await _categoryRepository.GetByIdAsync(command.SubCategoryId.Value, cancellationToken);
+            //    if (subCategory == null)
+            //        return Result<Unit>.Failure(new Error("SubCategory.NotFound", $"SubCategory with ID {command.SubCategoryId} was not found"));
+            //}
 
             product.Update(
                 command.Name,
@@ -70,7 +71,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                 _currentUser.Id);
 
             // Add this line:
-            //_productRepository.Update(product);
+            _productRepository.Update(product);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result<Unit>.Success(Unit.Value);

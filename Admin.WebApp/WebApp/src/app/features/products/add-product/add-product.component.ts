@@ -87,10 +87,8 @@ export class AddProductComponent implements OnInit {
         const product: ProductCreateCommand = {
           name: formValue.basicInfo.name,
           description: formValue.basicInfo.description,
-          price: {
-            amount: formValue.pricing.price,
-            currency: 'USD'  // Or get from configuration
-          },
+          price: formValue.pricing.price,  // Change to number
+          currency: 'USD',  // Add currency field
           categoryId: formValue.basicInfo.category,
           stock: formValue.pricing.stock,
           sku: this.generateSku(),

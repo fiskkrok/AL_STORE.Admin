@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddWebAPI(this IServiceCollection services)
     {
         // Add logging services
-        services.AddLogging(); // Added
+        services.AddLogging();
 
         services.AddAuthentication("Bearer")
             .AddJwtBearer("Bearer", options =>
@@ -95,6 +95,7 @@ public static class ServiceCollectionExtensions
                         context.User.IsInRole("SystemAdministrator")
                     )));
         // Add FastEndpoints
+
         services.AddFastEndpoints()
             .AddOpenApi();
         // Configure CORS

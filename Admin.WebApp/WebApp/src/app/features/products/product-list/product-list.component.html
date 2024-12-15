@@ -1,13 +1,13 @@
 <div class="product-list-container">
     <!-- Filters Section -->
     <div class="filters-section">
-        <div class="filters-grid">
-            <mat-form-field>
+        <div class="filters-grid d-flex justify-content-evenly">
+            <mat-form-field class="col-3 rounded-start">
                 <mat-label>Search Products</mat-label>
                 <input matInput [formControl]="searchControl" placeholder="Search by name...">
             </mat-form-field>
 
-            <mat-form-field>
+            <mat-form-field class="col-3 rounded-0">
                 <mat-label>Category</mat-label>
                 <mat-select [formControl]="categoryFilter">
                     <mat-option [value]="''">All Categories</mat-option>
@@ -17,24 +17,26 @@
                 </mat-select>
             </mat-form-field>
 
-            <mat-form-field>
+            <mat-form-field class="col-3 rounded-0">
                 <mat-label>Min Price</mat-label>
                 <input matInput type="number" [formControl]="minPriceFilter">
             </mat-form-field>
 
-            <mat-form-field>
+            <mat-form-field class="col-3 rounded-end">
                 <mat-label>Max Price</mat-label>
                 <input matInput type="number" [formControl]="maxPriceFilter">
             </mat-form-field>
 
+        </div>
+        <div>
+
+            <button mat-button (click)="resetFilters()">
+                Clear Filters
+            </button>
             <mat-checkbox [formControl]="inStockFilter">
                 In Stock Only
             </mat-checkbox>
         </div>
-
-        <button mat-button (click)="resetFilters()">
-            Clear Filters
-        </button>
     </div>
 
     <!-- Products Table -->
