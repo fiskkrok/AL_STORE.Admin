@@ -84,6 +84,12 @@ export class SidebarComponent implements OnInit {
         });
       }
     });
+
+    this.themeService.theme$.subscribe((isDark: boolean) => {
+      this.isDarkTheme = isDark;
+      // Update document theme for Material
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    });
   }
 
   toggleSidebar() {
