@@ -1,4 +1,3 @@
-// src/app/layout/main-layout/main-layout.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';

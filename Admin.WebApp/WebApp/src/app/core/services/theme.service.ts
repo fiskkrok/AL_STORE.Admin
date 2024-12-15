@@ -1,6 +1,6 @@
-// src/app/core/services/theme.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { OverlayContainer } from '@angular/cdk/overlay';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +8,10 @@ import { BehaviorSubject } from 'rxjs';
 export class ThemeService {
   private darkTheme = new BehaviorSubject<boolean>(this.getStoredTheme());
   theme$ = this.darkTheme.asObservable();
+
+  constructor(private overlayContainer: OverlayContainer) {
+    this.initializeTheme();
+  }
 
   private getStoredTheme(): boolean {
     const savedTheme = localStorage.getItem('theme');
@@ -26,6 +30,7 @@ export class ThemeService {
     this.darkTheme.next(isDark);
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    this.applyThemeToOverlay(isDark);
   }
 
   toggleTheme() {
@@ -42,5 +47,16 @@ export class ThemeService {
           this.setTheme(e.matches);
         }
       });
+  }
+
+  private applyThemeToOverlay(isDark: boolean) {
+    const overlayContainerClasses = this.overlayContainer.getContainerElement().classList;
+    if (isDark) {
+      overlayContainerClasses.add('dark-theme');
+      overlayContainerClasses.remove('light-theme');
+    } else {
+      overlayContainerClasses.add('light-theme');
+      overlayContainerClasses.remove('dark-theme');
+    }
   }
 }
