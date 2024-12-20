@@ -7,6 +7,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { User } from 'src/app/core/models/auth.models';
 
 interface NavItem {
+  isFirstLevel?: boolean;
   path: string;
   icon: string;
   label: string;

@@ -1,5 +1,6 @@
 @use 'sass:color';
 @use 'variables' as *;
+@use 'theme-colors' as *;
 
 *,
 *::before,
@@ -21,7 +22,7 @@ body {
     font-weight: $font-weight-normal;
     line-height: $line-height-base;
     color: var(--text-primary);
-    background-color: var(--bg-primary);
+    background-color: $primary;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }

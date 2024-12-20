@@ -81,11 +81,11 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
                 command.Description,
                 Money.From(command.Price),
                 currency: command.Currency,
-                command.Sku,
-                command.Stock,
-                command.CategoryId,
-                command.SubCategoryId,
-                _currentUser.Id);
+                sku: command.Sku,
+                stock: command.Stock,
+                categoryId: command.CategoryId,
+                id: command.SubCategoryId,
+                createdBy: _currentUser.Id);
 
             //Handle images
             foreach (var image in command.Images)
@@ -93,7 +93,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
                 product.AddImage(image.Url, image.FileName, image.Size, _currentUser.Id);
             }
 
-            _productRepository.Add(product);
+            await _productRepository.AddAsync(product, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result<Guid>.Success(product.Id);

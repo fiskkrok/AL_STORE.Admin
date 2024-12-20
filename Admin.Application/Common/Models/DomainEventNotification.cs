@@ -1,13 +1,15 @@
 ﻿using Admin.Domain.Common;
+
 using MediatR;
 
 namespace Admin.Application.Common.Models;
-public class DomainEventNotification<TDomainEvent> : INotification where TDomainEvent : DomainEvent
+
+public class DomainEventNotification<TEvent> : INotification where TEvent : DomainEvent
 {
-    public DomainEventNotification(TDomainEvent domainEvent)
+    public TEvent DomainEvent { get; }
+
+    public DomainEventNotification(TEvent domainEvent)
     {
         DomainEvent = domainEvent;
     }
-
-    public TDomainEvent DomainEvent { get; }
 }

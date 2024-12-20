@@ -2,12 +2,15 @@
 using Admin.Domain.Entities;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Admin.Infrastructure.Persistence.Repositories;
 public class CategoryRepository : Repository<Category>, ICategoryRepository
 {
-    public CategoryRepository(AdminDbContext context) : base(context)
+    private readonly ILogger<CategoryRepository> _logger;
+    public CategoryRepository(AdminDbContext context, ILogger<CategoryRepository> logger) : base(context, logger)
     {
+        _logger = logger;
     }
 
     public async Task<IEnumerable<Category>> GetAllAsync(

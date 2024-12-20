@@ -1,5 +1,4 @@
 using Admin.Application;
-using Admin.Application.Common.Caching;
 using Admin.Application.Common.Interfaces;
 using Admin.Infrastructure;
 using Admin.Infrastructure.Persistence;
@@ -12,6 +11,7 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Admin.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,7 +56,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 // Decorate the product repository with caching
-builder.Services.Decorate<IProductRepository, CachedProductRepository>();
+
 // Add HybridCache
 #pragma warning disable EXTEXP0018
 builder.Services.AddHybridCache(options =>
@@ -103,7 +103,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
         await context.Response.WriteAsJsonAsync(response);
     }
 });
-
+app.UseErrorHandling();
 // Detailed health check for specific components
 app.MapHealthChecks("/health/cache", new HealthCheckOptions
 {

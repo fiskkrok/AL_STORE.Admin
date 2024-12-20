@@ -8,13 +8,20 @@ public interface IProductRepository : IRepository<Product>
         ProductFilterRequest filter,
         CancellationToken cancellationToken = default);
 
-    Task<Product?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+    Task<Product?> GetBySlugAsync(
+        string slug,
+        CancellationToken cancellationToken = default);
 
-    Task<ProductVariant?> GetVariantByIdAsync(Guid variantId, CancellationToken cancellationToken = default);
+    Task<ProductVariant?> GetVariantByIdAsync(
+        Guid variantId,
+        CancellationToken cancellationToken = default);
 
     Task<IEnumerable<ProductVariant>> GetVariantsByProductIdAsync(
         Guid productId,
         CancellationToken cancellationToken = default);
 
-    Task<bool> SlugExistsAsync(string slug, Guid? excludeProductId = null, CancellationToken cancellationToken = default);
+    Task<bool> SlugExistsAsync(
+        string slug,
+        Guid? excludeProductId = null,
+        CancellationToken cancellationToken = default);
 }

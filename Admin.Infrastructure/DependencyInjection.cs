@@ -10,6 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Azure.Storage.Blobs;
 using Azure.Storage;
 using Microsoft.Extensions.Options;
+using Admin.Application.Common.Behaviors;
+using Admin.Infrastructure.Configuration;
+using FluentValidation;
+using MediatR;
+using RabbitMQ.Client;
 
 namespace Admin.Infrastructure;
 
@@ -22,13 +27,20 @@ public static class DependencyInjection
         services.AddDbContext<AdminDbContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(AdminDbContext).Assembly.FullName)));
-
+                b =>
+                {
+                    b.MigrationsAssembly(typeof(AdminDbContext).Assembly.FullName);
+                    b.EnableRetryOnFailure();
+                    // Add this to see what's happening
+                    b.CommandTimeout(30);
+                }));
+        services.AddEventHandling();
         // Register repositories
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AdminDbContext>());
-
+        services.Decorate<IProductRepository, CachedProductRepository>();
+        services.AddErrorHandling();
         // Register services
         services.AddScoped<IDomainEventService, DomainEventService>();
 
@@ -61,4 +73,6 @@ public static class DependencyInjection
         services.AddHostedService<BlobContainerInitializer>();
         return services;
     }
+
+
 }

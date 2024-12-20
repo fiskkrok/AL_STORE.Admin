@@ -18,8 +18,11 @@ public record ProductResponse
     public DateTime? LastModifiedAt { get; init; }
     public string? LastModifiedBy { get; init; }
 
-    public static ProductResponse FromDto(ProductDto dto) =>
-        new()
+    public static ProductResponse FromDto(ProductDto dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto, nameof(dto));
+
+        return new ProductResponse
         {
             Id = dto.Id,
             Name = dto.Name,
@@ -29,16 +32,19 @@ public record ProductResponse
             Stock = dto.Stock,
             Category = CategoryResponse.FromDto(dto.Category),
             SubCategory = dto.SubCategory != null ? CategoryResponse.FromDto(dto.SubCategory) : null,
-            Images = dto.Images.Select(ProductImageResponse.FromDto).ToList(),
+            Images = dto.Images?.Select(ProductImageResponse.FromDto).ToList() ?? new(),
             CreatedAt = dto.CreatedAt,
             CreatedBy = dto.CreatedBy,
             LastModifiedAt = dto.LastModifiedAt,
             LastModifiedBy = dto.LastModifiedBy
         };
+    }
 
-    // Add a method to create a summary version (for list views)
-    public static ProductResponse Summary(ProductDto dto) =>
-        new()
+    public static ProductResponse Summary(ProductDto dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto, nameof(dto));
+
+        return new ProductResponse
         {
             Id = dto.Id,
             Name = dto.Name,
@@ -46,6 +52,7 @@ public record ProductResponse
             Currency = dto.Currency,
             Stock = dto.Stock,
             Category = CategoryResponse.FromDto(dto.Category),
-            Images = dto.Images.Take(1).Select(ProductImageResponse.FromDto).ToList()
+            Images = dto.Images?.Take(1).Select(ProductImageResponse.FromDto).ToList() ?? new()
         };
+    }
 }

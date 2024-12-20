@@ -5,8 +5,18 @@
 public abstract class AuditableEntity
 {
     private readonly List<DomainEvent> _domainEvents = new();
+    private Guid _id;
 
-    public Guid Id { get; private init; }
+    public Guid Id
+    {
+        get => _id;
+        protected init => _id = value;
+    }
+
+    protected AuditableEntity(Guid? id = null)
+    {
+        _id = id ?? Guid.NewGuid();
+    }
     public DateTime CreatedAt { get; private set; }
     public string? CreatedBy { get; private set; }
     public DateTime? LastModifiedAt { get; private set; }
@@ -15,10 +25,7 @@ public abstract class AuditableEntity
 
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
-    protected AuditableEntity()
-    {
-        Id = Guid.NewGuid();
-    }
+ 
 
     protected void AddDomainEvent(DomainEvent domainEvent)
     {

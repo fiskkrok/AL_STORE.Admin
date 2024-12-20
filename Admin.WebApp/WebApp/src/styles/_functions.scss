@@ -2,6 +2,7 @@
 @use 'sass:math';
 @use 'sass:color';
 @use 'variables' as vars;
+@use 'theme-colors' as colors;
 
 // Get value from nested maps
 @function deep-map-get($map, $keys...) {
@@ -14,7 +15,7 @@
 
 // Get theme color
 @function get-color($key) {
-    @return map.get(vars.$theme-colors, $key);
+    @return map.get(colors.$primary-palette, $key);
 }
 
 // Get breakpoint

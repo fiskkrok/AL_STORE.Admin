@@ -11,44 +11,62 @@ using Microsoft.Extensions.Logging;
 namespace Admin.Infrastructure.Services;
 public class DomainEventService : IDomainEventService
 {
-    private readonly ILogger<DomainEventService> _logger;
     private readonly IPublisher _mediator;
+    private readonly ILogger<DomainEventService> _logger;
     private readonly IMessageBusService _messageBus;
 
     public DomainEventService(
-        ILogger<DomainEventService> logger,
         IPublisher mediator,
+        ILogger<DomainEventService> logger,
         IMessageBusService messageBus)
     {
-        _logger = logger;
         _mediator = mediator;
+        _logger = logger;
         _messageBus = messageBus;
     }
 
     public async Task PublishAsync(DomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Publishing domain event {Event}", domainEvent.GetType().Name);
+        _logger.LogInformation(
+            "Publishing domain event {EventType} with ID {EventId}",
+            domainEvent.GetType().Name,
+            domainEvent.EventId);
 
-        // First, publish through MediatR for in-process handling
-        await _mediator.Publish(GetNotificationCorrespondingToDomainEvent(domainEvent), cancellationToken);
+        // Create notification
+        var notification = CreateDomainEventNotification(domainEvent);
 
-        // Then, publish integration event to message bus if needed
-        var integrationEvent = MapToIntegrationEvent(domainEvent);
-        if (integrationEvent != null)
+        try
         {
-            await _messageBus.PublishAsync(integrationEvent, cancellationToken);
+            // Publish to in-memory handlers
+            await _mediator.Publish(notification, cancellationToken);
+
+            // Map to integration event if needed
+            var integrationEvent = MapToIntegrationEvent(domainEvent);
+            if (integrationEvent != null)
+            {
+                await _messageBus.PublishAsync(integrationEvent, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Error publishing domain event {EventType} with ID {EventId}",
+                domainEvent.GetType().Name,
+                domainEvent.EventId);
+            throw;
         }
     }
 
-    private static INotification GetNotificationCorrespondingToDomainEvent(DomainEvent domainEvent)
+    private static INotification CreateDomainEventNotification(DomainEvent domainEvent)
     {
-        return (INotification)Activator.CreateInstance(
-            typeof(DomainEventNotification<>).MakeGenericType(domainEvent.GetType()),
-            domainEvent)!;
+        var notificationType = typeof(DomainEventNotification<>).MakeGenericType(domainEvent.GetType());
+        return (INotification)Activator.CreateInstance(notificationType, domainEvent)!;
     }
 
     private static IMessage? MapToIntegrationEvent(DomainEvent domainEvent)
     {
+        // Map domain events to integration events based on type
         return domainEvent switch
         {
             ProductCreatedDomainEvent e => new ProductCreatedIntegrationEvent
@@ -83,15 +101,5 @@ public class DomainEventService : IDomainEventService
             },
             _ => null
         };
-    }
-
-    public async Task Publish(object notification, CancellationToken cancellationToken = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = new CancellationToken()) where TNotification : INotification
-    {
-        throw new NotImplementedException();
     }
 }

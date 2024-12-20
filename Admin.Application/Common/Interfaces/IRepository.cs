@@ -4,7 +4,7 @@ namespace Admin.Application.Common.Interfaces;
 public interface IRepository<TEntity> where TEntity : AuditableEntity
 {
     Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    void Add(TEntity entity);
-    void Update(TEntity entity);
-    void Remove(TEntity entity);
+    Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
+    Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    Task RemoveAsync(TEntity entity, CancellationToken cancellationToken = default);
 }

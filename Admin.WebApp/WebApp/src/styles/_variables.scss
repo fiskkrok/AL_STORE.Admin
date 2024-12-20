@@ -1,15 +1,11 @@
 @use 'sass:map';
 
-// Theme colors
-$theme-colors: (
-    "primary": rgb(87, 30, 47),
-    "secondary": rgb(47, 4, 21),
-    "dark": rgb(18, 3, 6),
-    "light": rgb(255, 250, 252),
-    "border": rgba(87, 30, 47, 0.2)
-);
-$primary-color: #3498db;
-$secondary-color: #2ecc71;
+$primary-color: hsl(210, 67%, 10%);
+$primary-color-20: hsl(210, 67%, 20%);
+$primary-color-30: hsl(210, 67%, 30%);
+$primary-color-40: hsl(210, 67%, 40%);
+$primary-color-50: hsl(210, 67%, 50%);
+$secondary-color: hsl(0, 0%, 91%);
 $font-stack: 'Helvetica Neue', sans-serif;
 $border-radius: 5px;
 // Breakpoints

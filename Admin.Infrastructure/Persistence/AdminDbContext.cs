@@ -26,7 +26,16 @@ public class AdminDbContext : DbContext, IUnitOfWork
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
 
+        // Add this logging to see what EF Core is doing
+        optionsBuilder.LogTo(Console.WriteLine);
+
+        // Make sure we're not doing anything weird with tracking
+        optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
+    }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

@@ -24,6 +24,31 @@
         .logo {
             width: 40px;
         }
+
+        .nav-menu {
+            overflow: hidden;
+            padding: 0;
+
+            .nav-item {
+                .nav-link {
+                    padding: 0.75rem 0.5rem;
+                }
+
+                .submenu {
+                    display: block;
+
+                    .child-link {
+                        padding-left: 0.75rem;
+
+                        span {
+                            display: none;
+                        }
+
+                        font-size: 0.9rem;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -104,6 +129,8 @@
             text-decoration: none;
             transition: vars.$sidebar-transition;
             margin-right: 1px;
+            border-right: 3px solid transparent;
+            border-left: 3px solid transparent;
 
             &:hover {
                 background-color: var(--mat-sys-color-primary-container);
@@ -128,12 +155,12 @@
         }
 
         .parent-link {
-            justify-content: space-between;
             cursor: pointer;
 
             &.active {
                 background-color: transparent;
-                border-left: none;
+                border-right: 3px solid transparent;
+                border-left: 3px solid transparent;
             }
         }
 
@@ -141,6 +168,18 @@
             background-color: var(--mat-sys-color-surface-container-highest);
             margin: 0.25rem 0;
             border-radius: 4px;
+
+            .first-level-link {
+
+                &:hover {
+                    border-top: none;
+                }
+
+                &.active {
+                    border-top: none;
+                }
+            }
+
 
             .child-link {
                 padding-left: 2.5rem;

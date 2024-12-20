@@ -1,78 +1,66 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+﻿//using System.Text.Json;
+//using Admin.Application.Common.Models;
+//using Microsoft.AspNetCore.Http;
+//using Microsoft.Extensions.Logging;
 
-namespace Admin.Infrastructure.Middleware;
-public class ExceptionHandlingMiddleware
-{
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+//namespace Admin.Infrastructure.Middleware;
+//public class ExceptionHandlingMiddleware
+//{
+//    private readonly RequestDelegate _next;
+//    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-    public ExceptionHandlingMiddleware(
-        RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+//    public ExceptionHandlingMiddleware(
+//        RequestDelegate next,
+//        ILogger<ExceptionHandlingMiddleware> logger)
+//    {
+//        _next = next;
+//        _logger = logger;
+//    }
 
 
-    public async Task InvokeAsync(HttpContext context)
-    {
-        try
-        {
-            await _next(context);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An unhandled exception has occurred");
-            await HandleExceptionAsync(context, ex);
-        }
-    }
-    //private static async Task HandleExceptionAsync(
-    //    HttpContext context,
-    //    Exception exception,
-    //    IWebHostEnvironment env)
-    //{
-    //    var errorResponse = new ErrorResponse
-    //    {
-    //        Title = "Server Error",
-    //        Messages = env.IsDevelopment()
-    //            ? new[] { exception.Message }
-    //            : new[] { "An unexpected error occurred" },
-    //        Details = env.IsDevelopment() ? exception.StackTrace : null
-    //    };
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        var (statusCode, errorResponse) = exception switch
-        {
-            Domain.Common.Exceptions.DomainException e =>
-                (StatusCodes.Status400BadRequest,
-                new ErrorResponse("Domain Error", e.Message)),
+//    public async Task InvokeAsync(HttpContext context)
+//    {
+//        try
+//        {
+//            await _next(context);
+//        }
+//        catch (Exception ex)
+//        {
+//            _logger.LogError(ex, "An unhandled exception has occurred");
+//            await HandleExceptionAsync(context, ex);
+//        }
+//    }
 
-            Application.Common.Exceptions.ValidationException e =>
-                (StatusCodes.Status400BadRequest,
-                new ErrorResponse("Validation Error",
-                    e.Errors.SelectMany(x => x.Value).ToArray())),
+//    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+//    {
+//        var (statusCode, errorResponse) = exception switch
+//        {
+//            Domain.Common.Exceptions.DomainException e =>
+//                (StatusCodes.Status400BadRequest,
+//                new ErrorResponse("Domain Error", e.Message)),
 
-            Application.Common.Exceptions.NotFoundException e =>
-                (StatusCodes.Status404NotFound,
-                new ErrorResponse("Not Found", e.Message)),
+//            Application.Common.Exceptions.ValidationException e =>
+//                (StatusCodes.Status400BadRequest,
+//                new ErrorResponse("Validation Error",
+//                    e.Errors.SelectMany(x => x.Value).ToArray())),
 
-            Common.Exceptions.StorageException =>
-                (StatusCodes.Status503ServiceUnavailable,
-                new ErrorResponse("Storage Error", "A storage operation failed")),
+//            Application.Common.Exceptions.NotFoundException e =>
+//                (StatusCodes.Status404NotFound,
+//                new ErrorResponse("Not Found", e.Message)),
 
-            _ => (StatusCodes.Status500InternalServerError,
-                new ErrorResponse("Server Error", "An unexpected error occurred"))
-        };
+//            Common.Exceptions.StorageException =>
+//                (StatusCodes.Status503ServiceUnavailable,
+//                new ErrorResponse("Storage Error", "A storage operation failed")),
 
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = statusCode;
+//            _ => (StatusCodes.Status500InternalServerError,
+//                new ErrorResponse("Server Error", "An unexpected error occurred"))
+//        };
 
-        var jsonResponse = JsonSerializer.Serialize(errorResponse);
-        await context.Response.WriteAsync(jsonResponse);
-    }
-}
+//        context.Response.ContentType = "application/json";
+//        context.Response.StatusCode = statusCode;
 
-public record ErrorResponse(string Title, params string[] Messages);
+//        var jsonResponse = JsonSerializer.Serialize(errorResponse);
+//        await context.Response.WriteAsync(jsonResponse);
+//    }
+//}
+

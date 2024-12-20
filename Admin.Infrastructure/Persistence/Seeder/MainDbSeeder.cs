@@ -1,17 +1,22 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Admin.Infrastructure.Persistence.Seeder;
+using Admin.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace Admin.Infrastructure.Persistence.Seeder;
 public class MainDbSeeder : IDbSeeder
 {
+    private readonly AdminDbContext _context;
     private readonly ICategorySeeder _categorySeeder;
     private readonly IProductSeeder _productSeeder;
     private readonly ILogger<MainDbSeeder> _logger;
 
     public MainDbSeeder(
+        AdminDbContext context,
         ICategorySeeder categorySeeder,
         IProductSeeder productSeeder,
         ILogger<MainDbSeeder> logger)
     {
+        _context = context;
         _categorySeeder = categorySeeder;
         _productSeeder = productSeeder;
         _logger = logger;
@@ -21,12 +26,18 @@ public class MainDbSeeder : IDbSeeder
     {
         try
         {
-            // Seed categories first
+            _logger.LogInformation("Checking if seeding is required...");
+
+            var hasData = await _context.Products.AnyAsync();
+            if (hasData)
+            {
+                _logger.LogInformation("Database already contains data, skipping seeding");
+                return;
+            }
+
+            _logger.LogInformation("Starting database seeding...");
             await _categorySeeder.SeedAsync();
-
-            // Then seed products
             await _productSeeder.SeedAsync();
-
             _logger.LogInformation("Database seeding completed successfully");
         }
         catch (Exception ex)

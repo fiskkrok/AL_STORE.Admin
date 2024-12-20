@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using Admin.Domain.Common;
@@ -32,8 +33,10 @@ public class Product : AuditableEntity
         string sku,
         int stock,
         Guid categoryId,
+        Guid? id = null,
         Guid? subCategoryId = null,
-        string? createdBy = null)
+        string? createdBy = null) : base(id)
+        
     {
         Guard.Against.NullOrWhiteSpace(name, nameof(name));
         Guard.Against.NullOrWhiteSpace(description, nameof(description));
@@ -44,6 +47,7 @@ public class Product : AuditableEntity
         Guard.Against.InvalidInput(currency, nameof(currency), c => c.Length == 3);
         Guard.Against.Null(categoryId, nameof(categoryId));
 
+        Id = id ?? Guid.NewGuid(); // Set the ID if provided, otherwise generate new
         Name = name;
         Description = description;
         _price = price;
@@ -51,7 +55,6 @@ public class Product : AuditableEntity
         Sku = sku;
         Stock = stock;
         CategoryId = categoryId;
-        SubCategoryId = subCategoryId;
 
         SetCreated(createdBy);
         AddDomainEvent(new ProductCreatedDomainEvent(this));
@@ -321,44 +324,32 @@ public class ProductJsonConverter : JsonConverter<Product>
 
             try
             {
-                // Extract required properties for constructor
+                // Get the ID first
+                var id = root.GetProperty("id").GetGuid();
+
+                // Get other required properties for constructor
                 var name = root.GetProperty("name").GetString() ?? "";
                 var description = root.GetProperty("description").GetString() ?? "";
-
-                // Handle price which might be stored as an object
-                decimal price;
-                if (root.TryGetProperty("price", out var priceElement))
-                {
-                    if (priceElement.ValueKind == JsonValueKind.Object)
-                    {
-                        price = priceElement.GetProperty("amount").GetDecimal();
-                    }
-                    else
-                    {
-                        price = priceElement.GetDecimal();
-                    }
-                }
-                else
-                {
-                    price = 0m;
-                }
-
+                var price = root.GetProperty("price").GetProperty("amount").GetDecimal();
                 var currency = root.GetProperty("currency").GetString() ?? "USD";
                 var sku = root.GetProperty("sku").GetString() ?? "";
                 var stock = root.GetProperty("stock").GetInt32();
                 var categoryId = root.GetProperty("categoryId").GetGuid();
 
-                // Create product using constructor
                 var product = new Product(
-                    name,
-                    description,
-                    price,
-                    currency,
-                    sku,
-                    stock,
-                    categoryId
+                    name: name,
+                    description: description,
+                    price: price,
+                    currency: currency,
+                    sku: sku,
+                    stock: stock,
+                    categoryId: categoryId,
+                    id: id, 
+                    createdBy: null
                 );
 
+
+             
                 // Handle optional properties
                 if (root.TryGetProperty("shortDescription", out var shortDesc))
                 {

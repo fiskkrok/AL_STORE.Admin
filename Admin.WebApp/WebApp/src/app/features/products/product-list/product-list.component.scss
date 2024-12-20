@@ -23,48 +23,4 @@
       margin-bottom: 16px;
     }
   }
-
-
-  .products-table {
-    overflow: auto;
-    background-color: var(--bg-secondary);
-    border-radius: 8px;
-    box-shadow: var(--shadow-sm);
-
-    .product-thumbnail {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: transform 0.2s;
-
-      &:hover {
-        transform: scale(1.1);
-      }
-    }
-
-    .mat-mdc-table {
-      width: 100%;
-    }
-
-    .mat-mdc-row {
-      &:hover {
-        background-color: var(--bg-hover);
-      }
-    }
-
-    .mat-mdc-header-cell {
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .mat-mdc-cell {
-      color: var(--text-primary);
-    }
-  }
-
-  .mat-mdc-paginator {
-    border-top: 1px solid var(--border);
-  }
 }

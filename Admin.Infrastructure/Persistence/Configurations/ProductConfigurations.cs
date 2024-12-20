@@ -11,6 +11,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
     public void Configure(EntityTypeBuilder<Product> builder)
     {
         builder.HasKey(x => x.Id);
+        // This is important - tell EF Core to not generate IDs
+        builder.Property(x => x.Id)
+            .ValueGeneratedNever();
         builder.Ignore(x => x.DomainEvents);
 
         // Simple properties using field keyword

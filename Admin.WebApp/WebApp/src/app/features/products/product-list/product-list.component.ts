@@ -27,6 +27,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { ProductService } from 'src/app/core/services/product.service';
 import { ErrorService } from 'src/app/core/services/error.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
     selector: 'app-product-list',
@@ -43,7 +44,8 @@ import { ErrorService } from 'src/app/core/services/error.service';
         MatInputModule,
         MatButtonModule,
         MatCheckboxModule,
-        MatSelectModule
+        MatSelectModule,
+        MatIconModule
     ]
 })
 export class ProductListComponent implements OnInit, OnDestroy {
