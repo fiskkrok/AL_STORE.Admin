@@ -48,6 +48,23 @@ export class SidebarComponent implements OnInit {
       ]
     },
     {
+      path: '/categories',
+      icon: 'bi-tags',
+      label: 'Categories',
+      children: [
+        {
+          path: '/categories/list',
+          icon: 'bi-list-ul',
+          label: 'List Categories'
+        },
+        {
+          path: '/categories/add',
+          icon: 'bi-plus-circle',
+          label: 'Add Category'
+        },
+      ]
+    },
+    {
       path: '/statistics',
       icon: 'bi-graph-up',
       label: 'Statistics'
@@ -131,5 +148,9 @@ export class SidebarComponent implements OnInit {
 
   logout() {
     this.authService.logout();
+  }
+
+  trackByPath(index: number, item: NavItem): string {
+    return item.path;
   }
 }

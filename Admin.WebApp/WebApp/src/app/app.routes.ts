@@ -4,6 +4,7 @@ import { HomeComponent } from './features/home/home.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { CallbackComponent } from './features/auth/login/callback.component';
 import { authGuard } from './core/guards/auth.guard';
+import { CategoryTreeComponent } from './features/categories/components/category-tree/category-tree.component';
 
 export const routes: Routes = [
   {
@@ -31,6 +32,11 @@ export const routes: Routes = [
         path: 'statistics',
         loadChildren: () => import('./features/statistics/statistics.routes')
           .then(m => m.STATISTICS_ROUTES)
+      },
+      {
+        path: 'categories',
+        component: CategoryTreeComponent,
+        canActivate: [authGuard]
       }
     ]
   }

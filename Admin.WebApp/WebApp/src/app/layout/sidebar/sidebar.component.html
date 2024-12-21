@@ -1,89 +1,63 @@
 <!-- Navigation Menu -->
 <div class="sidebar {{ isCollapsed ? 'collapsed' : '' }} {{ isDarkTheme ? 'dark' : '' }}">
     <div class="sidebar-header">
-        @if (!isCollapsed) {
-        <h1 class="title" routerLink="/">Product Management</h1>
-        }
+        <h1 class="title" routerLink="/" *ngIf="!isCollapsed">Product Management</h1>
         <button class="toggle-btn" (click)="toggleSidebar()">
             <i class="bi p-2" [class.bi-chevron-left]="!isCollapsed" [class.bi-chevron-right]="isCollapsed"></i>
         </button>
     </div>
-    <nav class="nav nav-tabs flex-column nav-menu ">
+    <nav class="nav nav-tabs flex-column nav-menu">
         <!-- Sidebar Header -->
-        @for (item of navItems; track item.path) {
-        <div class="nav-item">
-            @if (item.children) {
-            <!-- Parent menu item with children -->
-            <div class="nav-link parent-link d-flex" [class.active]="isChildActive(item)" (click)="toggleSubmenu(item)">
+        <div class="nav-item" *ngFor="let item of navItems; trackBy: trackByPath">
+            <div *ngIf="item.children" class="nav-link parent-link d-flex"
+                [class.active]="isChildActive(item) || isSubmenuOpen(item)" (click)="toggleSubmenu(item)">
                 <i class="bi p-2" [class]="item.icon"></i>
-                @if (!isCollapsed) {
-                <span class="flex-grow-1">{{ item.label }}</span>
-                <i class="bi " [class.bi-chevron-down]="!isSubmenuOpen(item)"
-                    [class.bi-chevron-up]="isSubmenuOpen(item)"></i>
-                }
+                <span class="flex-grow-1" *ngIf="!isCollapsed">{{ item.label }}</span>
+                <i class="bi" [class.bi-chevron-down]="!isSubmenuOpen(item)" [class.bi-chevron-up]="isSubmenuOpen(item)"
+                    *ngIf="!isCollapsed"></i>
             </div>
-
-            <!-- Submenu -->
-            @if (isSubmenuOpen(item)) {
-            <div class="submenu">
-                @for (child of item.children; track child.path) {
-                <a class="nav-link child-link" [ngClass]="item ?  'first-level-link' : null" [routerLink]="child.path"
-                    routerLinkActive="active">
+            <div *ngIf="isSubmenuOpen(item)" class="submenu">
+                <a class="nav-link child-link" *ngFor="let child of item.children; trackBy: trackByPath"
+                    [routerLink]="child.path" routerLinkActive="active">
                     <i class="bi p-2" [class]="child.icon"></i>
-                    @if (!isCollapsed) {
-                    <span>{{ child.label }}</span>
-                    }
+                    <span *ngIf="!isCollapsed">{{ child.label }}</span>
                 </a>
-                }
             </div>
-            }
-            } @else {
-            <!-- Regular menu item -->
-            <a class="nav-link" [routerLink]="item.path" routerLinkActive="active">
+            <a *ngIf="!item.children" class="nav-link" [routerLink]="item.path" routerLinkActive="active">
                 <i class="bi p-2" [class]="item.icon"></i>
-                @if (!isCollapsed) {
-                <span>{{ item.label }}</span>
-                }
+                <span *ngIf="!isCollapsed">{{ item.label }}</span>
             </a>
-            }
         </div>
-        }
     </nav>
 
     <!-- User Menu -->
     <div class="user-info" (click)="toggleUserMenu()">
         <i class="bi p-2 bi-person-circle"></i>
-        @if (!isCollapsed) {
-        <span>{{ currentUser?.username || 'Guest' }}</span>
-        <i class="bi" [class.bi-chevron-up]="isUserMenuOpen" [class.bi-chevron-down]="!isUserMenuOpen"></i>
-        }
+        <span *ngIf="!isCollapsed">{{ currentUser?.username || 'Guest' }}</span>
+        <i class="bi" [class.bi-chevron-up]="isUserMenuOpen" [class.bi-chevron-down]="!isUserMenuOpen"
+            *ngIf="!isCollapsed"></i>
     </div>
 
-    @if (isUserMenuOpen && !isCollapsed) {
-    <div class="user-menu drop-up mb-0">
+    <div class="user-menu drop-up mb-0" *ngIf="isUserMenuOpen && !isCollapsed">
         <a (click)="logout()">
             <i class="bi bi-box-arrow-right pe-2"></i>
             <span>Logout</span>
         </a>
     </div>
-    }
 
     <!-- Footer -->
     <div class="sidebar-footer mb-0">
         <button class="theme-toggle btn" (click)="toggleTheme()">
             <i class="bi" [class.bi-moon]="isDarkTheme" [class.bi-sun]="!isDarkTheme"></i>
-            @if (!isCollapsed) {
-            <span>Toggle Theme</span>
-            }
+            <span *ngIf="!isCollapsed">Toggle Theme</span>
         </button>
     </div>
 </div>
 <!-- Mobile Navigation -->
 <nav class="bottom-nav">
-    @for (item of mobileNavItems; track item.path) {
-    <a class="nav-item" [routerLink]="item.path" routerLinkActive="active">
+    <a class="nav-item" *ngFor="let item of mobileNavItems; trackBy: trackByPath" [routerLink]="item.path"
+        routerLinkActive="active">
         <i [class]="item.icon"></i>
         <span>{{ item.label }}</span>
     </a>
-    }
 </nav>

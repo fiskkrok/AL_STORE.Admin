@@ -1,6 +1,6 @@
 import * as fromSelectors from './product.selectors';
 import { ProductState, initialProductState } from './product.state';
-import { Product } from '../../shared/models/product.model';
+import { Product, ProductStatus, ProductVisibility } from '../../shared/models/product.model';
 
 describe('Product Selectors', () => {
     const mockProduct: Product = {
@@ -13,14 +13,18 @@ describe('Product Selectors', () => {
         category: {
             id: '1',
             name: 'Test Category',
-            description: 'Test Category Description'
+            description: 'Test Category Description',
+            slug: '',
+            isActive: false
         },
-        subCategory: null,
+        subCategory: undefined,
         images: [],
-        createdAt: new Date().toISOString(),
-        createdBy: null,
-        lastModifiedAt: null,
-        lastModifiedBy: null
+        slug: '',
+        sku: '',
+        status: ProductStatus.Draft,
+        visibility: ProductVisibility.Visible,
+        tags: [],
+        isArchived: false
     };
 
     const mockState: { products: ProductState } = {

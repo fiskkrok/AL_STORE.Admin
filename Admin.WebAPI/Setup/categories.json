@@ -1,118 +1,166 @@
 {
   "categories": [
     {
+      "id": "00000000-0000-0000-0000-000000000001",
       "name": "Men's Grooming",
       "description": "Essential grooming products for the modern gentleman",
+      "slug": "mens-grooming",
+      "sortOrder": 1,
+      "metaTitle": "Men's Grooming Products",
+      "metaDescription": "Discover top grooming essentials for men including skin care, hair care, and shaving tools.",
+      "imageUrl": "/images/mens-grooming.jpg",
+      "createdAt": "2024-12-21T00:00:00Z",
+      "createdBy": "Seeder",
+      "isActive": true,
       "subCategories": [
         {
+          "id": "00000000-0000-0000-0000-000000000002",
           "name": "Skin Care",
           "description": "Premium skin care products for men",
+          "slug": "skin-care",
+          "sortOrder": 1,
+          "metaTitle": "Men's Skin Care",
+          "metaDescription": "Explore our range of premium men's skin care products.",
+          "imageUrl": "/images/skin-care.jpg",
+          "createdAt": "2024-12-21T00:00:00Z",
+          "createdBy": "Seeder",
+          "isActive": true,
           "subCategories": [
             {
+              "id": "00000000-0000-0000-0000-000000000003",
               "name": "Daily Care",
-              "description": "Essential daily skin care routines"
+              "description": "Essential daily skin care routines",
+              "slug": "daily-care",
+              "sortOrder": 1,
+              "metaTitle": "Daily Skin Care",
+              "metaDescription": "Your guide to essential daily skin care for men.",
+              "imageUrl": "/images/daily-care.jpg",
+              "createdAt": "2024-12-21T00:00:00Z",
+              "createdBy": "Seeder",
+              "isActive": true
             },
             {
+              "id": "00000000-0000-0000-0000-000000000004",
               "name": "Anti-Aging",
-              "description": "Advanced anti-aging treatments"
-            },
-            {
-              "name": "Body Care",
-              "description": "Complete body care solutions"
+              "description": "Advanced anti-aging treatments",
+              "slug": "anti-aging",
+              "sortOrder": 2,
+              "metaTitle": "Men's Anti-Aging Products",
+              "metaDescription": "Stay youthful with our advanced anti-aging solutions.",
+              "imageUrl": "/images/anti-aging.jpg",
+              "createdAt": "2024-12-21T00:00:00Z",
+              "createdBy": "Seeder",
+              "isActive": true
             }
           ]
         },
         {
+          "id": "00000000-0000-0000-0000-000000000005",
           "name": "Hair Care",
           "description": "Professional hair care products",
+          "slug": "hair-care",
+          "sortOrder": 2,
+          "metaTitle": "Men's Hair Care",
+          "metaDescription": "Achieve healthy and stylish hair with our premium products.",
+          "imageUrl": "/images/hair-care.jpg",
+          "createdAt": "2024-12-21T00:00:00Z",
+          "createdBy": "Seeder",
+          "isActive": true,
           "subCategories": [
             {
+              "id": "00000000-0000-0000-0000-000000000006",
               "name": "Shampoo & Conditioner",
-              "description": "Premium hair washing products"
+              "description": "Premium hair washing products",
+              "slug": "shampoo-conditioner",
+              "sortOrder": 1,
+              "metaTitle": "Shampoo & Conditioner for Men",
+              "metaDescription": "Keep your hair clean and nourished with our shampoos and conditioners.",
+              "imageUrl": "/images/shampoo-conditioner.jpg",
+              "createdAt": "2024-12-21T00:00:00Z",
+              "createdBy": "Seeder",
+              "isActive": true
             },
             {
+              "id": "00000000-0000-0000-0000-000000000007",
               "name": "Styling",
-              "description": "Hair styling products for every look"
-            }
-          ]
-        },
-        {
-          "name": "Shaving",
-          "description": "Traditional and modern shaving solutions",
-          "subCategories": [
-            {
-              "name": "Razors",
-              "description": "Quality razors for a clean shave"
-            },
-            {
-              "name": "Shaving Cream",
-              "description": "Luxury shaving creams and soaps"
-            },
-            {
-              "name": "After Shave",
-              "description": "Post-shave care products"
+              "description": "Hair styling products for every look",
+              "slug": "styling",
+              "sortOrder": 2,
+              "metaTitle": "Men's Hair Styling",
+              "metaDescription": "Achieve your desired look with our professional styling products.",
+              "imageUrl": "/images/styling.jpg",
+              "createdAt": "2024-12-21T00:00:00Z",
+              "createdBy": "Seeder",
+              "isActive": true
             }
           ]
         }
       ]
     },
     {
+      "id": "00000000-0000-0000-0000-000000000008",
       "name": "Accessories",
       "description": "Sophisticated accessories for the modern gentleman",
+      "slug": "accessories",
+      "sortOrder": 2,
+      "metaTitle": "Men's Accessories",
+      "metaDescription": "Browse our collection of premium accessories including watches and leather goods.",
+      "imageUrl": "/images/accessories.jpg",
+      "createdAt": "2024-12-21T00:00:00Z",
+      "createdBy": "Seeder",
+      "isActive": true,
       "subCategories": [
         {
+          "id": "00000000-0000-0000-0000-000000000009",
           "name": "Watches",
-          "description": "Timeless timepieces for every occasion"
+          "description": "Timeless timepieces for every occasion",
+          "slug": "watches",
+          "sortOrder": 1,
+          "metaTitle": "Men's Watches",
+          "metaDescription": "Discover timeless watches for any style or occasion.",
+          "imageUrl": "/images/watches.jpg",
+          "createdAt": "2024-12-21T00:00:00Z",
+          "createdBy": "Seeder",
+          "isActive": true
         },
         {
+          "id": "00000000-0000-0000-0000-000000000010",
           "name": "Leather Goods",
           "description": "Premium leather accessories",
+          "slug": "leather-goods",
+          "sortOrder": 2,
+          "metaTitle": "Leather Goods for Men",
+          "metaDescription": "Explore premium leather wallets, belts, and more.",
+          "imageUrl": "/images/leather-goods.jpg",
+          "createdAt": "2024-12-21T00:00:00Z",
+          "createdBy": "Seeder",
+          "isActive": true,
           "subCategories": [
             {
+              "id": "00000000-0000-0000-0000-000000000011",
               "name": "Wallets",
-              "description": "Elegant wallets and cardholders"
+              "description": "Elegant wallets and cardholders",
+              "slug": "wallets",
+              "sortOrder": 1,
+              "metaTitle": "Men's Wallets",
+              "metaDescription": "Stylish and functional wallets for everyday use.",
+              "imageUrl": "/images/wallets.jpg",
+              "createdAt": "2024-12-21T00:00:00Z",
+              "createdBy": "Seeder",
+              "isActive": true
             },
             {
+              "id": "00000000-0000-0000-0000-000000000012",
               "name": "Belts",
-              "description": "Classic and modern belt designs"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Lifestyle",
-      "description": "Elevate your lifestyle with premium products",
-      "subCategories": [
-        {
-          "name": "Bar & Wine",
-          "description": "Essential tools for the home bar",
-          "subCategories": [
-            {
-              "name": "Bar Tools",
-              "description": "Professional grade bartending tools"
-            },
-            {
-              "name": "Glassware",
-              "description": "Premium glasses for every drink"
-            },
-            {
-              "name": "Wine Accessories",
-              "description": "Everything needed for wine appreciation"
-            }
-          ]
-        },
-        {
-          "name": "Coffee & Tea",
-          "description": "Refined coffee and tea accessories",
-          "subCategories": [
-            {
-              "name": "Brewing Equipment",
-              "description": "Professional brewing tools"
-            },
-            {
-              "name": "Accessories",
-              "description": "Essential coffee and tea accessories"
+              "description": "Classic and modern belt designs",
+              "slug": "belts",
+              "sortOrder": 2,
+              "metaTitle": "Men's Belts",
+              "metaDescription": "Enhance your look with our premium belt designs.",
+              "imageUrl": "/images/belts.jpg",
+              "createdAt": "2024-12-21T00:00:00Z",
+              "createdBy": "Seeder",
+              "isActive": true
             }
           ]
         }

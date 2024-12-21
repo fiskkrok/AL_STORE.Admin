@@ -1,7 +1,7 @@
 import { productReducer } from './product.reducer';
 import { ProductActions } from './product.actions';
 import { initialProductState, ProductState } from './product.state';
-import { Product } from '../../shared/models/product.model';
+import { Product, ProductStatus, ProductVisibility } from '../../shared/models/product.model';
 
 describe('Product Reducer', () => {
     const mockProduct: Product = {
@@ -14,14 +14,18 @@ describe('Product Reducer', () => {
         category: {
             id: '1',
             name: 'Test Category',
-            description: 'Test Category Description'
+            description: 'Test Category Description',
+            slug: '',
+            isActive: false
         },
-        subCategory: null,
+        subCategory: undefined,
         images: [],
-        createdAt: new Date().toISOString(),
-        createdBy: null,
-        lastModifiedAt: null,
-        lastModifiedBy: null
+        slug: '',
+        sku: '',
+        status: ProductStatus.Draft,
+        visibility: ProductVisibility.Visible,
+        tags: [],
+        isArchived: false
     };
 
     describe('unknown action', () => {

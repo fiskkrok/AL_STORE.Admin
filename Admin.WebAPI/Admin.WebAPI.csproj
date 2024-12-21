@@ -60,8 +60,4 @@
     <ProjectReference Include="..\Admin.ServiceDefaults\Admin.ServiceDefaults.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>

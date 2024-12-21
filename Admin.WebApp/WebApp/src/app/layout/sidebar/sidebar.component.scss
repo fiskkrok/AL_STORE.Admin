@@ -53,7 +53,7 @@
 }
 
 .user-info {
-    position: relative; // Add relative positioning
+    position: relative;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -64,20 +64,16 @@
         margin-right: 0.5rem;
     }
 
-
     .bi-chevron-up,
     .bi-chevron-down {
         margin-left: auto;
     }
-
 }
 
 .user-menu {
     position: relative;
-    // bottom: 100%; // Position above the user-info
     left: 0;
     padding-bottom: 1rem;
-
     background: var(--mat-sys-color-surface-container);
     border: 1px solid var(--mat-sys-color-outline);
     border-radius: 4px 4px 0 0;
@@ -158,9 +154,10 @@
             cursor: pointer;
 
             &.active {
-                background-color: transparent;
-                border-right: 3px solid transparent;
-                border-left: 3px solid transparent;
+                background-color: var(--mat-sys-color-primary-container);
+                color: var(--mat-sys-color-on-primary-container);
+                border-right: 3px solid var(--mat-sys-color-primary);
+                border-left: 3px solid var(--mat-sys-color-primary);
             }
         }
 
@@ -170,7 +167,6 @@
             border-radius: 4px;
 
             .first-level-link {
-
                 &:hover {
                     border-top: none;
                 }
@@ -179,7 +175,6 @@
                     border-top: none;
                 }
             }
-
 
             .child-link {
                 padding-left: 2.5rem;
@@ -190,6 +185,7 @@
                     color: var(--mat-sys-color-on-primary-container);
                     margin: 0 0.5rem;
                     border-radius: 4px;
+                    border-left: 3px solid var(--mat-sys-color-primary);
                 }
             }
         }

@@ -17,6 +17,8 @@ import { environment } from '../environments/environment';
 import { productReducer } from './store/product/product.reducer';
 import { ProductEffects } from './store/product/product.effects';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { CategoryEffects } from './store/category/category.effects';
+import { categoryReducer } from './store/category/category.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -30,9 +32,10 @@ export const appConfig: ApplicationConfig = {
     ),
     // Add NgRx Store configuration
     provideStore({
-      products: productReducer
+      products: productReducer,
+      categories: categoryReducer,
     }),
-    provideEffects([ProductEffects]),
+    provideEffects([ProductEffects, CategoryEffects]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: environment.production,
