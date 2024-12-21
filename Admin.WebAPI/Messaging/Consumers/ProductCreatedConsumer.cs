@@ -1,6 +1,8 @@
 ﻿using Admin.Application.Products.Events;
 using Admin.Application.Products.Queries;
 using Admin.WebAPI.Hubs;
+using Admin.WebAPI.Hubs.Interface;
+
 using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;

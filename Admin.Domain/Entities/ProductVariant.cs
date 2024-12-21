@@ -1,6 +1,7 @@
 ﻿using Admin.Domain.Common;
 using Admin.Domain.Common.Exceptions;
 using Admin.Domain.Events;
+using Admin.Domain.Events.ProductVariant;
 using Admin.Domain.ValueObjects;
 using Ardalis.GuardClauses;
 

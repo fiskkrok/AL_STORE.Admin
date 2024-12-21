@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Claims;
+
+using Admin.WebAPI.Hubs.Interface;
 using Admin.WebAPI.Hubs.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;

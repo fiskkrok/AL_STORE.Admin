@@ -1,7 +1,7 @@
 ﻿using Admin.Domain.Common;
 using Admin.Domain.Common.Exceptions;
 using Admin.Domain.Events;
-
+using Admin.Domain.Events.Category;
 using Ardalis.GuardClauses;
 
 namespace Admin.Domain.Entities;

@@ -1,5 +1,6 @@
 ﻿using Admin.Application.Products.Events;
 using Admin.WebAPI.Hubs;
+using Admin.WebAPI.Hubs.Interface;
 
 using MassTransit;
 

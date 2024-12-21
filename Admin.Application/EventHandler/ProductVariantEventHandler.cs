@@ -1,8 +1,10 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
 using Admin.Application.Products.Events;
-using Admin.Domain.Events;
+using Admin.Domain.Events.ProductVariant;
+
 using MediatR;
+
 using Microsoft.Extensions.Logging;
 
 namespace Admin.Application.EventHandler;

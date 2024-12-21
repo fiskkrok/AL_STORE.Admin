@@ -1,6 +1,6 @@
 ﻿using Admin.Application.Common.Events;
 using Admin.Application.Common.Models;
-using Admin.Domain.Events;
+using Admin.Domain.Events.Product;
 
 using Microsoft.Extensions.Logging;
 

@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Admin.Domain.Common;
 using Admin.Domain.Enums;
 using Admin.Domain.Events;
+using Admin.Domain.Events.Product;
 using Admin.Domain.ValueObjects;
 using Ardalis.GuardClauses;
 

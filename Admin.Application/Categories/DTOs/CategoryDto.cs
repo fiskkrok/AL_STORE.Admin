@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Admin.Application.Categories.DTOs;
+﻿namespace Admin.Application.Categories.DTOs;
 // DTOs
 public class CategoryDto
 {

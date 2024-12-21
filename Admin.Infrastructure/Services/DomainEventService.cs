@@ -2,7 +2,7 @@
 using Admin.Application.Common.Models;
 using Admin.Application.Products.Events;
 using Admin.Domain.Common;
-using Admin.Domain.Events;
+using Admin.Domain.Events.Product;
 
 using MediatR;
 
