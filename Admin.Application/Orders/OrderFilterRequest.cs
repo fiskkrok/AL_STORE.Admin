@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Admin.Domain.Enums;
+﻿using Admin.Domain.Enums;
 
 namespace Admin.Application.Orders;
 public class OrderFilterRequest

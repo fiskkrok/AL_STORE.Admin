@@ -3,7 +3,6 @@
 using Admin.Domain.Entities;
 
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Admin.Infrastructure.Persistence.Seeder;

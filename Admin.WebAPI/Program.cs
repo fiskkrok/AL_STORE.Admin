@@ -1,14 +1,12 @@
 using Admin.Application;
 using Admin.Application.Common.Interfaces;
 using Admin.Infrastructure;
-using Admin.Infrastructure.Persistence;
 using Admin.Infrastructure.Services.FileStorage;
 using Admin.WebAPI.Infrastructure;
 using Microsoft.Extensions.Azure;
 using Admin.WebAPI.Extensions;
 using Admin.WebAPI.Services;
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Admin.Infrastructure.Extensions;
@@ -74,7 +72,7 @@ builder.Services.AddCustomHealthChecks(builder.Configuration);
 
 
 
-var app = builder.Build();
+   var app = builder.Build();
 
 //app.MapDefaultEndpoints();
 

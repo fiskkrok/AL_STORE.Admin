@@ -1,7 +1,6 @@
 ﻿using Admin.WebAPI.Hubs.Interface;
 
 using Microsoft.AspNetCore.SignalR;
-using Polly;
 
 namespace Admin.WebAPI.Hubs;
 

@@ -1,6 +1,5 @@
 ﻿using Admin.Application.Common.Exceptions;
 using Admin.Application.Common.Models;
-using FluentValidation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;

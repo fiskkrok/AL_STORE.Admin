@@ -1,6 +1,4 @@
-﻿using Admin.Application.Orders.DTOs;
-using Admin.Application.Orders.Queries;
-using Admin.Domain.Enums;
+﻿using Admin.Application.Orders.Queries;
 using Admin.WebAPI.Endpoints.Orders.Responses;
 using FastEndpoints;
 using MediatR;

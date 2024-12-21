@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Admin.Domain.Common;
-using Admin.Domain.Entities;
+﻿using Admin.Domain.Common;
 
 namespace Admin.Domain.Events.Category;
 public record CategoryImageUpdatedDomainEvent(Entities.Category Category, string? ImageUrl) : DomainEvent;

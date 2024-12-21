@@ -5,8 +5,6 @@ using Admin.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-using Polly;
-
 namespace Admin.Infrastructure.Persistence.Repositories;
 
 public class ProductRepository : Repository<Product>, IProductRepository

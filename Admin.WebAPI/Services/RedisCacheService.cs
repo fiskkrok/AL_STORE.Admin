@@ -1,7 +1,5 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Domain.Entities;
-using Admin.Domain.Enums;
-
 using StackExchange.Redis;
 
 using System.Reflection;

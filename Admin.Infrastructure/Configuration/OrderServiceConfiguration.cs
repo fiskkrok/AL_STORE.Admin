@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Admin.Application.Common.Interfaces;
+﻿using Admin.Application.Common.Interfaces;
 using Admin.Infrastructure.Persistence;
 using Admin.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +11,8 @@ public static class OrderServiceConfiguration
     {
         // Register repositories
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IStockRepository, StockRepository>();
+
 
         // Add DbContext configuration
         services.AddScoped<DbContext>(provider => provider.GetService<AdminDbContext>());
