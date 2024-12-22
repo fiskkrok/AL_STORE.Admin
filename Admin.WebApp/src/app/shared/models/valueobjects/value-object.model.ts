@@ -1,4 +1,3 @@
-
 export interface Address {
     firstName: string;
     lastName: string;
@@ -9,4 +8,10 @@ export interface Address {
     postalCode: string;
     country: string;
     phone?: string;
+}
+
+
+export interface Money {
+    amount: number;
+    currency: string;
 }

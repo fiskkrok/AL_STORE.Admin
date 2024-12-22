@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
-import { Category } from 'src/app/shared/models/Categories/category.model';
+import { Category } from 'src/app/shared/models/categories/category.model';
 
 @Component({
   selector: 'app-category-tree-node',

@@ -1,4 +1,4 @@
-import { Category } from "src/app/shared/models/Categories/category.model";
+import { Category } from "src/app/shared/models/categories/category.model";
 
 
 export interface CategoryState {

@@ -5,7 +5,7 @@ import { Action } from '@ngrx/store';
 import { ProductEffects } from './product.effects';
 import { ProductActions } from './product.actions';
 import { ProductService } from '../../core/services/product.service';
-import { Product, ProductStatus, ProductVisibility } from '../../shared/models/product.model';
+import { Product, ProductStatus, ProductVisibility } from '../../shared/models/products/product.model';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { initialProductState } from './product.state';
 

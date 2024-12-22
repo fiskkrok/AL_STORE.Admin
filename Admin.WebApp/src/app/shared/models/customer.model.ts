@@ -1,5 +1,5 @@
-import { Address } from "./address.model";
 import { AuditableEntity } from "./auditableEntity.model";
+import { Address } from "./valueobjects/value-object.model";
 
 // Customer related interfaces
 interface Customer extends AuditableEntity {
@@ -14,4 +14,10 @@ interface Customer extends AuditableEntity {
     // status: CustomerStatus;
     notes?: string;
     tags?: string[];
+}
+
+enum CustomerStatus {
+    Active = 'active',
+    Inactive = 'inactive',
+    Blocked = 'blocked'
 }

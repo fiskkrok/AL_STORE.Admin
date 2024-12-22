@@ -6,7 +6,7 @@ import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil, startWith } from 'rxjs/operators';
-import { Product } from '../../../shared/models/product.model';
+import { Product } from '../../../shared/models/products/product.model';
 import { ProductActions } from '../../../store/product/product.actions';
 import {
     selectAllProducts,
@@ -28,6 +28,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { ProductService } from 'src/app/core/services/product.service';
 import { ErrorService } from 'src/app/core/services/error.service';
 import { MatIconModule } from '@angular/material/icon';
+import { StockActions } from 'src/app/store/stock/stock.actions';
+import { StockManagementComponent } from '../components/stock-management/stock-management.component';
 
 @Component({
     selector: 'app-product-list',
@@ -45,7 +47,8 @@ import { MatIconModule } from '@angular/material/icon';
         MatButtonModule,
         MatCheckboxModule,
         MatSelectModule,
-        MatIconModule
+        MatIconModule,
+        StockManagementComponent
     ]
 })
 export class ProductListComponent implements OnInit, OnDestroy {
@@ -87,6 +90,11 @@ export class ProductListComponent implements OnInit, OnDestroy {
         this.initializeFilters();
         this.loadCategories();
         this.loadProducts();
+        this.products$.pipe(takeUntil(this.destroy$)).subscribe(products => {
+            products.forEach(product => {
+                this.store.dispatch(StockActions.loadStock({ productId: product.id }));
+            });
+        });
     }
 
     ngOnDestroy() {

@@ -9,7 +9,9 @@ export const environment = {
             products: 'https://localhost:7048/api/products',
             categories: 'https://localhost:7048/api/categories',
             statistics: 'https://localhost:7048/api/statistics',
-            auth: 'https://localhost:7048/api/auth'
+            stock: 'https://localhost:7048/api/stock',
+            auth: 'https://localhost:7048/api/auth',
+            orders: 'https://localhost:7048/api/orders',
         },
         // Shop Portal API
         shop: {
@@ -54,7 +56,11 @@ export const environment = {
 
     // SignalR
     signalR: {
-        hubUrl: 'http://localhost:5001/hubs/notifications'
+        hubUrlnotifications: 'https://localhost:7048/hubs/notifications',
+        product: 'https://localhost:7048/hubs/products',
+        category: 'https://localhost:7048/hubs/categories',
+        stock: 'https://localhost:7048/hubs/stock',
+        order: 'https://localhost:7048/hubs/orders'
     },
 
     // Cache Configuration

@@ -19,6 +19,11 @@ import { ProductEffects } from './store/product/product.effects';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { CategoryEffects } from './store/category/category.effects';
 import { categoryReducer } from './store/category/category.reducer';
+import { stockReducer } from './store/stock/stock.reducer';
+import { StockEffects } from './store/stock/stock.effects';
+import { orderReducer } from './store/order/order.reducer';
+import { OrderEffects } from './store/order/order.effects';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -34,14 +39,17 @@ export const appConfig: ApplicationConfig = {
     provideStore({
       products: productReducer,
       categories: categoryReducer,
+      stock: stockReducer,
+      order: orderReducer,
     }),
-    provideEffects([ProductEffects, CategoryEffects]),
+    provideEffects([ProductEffects, CategoryEffects, StockEffects, OrderEffects]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: environment.production,
       autoPause: true,
     }),
     provideAnimations(), // Add animations provider
+    provideNativeDateAdapter(), // Add date adapter provider
     importProvidersFrom(
       ReactiveFormsModule,
       FileValueAccessor,

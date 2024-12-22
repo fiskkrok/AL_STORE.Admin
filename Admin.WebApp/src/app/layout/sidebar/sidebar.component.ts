@@ -51,24 +51,36 @@ export class SidebarComponent implements OnInit {
       path: '/categories',
       icon: 'bi-tags',
       label: 'Categories',
-      children: [
-        {
-          path: '/categories/list',
-          icon: 'bi-list-ul',
-          label: 'List Categories'
-        },
-        {
-          path: '/categories/add',
-          icon: 'bi-plus-circle',
-          label: 'Add Category'
-        },
-      ]
     },
     {
       path: '/statistics',
       icon: 'bi-graph-up',
       label: 'Statistics'
-    }
+    },
+    {
+      path: '/dashboards',
+      icon: 'bi-columns-gap',
+      label: 'Dashboards',
+      children: [
+        {
+          path: '/dashboards/stockalerts',
+          icon: 'bi-bell',
+          label: 'Stock Alerts'
+        }
+      ]
+    },
+    {
+      path: '/orders',
+      icon: 'bi-cart',
+      label: 'Orders',
+      children: [
+        {
+          path: '/orders',
+          icon: 'bi-list-ul',
+          label: 'All Orders'
+        }
+      ]
+    },
   ];
 
   // Flattened navigation for mobile

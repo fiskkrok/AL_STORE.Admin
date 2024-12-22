@@ -3,12 +3,13 @@ using System.Security.Claims;
 
 using Admin.WebAPI.Hubs.Interface;
 using Admin.WebAPI.Hubs.Models;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Admin.WebAPI.Hubs;
 //ProductHub.cs - Updated implementation
-[Authorize]
+//[Authorize]
 public class ProductHub : Hub<IProductHubClient>
 {
     private readonly ILogger<ProductHub> _logger;
@@ -41,16 +42,17 @@ public class ProductHub : Hub<IProductHubClient>
             _connections.TryAdd(Context.ConnectionId, connection);
 
             // Add to appropriate groups based on roles
-            if (user.IsInRole("Admin"))
-                await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");
+            //if (user.IsInRole("SystemAdministrator"))
+                await Groups.AddToGroupAsync(Context.ConnectionId, "SystemAdministrators");
 
-            if (user.IsInRole("Inventory"))
+            //if (user.IsInRole("Inventory")) 
+            //if (user.IsInRole("SystemAdministrator"))
                 await Groups.AddToGroupAsync(Context.ConnectionId, "Inventory");
 
             // Notify admins of new connection
-            if (connection.Roles.Contains("Admin"))
+            if (connection.Roles.Contains("SystemAdministrator"))
             {
-                await Clients.Group("Admins").UserConnected(new
+                await Clients.Group("SystemAdministrators").UserConnected(new
                 {
                     connection.Username,
                     connection.ConnectedAt
@@ -66,19 +68,19 @@ public class ProductHub : Hub<IProductHubClient>
         await base.OnConnectedAsync();
     }
 
-   
-        public override async Task OnDisconnectedAsync(Exception? exception)
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         if (_connections.TryRemove(Context.ConnectionId, out var connection))
         {
             // Remove from groups
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Admins");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SystemAdministrators");
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Inventory");
 
             // Notify admins of disconnection
-            if (connection.Roles.Contains("Admin"))
+            if (connection.Roles.Contains("SystemAdministrator"))
             {
-                await Clients.Group("Admins").UserDisconnected(new
+                await Clients.Group("SystemAdministrators").UserDisconnected(new
                 {
                     connection.Username,
                     DisconnectedAt = DateTime.UtcNow
@@ -118,7 +120,8 @@ public class ProductHub : Hub<IProductHubClient>
 
     public async Task JoinInventoryMonitoring()
     {
-        if (Context.User?.IsInRole("Inventory") == true)
+        //if (Context.User?.IsInRole("Inventory") == true)
+        if (Context.User?.IsInRole("SystemAdministrator") == true)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, "InventoryMonitors");
 
@@ -134,7 +137,7 @@ public class ProductHub : Hub<IProductHubClient>
 
     public async Task SendInventoryAlert(string message)
     {
-        if (Context.User?.IsInRole("Inventory") == true)
+        if (Context.User?.IsInRole("SystemAdministrator") == true)
         {
             await Clients.Group("InventoryMonitors").InventoryAlert(new
             {
@@ -153,4 +156,5 @@ public class ProductHub : Hub<IProductHubClient>
             throw new HubException("Unauthorized to send inventory alerts");
         }
     }
+
 }

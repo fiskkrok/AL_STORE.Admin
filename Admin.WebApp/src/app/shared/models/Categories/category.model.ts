@@ -17,3 +17,7 @@ export interface Category {
     lastModifiedAt?: string;
     lastModifiedBy?: string;
 }
+
+interface SubCategory extends Omit<Category, 'parentId'> {
+    parentCategoryId: string;
+}

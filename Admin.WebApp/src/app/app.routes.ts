@@ -34,10 +34,20 @@ export const routes: Routes = [
           .then(m => m.STATISTICS_ROUTES)
       },
       {
+        path: 'dashboards',
+        loadChildren: () => import('./features/dashboard/dashboards.routes')
+          .then(m => m.DASHBOARD_ROUTES)
+      },
+      {
         path: 'categories',
         component: CategoryTreeComponent,
         canActivate: [authGuard]
-      }
+      },
+      {
+        path: 'orders',
+        loadChildren: () => import('./features/orders/orders.routes')
+          .then(m => m.ORDER_ROUTES)
+      },
     ]
   }
 ];

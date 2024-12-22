@@ -1,4 +1,4 @@
-import { UserRef } from "./user-ref.model";
+import { UserRef } from "./user.model";
 
 // Base interfaces for common properties
 export interface AuditableEntity {

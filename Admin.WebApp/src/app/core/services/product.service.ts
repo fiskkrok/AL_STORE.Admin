@@ -9,12 +9,11 @@ import {
     ProductStatus,
     ProductVisibility,
     ProductImage,
-    Category,
     ProductVariant,
-    Money
-} from '../../shared/models/product.model';
+} from '../../shared/models/products/product.model';
 import { PagedResponse } from '../../shared/models/paged-response.model';
 import { DashboardStats } from 'src/app/features/statistics/statistics.component';
+import { Category } from 'src/app/shared/models/categories/category.model';
 
 // Enhanced filter options
 export interface ProductFilters {

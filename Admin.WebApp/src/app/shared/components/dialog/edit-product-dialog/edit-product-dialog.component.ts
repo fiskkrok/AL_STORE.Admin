@@ -7,12 +7,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { Product, ProductStatus, ProductVisibility } from 'src/app/shared/models/product.model';
-import { ProductService, ProductUpdateCommand } from 'src/app/core/services/product.service';
+import { Product, ProductImage } from 'src/app/shared/models/products/product.model';
+import { ProductService } from 'src/app/core/services/product.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ErrorService } from 'src/app/core/services/error.service';
 import { firstValueFrom } from 'rxjs';
-import { ProductImage } from 'src/app/shared/models/product-image.model';
 
 @Component({
   selector: 'app-edit-product-dialog',
@@ -99,41 +98,7 @@ export class EditProductDialogComponent {
     this.dialogRef.close();
   }
 
-  // onSubmit() {
-  //   if (this.editProductForm.valid && (this.editProductForm.dirty || this.hasImageChanges())) {
-  //     const formValue = this.editProductForm.value;
 
-  //     const updateCommand: ProductUpdateCommand = {
-  //       id: this.data.id,
-  //       name: formValue.name,
-  //       description: formValue.description,
-  //       price: formValue.price,  // Change to number
-  //       currency: 'USD',  // Add currency field
-  //       categoryId: formValue.category,
-  //       stock: formValue.stock,
-  //       status: this.data.status || ProductStatus.Draft,
-  //       visibility: this.data.visibility || ProductVisibility.Hidden,
-  //       newImages: this.newImages,
-  //       imageIdsToRemove: this.imagesToRemove,
-  //       imageUpdates: this.data.images.map((img, index) => ({
-  //         id: img.id,
-  //         isPrimary: index === 0,
-  //         sortOrder: index,
-  //         alt: img.fileName
-  //       }))
-  //     };
-
-  //     this.productService.updateProduct(updateCommand).subscribe({
-  //       next: () => {
-  //         this.dialogRef.close(true);
-  //       },
-  //       error: (error: Error) => {
-  //         console.error('Error updating product:', error);
-  //         this.dialogRef.close(false);
-  //       }
-  //     });
-  //   }
-  // }
   async onSubmit() {
     if (!this.editProductForm.valid) return;
 

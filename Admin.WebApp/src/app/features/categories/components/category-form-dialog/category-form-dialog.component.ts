@@ -8,28 +8,28 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { Store } from '@ngrx/store';
-import { Category } from 'src/app/shared/models/Categories/category.model';
+import { Category } from 'src/app/shared/models/categories/category.model';
 import { selectAllCategories } from 'src/app/store/category/category.selectors';
 import { FileUploadComponent } from 'src/app/shared/components/file-upload/file-upload.component';
 interface DialogData {
-    category?: Category;
-    parentCategoryId?: string;
+  category?: Category;
+  parentCategoryId?: string;
 }
 
 @Component({
-    selector: 'app-category-form-dialog',
-    standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatButtonModule,
-        FileUploadComponent
-    ],
-    template: `
+  selector: 'app-category-form-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    FileUploadComponent
+  ],
+  template: `
     <div class="category-form-dialog">
       <h2 mat-dialog-title>{{ isEditing ? 'Edit' : 'Add' }} Category</h2>
       
@@ -117,7 +117,7 @@ interface DialogData {
       </form>
     </div>
   `,
-    styles: [`
+  styles: [`
     .category-form-dialog {
       min-width: 500px;
     }
@@ -153,59 +153,59 @@ interface DialogData {
   `]
 })
 export class CategoryFormDialogComponent {
-    form: FormGroup;
-    categories$;
-    selectedFile: File | null = null;
+  form: FormGroup;
+  categories$;
+  selectedFile: File | null = null;
 
-    get isEditing(): boolean {
-        return !!this.data.category;
+  get isEditing(): boolean {
+    return !!this.data.category;
+  }
+
+  constructor(
+    private readonly dialogRef: MatDialogRef<CategoryFormDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    private readonly fb: FormBuilder,
+    private readonly store: Store
+  ) {
+    this.categories$ = this.store.select(selectAllCategories);
+
+    this.form = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(200)]],
+      description: ['', [Validators.required, Validators.maxLength(2000)]],
+      parentCategoryId: [data.parentCategoryId || null],
+      metaTitle: ['', [Validators.maxLength(200)]],
+      metaDescription: ['', [Validators.maxLength(500)]]
+    });
+
+    if (this.isEditing) {
+      this.form.patchValue({
+        name: data.category?.name,
+        description: data.category?.description,
+        parentCategoryId: data.category?.parentCategoryId,
+        metaTitle: data.category?.metaTitle,
+        metaDescription: data.category?.metaDescription
+      });
     }
+  }
 
-    constructor(
-        private readonly dialogRef: MatDialogRef<CategoryFormDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: DialogData,
-        private readonly fb: FormBuilder,
-        private readonly store: Store
-    ) {
-        this.categories$ = this.store.select(selectAllCategories);
+  onImageSelected(file: File) {
+    this.selectedFile = file;
+  }
 
-        this.form = this.fb.group({
-            name: ['', [Validators.required, Validators.maxLength(200)]],
-            description: ['', [Validators.required, Validators.maxLength(2000)]],
-            parentCategoryId: [data.parentCategoryId || null],
-            metaTitle: ['', [Validators.maxLength(200)]],
-            metaDescription: ['', [Validators.maxLength(500)]]
-        });
+  onSubmit() {
+    if (this.form.valid) {
+      const formValue = this.form.value;
 
-        if (this.isEditing) {
-            this.form.patchValue({
-                name: data.category?.name,
-                description: data.category?.description,
-                parentCategoryId: data.category?.parentCategoryId,
-                metaTitle: data.category?.metaTitle,
-                metaDescription: data.category?.metaDescription
-            });
-        }
+      const result = {
+        ...formValue,
+        file: this.selectedFile
+      };
+
+      this.dialogRef.close(result);
     }
+  }
 
-    onImageSelected(file: File) {
-        this.selectedFile = file;
-    }
-
-    onSubmit() {
-        if (this.form.valid) {
-            const formValue = this.form.value;
-
-            const result = {
-                ...formValue,
-                file: this.selectedFile
-            };
-
-            this.dialogRef.close(result);
-        }
-    }
-
-    onCancel() {
-        this.dialogRef.close();
-    }
+  onCancel() {
+    this.dialogRef.close();
+  }
 }

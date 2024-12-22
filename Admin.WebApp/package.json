@@ -32,8 +32,11 @@
     "bootstrap-icons": "^1.11.3",
     "oidc-client": "^1.11.5",
     "oidc-client-ts": "^3.1.0",
+    "papaparse": "^5.4.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "update": "^0.7.4",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {

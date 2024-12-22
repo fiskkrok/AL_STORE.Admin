@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorService } from 'src/app/core/services/error.service';
 import { ProductService, ProductCreateCommand } from '../../../core/services/product.service';
-import { Product, ProductStatus, ProductVisibility, Money } from '../../../shared/models/product.model';
+import { ProductStatus, ProductVisibility } from '../../../shared/models/products/product.model';
 
 interface ProductFormModel {
   basicInfo: {

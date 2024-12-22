@@ -24,7 +24,7 @@ public class UpdateCategoryEndpoint : Endpoint<UpdateCategoryCommand, IResult>
             .Produces(StatusCodes.Status404NotFound)
             .WithName("UpdateCategory")
             .WithOpenApi());
-        Policies("ProductsEdit", "FullAdminAccess");
+        Policies("ProductEdit", "FullAdminAccess");
     }
 
     public override async Task HandleAsync(UpdateCategoryCommand req, CancellationToken ct)
