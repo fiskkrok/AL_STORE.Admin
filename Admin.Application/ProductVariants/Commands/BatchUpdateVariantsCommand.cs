@@ -1,5 +1,6 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 using Admin.Domain.ValueObjects;
 using MediatR;
@@ -18,7 +19,7 @@ public record UpdateVariantRequest
     public string? Sku { get; init; }
     public decimal? Price { get; init; }
     public int? Stock { get; init; }
-    public List<ProductAttributeRequest>? Attributes { get; init; }
+    public List<ProductAttributeDto>? Attributes { get; init; }
 }
 
 public class BatchUpdateVariantsCommandHandler

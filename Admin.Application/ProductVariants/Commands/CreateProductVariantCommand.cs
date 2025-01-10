@@ -1,5 +1,6 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 using Admin.Domain.ValueObjects;
 using FluentValidation;
@@ -13,7 +14,7 @@ public record CreateProductVariantCommand : IRequest<Result<Guid>>
     public decimal Price { get; init; }
     public string Currency { get; init; } = "USD";
     public int Stock { get; init; }
-    public List<ProductAttributeRequest> Attributes { get; init; } = new();
+    public List<ProductAttributeDto> Attributes { get; init; } = new();
 
     public CreateProductVariantCommand(
         Guid productId,
@@ -21,7 +22,7 @@ public record CreateProductVariantCommand : IRequest<Result<Guid>>
         decimal price,
         string currency,
         int stock,
-        List<ProductAttributeRequest> attributes)
+        List<ProductAttributeDto> attributes)
     {
         ProductId = productId;
         Sku = sku;

@@ -1,6 +1,7 @@
 ﻿// Admin.Application/DependencyInjection.cs
 
 using System.Reflection;
+using Admin.Application.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddMediatR(cfg => {
             cfg.RegisterServicesFromAssembly(assembly);
         });
+        services.AddScoped<IRoleService, RoleService>();
 
         services.AddAutoMapper(assembly);
         services.AddValidatorsFromAssembly(assembly);

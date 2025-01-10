@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Admin.Infrastructure.Configuration;
+using Admin.Infrastructure.Services;
 
 namespace Admin.Infrastructure;
 
@@ -29,7 +30,8 @@ public static class DependencyInjection
         services.AddOrderServices();
         services.AddFileHandelingConfiguration( configuration);
         services.AddErrorHandling();
-
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserService, UserService>();
         // Register repositories
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();

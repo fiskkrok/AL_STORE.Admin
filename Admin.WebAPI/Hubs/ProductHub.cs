@@ -32,7 +32,7 @@ public class ProductHub : Hub<IProductHubClient>
         {
             var connection = new UserConnection
             {
-                UserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                    UserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value,
                 Username = user.Identity.Name,
                 ConnectionId = Context.ConnectionId,
                 ConnectedAt = DateTime.UtcNow,

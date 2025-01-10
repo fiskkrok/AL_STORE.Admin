@@ -38,7 +38,11 @@ builder.Services.AddAzureClients(clientBuilder =>
                                            throw new InvalidOperationException("Blob storage connection string not configured."));
     }
 });
+// Add JWT Authentication
+builder.Services.AddAuthenticationServices(builder.Configuration);
 
+// Add Authorization policies
+builder.Services.AddAuthorizationPolicies();
 // For Aspire
 //builder.AddAzureBlobClient("alstoreblob");
 //builder.AddRedisClient("redis");

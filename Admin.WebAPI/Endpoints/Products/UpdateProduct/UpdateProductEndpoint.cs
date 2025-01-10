@@ -1,11 +1,13 @@
 ﻿using System.Globalization;
 using Admin.Application.Products.Commands.UpdateProduct;
 using Admin.WebAPI.Endpoints.Products.Request;
+using Admin.WebAPI.Infrastructure.Authorization;
+
 using FastEndpoints;
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Products.UpdateProduct;
-
+[RequirePermission(Domain.Constants.Permissions.Products.Manage)]
 public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, IResult>
 {
     private readonly IMediator _mediator;

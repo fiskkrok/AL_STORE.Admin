@@ -1,4 +1,5 @@
-﻿using Admin.Application.ProductVariants.Commands;
+﻿using Admin.Application.Products.DTOs;
+using Admin.Application.ProductVariants.Commands;
 
 using FastEndpoints;
 
@@ -42,7 +43,7 @@ public class UpdateProductVariantEndpoint : Endpoint<UpdateProductVariantRequest
                 Price = req.Price,
                 Currency = req.Currency,
                 Stock = req.Stock,
-                Attributes = req.Attributes.Select(o => new Application.Common.Models.ProductAttributeRequest()
+                Attributes = req.Attributes.Select(o => new ProductAttributeDto()
                 {
                     Name = o.Name,
                     Value = o.Value,

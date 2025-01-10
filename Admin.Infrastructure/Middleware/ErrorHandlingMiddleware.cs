@@ -1,4 +1,6 @@
-﻿using Admin.Application.Common.Exceptions;
+﻿using System.Net;
+
+using Admin.Application.Common.Exceptions;
 using Admin.Application.Common.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,16 +14,16 @@ public class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ErrorHandlingMiddleware> _logger;
-    private readonly IWebHostEnvironment _env;
+    private readonly IHostEnvironment _environment;
 
     public ErrorHandlingMiddleware(
         RequestDelegate next,
         ILogger<ErrorHandlingMiddleware> logger,
-        IWebHostEnvironment env)
+        IHostEnvironment environment)
     {
         _next = next;
         _logger = logger;
-        _env = env;
+        _environment = environment;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -32,91 +34,74 @@ public class ErrorHandlingMiddleware
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "An unhandled exception occurred");
             await HandleExceptionAsync(context, ex);
         }
     }
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (statusCode, response) = MapExceptionToResponse(exception);
+        var response = context.Response;
+        response.ContentType = "application/json";
 
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = statusCode;
+        var errorResponse = new ErrorResponse();
 
-        // Add stack trace in development
-        if (_env.IsDevelopment())
+        switch (exception)
         {
-            response.StackTrace = exception.StackTrace;
+            case ValidationException validationException:
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                errorResponse.Code = "ValidationError";
+                errorResponse.Message = "Validation failed";
+                errorResponse.ValidationErrors = validationException.Errors
+                    .GroupBy(x => x.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(x => x.ErrorMessage).ToArray());
+                break;
+
+            case NotFoundException notFoundException:
+                response.StatusCode = (int)HttpStatusCode.NotFound;
+                errorResponse.Code = "NotFound";
+                errorResponse.Message = notFoundException.Message;
+                break;
+
+            case AppException appException:
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                errorResponse.Code = appException.Code;
+                errorResponse.Message = appException.Message;
+                break;
+
+            case UnauthorizedAccessException:
+                response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                errorResponse.Code = "Unauthorized";
+                errorResponse.Message = "Unauthorized access";
+                break;
+
+            default:
+                response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                errorResponse.Code = "InternalServerError";
+                errorResponse.Message = "An internal server error occurred";
+                if (_environment.IsDevelopment())
+                {
+                    errorResponse.StackTrace = exception.StackTrace;
+                }
+                break;
         }
 
-        // Log the error with structured data
+        // Add request tracking information
+        var requestId = context.TraceIdentifier;
+        var endpoint = context.GetEndpoint()?.DisplayName;
+        var user = context.User?.Identity?.Name ?? "anonymous";
+
         _logger.LogError(
             exception,
-            "Error processing request: {ErrorCode} - {ErrorMessage} {@ValidationErrors}",
-            response.Code,
-            response.Message,
-            response.ValidationErrors);
+            "Error handling request. RequestId: {RequestId}, Endpoint: {Endpoint}, User: {User}, StatusCode: {StatusCode}, ErrorCode: {ErrorCode}",
+            requestId,
+            endpoint,
+            user,
+            response.StatusCode,
+            errorResponse.Code);
 
-        await context.Response.WriteAsJsonAsync(response);
-    }
-
-    private static (int statusCode, ErrorResponse response) MapExceptionToResponse(Exception exception)
-    {
-        return exception switch
-        {
-            ValidationException validationEx => (
-                StatusCodes.Status400BadRequest,
-                new ErrorResponse
-                {
-                    Code = "Validation.Error",
-                    Message = "One or more validation errors occurred",
-                    ValidationErrors = validationEx.Errors
-                        .GroupBy(e => e.PropertyName)
-                        .ToDictionary(
-                            g => g.Key,
-                            g => g.Select(e => e.ErrorMessage).ToArray())
-                }),
-
-            EntityNotFoundException notFoundEx => (
-                StatusCodes.Status404NotFound,
-                new ErrorResponse
-                {
-                    Code = notFoundEx.Code,
-                    Message = notFoundEx.Message
-                }),
-
-            ConflictException conflictEx => (
-                StatusCodes.Status409Conflict,
-                new ErrorResponse
-                {
-                    Code = conflictEx.Code,
-                    Message = conflictEx.Message
-                }),
-
-            DomainRuleException domainEx => (
-                StatusCodes.Status400BadRequest,
-                new ErrorResponse
-                {
-                    Code = domainEx.Code,
-                    Message = domainEx.Message
-                }),
-
-            AppException appEx => (
-                StatusCodes.Status400BadRequest,
-                new ErrorResponse
-                {
-                    Code = appEx.Code,
-                    Message = appEx.Message
-                }),
-
-            // Default case for unexpected exceptions
-            _ => (
-                StatusCodes.Status500InternalServerError,
-                new ErrorResponse
-                {
-                    Code = "Internal.Error",
-                    Message = "An unexpected error occurred"
-                })
-        };
+        await response.WriteAsJsonAsync(errorResponse);
     }
 }

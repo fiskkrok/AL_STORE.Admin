@@ -1,4 +1,5 @@
 ﻿using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
 using Admin.Application.ProductVariants.Commands;
 
 using FastEndpoints;
@@ -41,7 +42,7 @@ public class CreateProductVariantEndpoint : Endpoint<CreateProductVariantRequest
                 req.Price,
                 req.Currency,
                 req.Stock,
-                req.Attributes.Select(o => new ProductAttributeRequest()
+                req.Attributes.Select(o => new ProductAttributeDto()
                 {
                     Name = o.Name,
                     Value = o.Value,

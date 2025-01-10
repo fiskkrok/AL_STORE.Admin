@@ -8,7 +8,6 @@ using FluentValidation;
 
 using MediatR;
 
-//using Admin.Application.Shared.Messages;
 
 namespace Admin.Application.Products.Commands.CreateProduct;
 
@@ -29,10 +28,10 @@ public record CreateProductCommand : IRequest<Result<Guid>>
     public Guid CategoryId { get; init; }
     public Guid? SubCategoryId { get; init; }
     public List<ProductImageDto> Images { get; init; } = new();
-    public List<CreateProductVariantRequest> Variants { get; init; } = new();
-    public List<ProductAttributeRequest> Attributes { get; init; } = new();
-    public ProductSeoRequest? Seo { get; init; }
-    public ProductDimensionsRequest? Dimensions { get; init; }
+    public List<ProductVariantDto> Variants { get; init; } = new();
+    public List<ProductAttributeDto> Attributes { get; init; } = new();
+    public ProductSeoDto? Seo { get; init; }
+    public ProductDimensionsDto? Dimensions { get; init; }
     public List<string> Tags { get; init; } = new();
 }
 

@@ -57,7 +57,6 @@
     <ProjectReference Include="..\Admin.Application\Admin.Application.csproj" />
     <ProjectReference Include="..\Admin.Domain\Admin.Domain.csproj" />
     <ProjectReference Include="..\Admin.Infrastructure\Admin.Infrastructure.csproj" />
-    <ProjectReference Include="..\Admin.ServiceDefaults\Admin.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

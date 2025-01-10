@@ -1,6 +1,7 @@
 ﻿using Admin.Application.Common.Exceptions;
 using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 using Admin.Domain.ValueObjects;
 using MediatR;
@@ -14,7 +15,7 @@ public record UpdateProductVariantCommand : IRequest<Result<Unit>>
     public decimal Price { get; init; }
     public string Currency { get; init; } = "USD";
     public int Stock { get; init; }
-    public List<ProductAttributeRequest> Attributes { get; init; } = new();
+    public List<ProductAttributeDto> Attributes { get; init; } = new();
 }
 
 public class UpdateProductVariantCommandHandler : IRequestHandler<UpdateProductVariantCommand, Result<Unit>>
