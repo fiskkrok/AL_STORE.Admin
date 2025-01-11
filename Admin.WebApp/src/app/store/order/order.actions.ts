@@ -1,6 +1,6 @@
 // src/app/store/order/order.actions.ts
 import { createActionGroup, props, emptyProps } from '@ngrx/store';
-import { Order } from 'src/app/shared/models/orders/order.model';
+import { Order } from 'src/app/shared/models/order.model';
 import { OrderListParams } from '../../core/services/order.service';
 
 export const OrderActions = createActionGroup({

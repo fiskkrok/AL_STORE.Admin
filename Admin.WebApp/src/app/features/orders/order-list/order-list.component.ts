@@ -18,7 +18,7 @@ import { OrderActions } from '../../../store/order/order.actions';
 import { selectAllOrders, selectOrdersLoading, selectOrdersError, selectOrderPagination } from '../../../store/order/order.selectors';
 import { StatusBadgeComponent } from 'src/app/shared/components/badges/status-badge.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { Order, OrderStatus } from 'src/app/shared/models/orders/order.model';
+import { Order, OrderStatus } from 'src/app/shared/models/order.model';
 import { SelectionModel } from '@angular/cdk/collections';
 
 @Component({

@@ -1,6 +1,6 @@
 // src/app/store/stock/stock.actions.ts
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { BatchStockAdjustment, StockAdjustment, StockItem } from 'src/app/shared/models/inventory/stock.model';
+import { BatchStockAdjustment, StockAdjustment, StockItem } from 'src/app/shared/models/stock.model';
 
 export const StockActions = createActionGroup({
     source: 'Stock',

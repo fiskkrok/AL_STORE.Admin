@@ -9,7 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorService } from 'src/app/core/services/error.service';
 import { ProductService, ProductCreateCommand } from '../../../core/services/product.service';
-import { ProductStatus, ProductVisibility } from '../../../shared/models/products/product.model';
+import { ProductStatus, ProductVisibility } from '../../../shared/models/product.model';
+import { HasPermissionDirective } from 'src/app/shared/directives/permission.directive';
 
 interface ProductFormModel {
   basicInfo: {
@@ -34,7 +35,8 @@ interface ProductFormModel {
     FormlyModule,
     FormlyBootstrapModule,
     ReactiveFormsModule,
-    MatButtonModule
+    MatButtonModule,
+    HasPermissionDirective
   ],
 })
 export class AddProductComponent implements OnInit {

@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import * as signalR from '@microsoft/signalr';
 import { Store } from '@ngrx/store';
 import { StockActions } from '../../store/stock/stock.actions';
-import { BatchStockAdjustment, StockAdjustment, StockItem } from 'src/app/shared/models/inventory/stock.model';
+import { BatchStockAdjustment, StockAdjustment, StockItem } from 'src/app/shared/models/stock.model';
 
 @Injectable({
     providedIn: 'root'

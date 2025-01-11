@@ -5,8 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
-import { Product } from 'src/app/shared/models/products/product.model';
-import { StockItem } from 'src/app/shared/models/inventory/stock.model';
+import { Product } from 'src/app/shared/models/product.model';
+import { StockItem } from 'src/app/shared/models/stock.model';
 import { Observable } from 'rxjs';
 import { selectStockForProduct } from 'src/app/store/stock/stock.selectors';
 

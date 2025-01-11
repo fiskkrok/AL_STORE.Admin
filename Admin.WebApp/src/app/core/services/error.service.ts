@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ApiError, ValidationError } from '../models/error.models';
+import { ApiError, ValidationError } from '../../shared/models/error.models';
 import { HttpErrorResponse } from '@angular/common/http';
 import { v4 as uuidv4 } from 'uuid';
 

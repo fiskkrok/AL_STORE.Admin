@@ -1,6 +1,6 @@
 import * as fromSelectors from './product.selectors';
 import { ProductState, initialProductState } from './product.state';
-import { Product, ProductStatus, ProductVisibility } from '../../shared/models/products/product.model';
+import { Product, ProductStatus, ProductVisibility } from '../../shared/models/product.model';
 
 describe('Product Selectors', () => {
     const mockProduct: Product = {

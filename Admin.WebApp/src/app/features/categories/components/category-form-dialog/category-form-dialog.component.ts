@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { Store } from '@ngrx/store';
-import { Category } from 'src/app/shared/models/categories/category.model';
+import { Category } from 'src/app/shared/models/category.model';
 import { selectAllCategories } from 'src/app/store/category/category.selectors';
 import { FileUploadComponent } from 'src/app/shared/components/file-upload/file-upload.component';
 interface DialogData {

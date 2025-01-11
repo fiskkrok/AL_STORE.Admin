@@ -4,12 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Category } from 'src/app/shared/models/categories/category.model';
+import { Category } from 'src/app/shared/models/category.model';
 import {
     CreateCategoryRequest,
     UpdateCategoryRequest,
     ReorderCategoryRequest
-} from 'src/app/shared/models/categories/Request.model';
+} from 'src/app/shared/models/Request.model';
 import { Store } from '@ngrx/store';
 import * as signalR from '@microsoft/signalr';
 import { CategoryActions } from 'src/app/store/category/category.actions';

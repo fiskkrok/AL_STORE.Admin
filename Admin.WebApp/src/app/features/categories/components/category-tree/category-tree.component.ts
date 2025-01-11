@@ -9,7 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
 import { CategoryFormDialogComponent } from '../category-form-dialog/category-form-dialog.component';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Category } from 'src/app/shared/models/categories/category.model';
+import { Category } from 'src/app/shared/models/category.model';
 import { CategoryActions } from '../../../../store/category/category.actions';
 import { selectCategoryHierarchy, selectCategoriesLoading, selectCategoriesError } from '../../../../store/category/category.selectors';
 import { DialogService } from '../../../../core/services/dialog.service';

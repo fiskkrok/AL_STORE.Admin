@@ -9,7 +9,7 @@ import { OrderActions } from './order.actions';
 import { selectOrderFilters } from './order.selectors';
 import { ErrorService } from '../../core/services/error.service';
 import { LoadingService } from '../../core/services/loading.service';
-import { OrderStatus } from 'src/app/shared/models/orders/order.model';
+import { OrderStatus } from 'src/app/shared/models/order.model';
 
 @Injectable()
 export class OrderEffects {

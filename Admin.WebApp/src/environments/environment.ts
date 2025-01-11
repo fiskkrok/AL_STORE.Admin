@@ -51,7 +51,12 @@ export const environment = {
     features: {
         enableAnalytics: true,
         enableNotifications: true,
-        useSignalR: true
+        useSignalR: true,
+        enableCache: true,
+        enableAuth: true,
+        enableShoppingCart: true,
+        enableShipping: true,
+
     },
 
     // SignalR

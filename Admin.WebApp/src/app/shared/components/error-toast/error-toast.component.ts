@@ -2,7 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ErrorService } from '../../../core/services/error.service';
-import { ApiError } from '../../../core/models/error.models';
+import { ApiError } from '../../models/error.models';
 import { animate, style, transition, trigger } from '@angular/animations';
 
 @Component({

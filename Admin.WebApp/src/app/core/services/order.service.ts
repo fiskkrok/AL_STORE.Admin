@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PagedResponse } from '../../shared/models/paged-response.model';
-import { Order, OrderStatus, PaymentStatus } from '../../shared/models/orders/order.model';
+import { Order, OrderStatus, PaymentStatus } from '../../shared/models/order.model';
 
 export interface OrderListParams {
     searchTerm?: string;

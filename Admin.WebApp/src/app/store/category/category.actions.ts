@@ -1,7 +1,7 @@
 // src/app/store/category/category.actions.ts
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { CreateCategoryRequest, UpdateCategoryRequest, ReorderCategoryRequest } from 'src/app/shared/models/categories/Request.model';
-import { Category } from 'src/app/shared/models/categories/category.model';
+import { CreateCategoryRequest, UpdateCategoryRequest, ReorderCategoryRequest } from 'src/app/shared/models/Request.model';
+import { Category } from 'src/app/shared/models/category.model';
 
 export const CategoryActions = createActionGroup({
     source: 'Category',

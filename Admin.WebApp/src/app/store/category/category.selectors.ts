@@ -1,7 +1,7 @@
 // src/app/store/category/category.selectors.ts
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { CategoryState } from './category.state';
-import { Category } from 'src/app/shared/models/categories/category.model';
+import { Category } from 'src/app/shared/models/category.model';
 
 export const selectCategoryState = createFeatureSelector<CategoryState>('categories');
 

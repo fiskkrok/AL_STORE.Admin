@@ -1,6 +1,6 @@
-import { Category } from "../categories/category.model";
-import { SubCategory } from "../categories/sub-category.model";
-import { Money } from "../valueobjects/value-object.model";
+import { Category } from "../models/category.model";
+import { SubCategory } from "./sub-category.model";
+import { Money } from "./value-object.model";
 
 
 export interface ProductImage {

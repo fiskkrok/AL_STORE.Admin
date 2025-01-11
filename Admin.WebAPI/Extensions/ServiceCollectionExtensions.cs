@@ -27,78 +27,10 @@ public static class ServiceCollectionExtensions
     {
         // Add logging services
         services.AddLogging();
-
-        //services.AddAuthentication("Bearer")
-        //    .AddJwtBearer("Bearer", options =>
-        //    {
-        //        options.Authority = "https://localhost:5001";
-        //        options.TokenValidationParameters = new TokenValidationParameters
-        //        {
-        //            ValidateAudience = true,
-        //            ValidAudiences = new[] { "api" }, // Add both valid audiences
-        //            ValidateIssuer = true,
-        //            ValidIssuer = "https://localhost:5001",
-        //            ValidateLifetime = true
-        //        };
-        //        options.Events = new JwtBearerEvents
-        //        {
-        //            OnAuthenticationFailed = context =>
-        //            {
-        //                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
-        //                logger.LogError(context.Exception, "Authentication failed"); // Modified
-        //                return Task.CompletedTask;
-        //            },
-        //            OnTokenValidated = context =>
-        //            {
-        //                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
-        //                logger.LogInformation("Token validated successfully"); // Modified
-        //                return Task.CompletedTask;
-        //            },
-        //            OnChallenge = context =>
-        //            {
-        //                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
-        //                logger.LogWarning("OnChallenge: {Error}", context.Error); // Modified
-        //                return Task.CompletedTask;
-        //            },
-        //            OnMessageReceived = context =>
-        //            {
-        //                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>(); // Added
-        //                logger.LogInformation("Token received: {Token}", context.Token); // Modified
-        //                return Task.CompletedTask;
-        //            }
-        //        };
-        //    });
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
-        //services.AddAuthorization();
-        //services.AddAuthorizationBuilder()
-        //    .AddPolicy("FullAdminAccess", policy =>
-        //        policy.RequireRole("SystemAdministrator")
-        //            .RequireClaim("scope", "api.full"))
-        //    .AddPolicy("ProductEdit", policy =>
-        //        policy.RequireAssertion(context =>
-        //            context.User.HasClaim(c =>
-        //                c is { Type: "scope", Value: "products.update" or "api.full" } ||
-        //                context.User.IsInRole("SystemAdministrator")
-        //            )))
-        //    .AddPolicy("ProductsCreate", policy =>
-        //        policy.RequireAssertion(context =>
-        //            context.User.HasClaim(c =>
-        //                c is { Type: "scope", Value: "products.create" or "api.full" } ||
-        //                context.User.IsInRole("SystemAdministrator")
-        //            )))
-        //    .AddPolicy("ProductsRead", policy =>
-        //        policy.RequireAssertion(context =>
-        //            context.User.HasClaim(c =>
-        //                c is { Type: "scope", Value: "products.read" or "api.full" } ||
-        //                context.User.IsInRole("SystemAdministrator")
-        //            )))
-        //    .AddPolicy("ProductsDelete", policy =>
-        //        policy.RequireAssertion(context =>
-        //            context.User.HasClaim(c =>
-        //                c is { Type: "scope", Value: "products.delete" or "api.full" } ||
-        //                context.User.IsInRole("SystemAdministrator")
-        //            )));
+        services.AddAuthorization();
+       
         // Add FastEndpoints
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddScoped<ITokenService, JwtTokenService>();

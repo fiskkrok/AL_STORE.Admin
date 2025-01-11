@@ -36,13 +36,3 @@ export class HasPermissionDirective implements OnInit {
     }
 }
 
-// Usage example in a component:
-@Component({
-    standalone: true,
-    imports: [CommonModule, HasPermissionDirective],
-    template: `
-        <button *appHasPermission="'products.create'">
-            Create Product
-        </button>
-    `
-})

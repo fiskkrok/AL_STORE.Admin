@@ -6,7 +6,7 @@ import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil, startWith } from 'rxjs/operators';
-import { Product } from '../../../shared/models/products/product.model';
+import { Product } from '../../../shared/models/product.model';
 import { ProductActions } from '../../../store/product/product.actions';
 import {
     selectAllProducts,

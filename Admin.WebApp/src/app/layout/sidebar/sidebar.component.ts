@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { User } from 'src/app/core/models/auth.models';
+import { User } from 'src/app/shared/models/auth.models';
 
 interface NavItem {
   isFirstLevel?: boolean;
@@ -107,7 +107,7 @@ export class SidebarComponent implements OnInit {
     });
 
     // Ensure the current user is set if already authenticated
-    this.authService.isAuthenticated().subscribe(isAuthenticated => {
+    this.authService.isAuthenticated$.subscribe(isAuthenticated => {
       if (isAuthenticated) {
         this.authService.currentUser$.subscribe(user => {
           this.currentUser = user;

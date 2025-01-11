@@ -2,7 +2,7 @@
 import { createReducer, on } from '@ngrx/store';
 import { OrderActions } from './order.actions';
 import { initialOrderState } from './order.state';
-import { OrderStatus } from 'src/app/shared/models/orders/order.model';
+import { OrderStatus } from 'src/app/shared/models/order.model';
 
 export const orderReducer = createReducer(
     initialOrderState,

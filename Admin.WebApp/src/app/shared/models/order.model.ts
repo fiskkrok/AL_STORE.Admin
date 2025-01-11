@@ -1,5 +1,6 @@
-import { AuditableEntity } from "../auditableEntity.model";
-import { Address, Money } from "../valueobjects/value-object.model";
+import { AuditableEntity } from "./auditableEntity.model";
+import { Money, Address } from "./value-object.model";
+
 
 export interface Order extends AuditableEntity {
     payment: any;

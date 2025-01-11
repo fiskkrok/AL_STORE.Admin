@@ -1,5 +1,5 @@
 // src/app/store/order/order.state.ts
-import { Order } from 'src/app/shared/models/orders/order.model';
+import { Order } from 'src/app/shared/models/order.model';
 import { OrderListParams } from '../../core/services/order.service';
 
 export interface OrderState {

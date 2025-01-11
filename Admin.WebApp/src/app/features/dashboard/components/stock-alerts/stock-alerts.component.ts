@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { StockItem } from 'src/app/shared/models/inventory/stock.model';
+import { StockItem } from 'src/app/shared/models/stock.model';
 import { StockActions } from '../../../../store/stock/stock.actions';
 import { selectLowStockAlerts, selectOutOfStockAlerts } from '../../../../store/stock/stock.selectors';
 import { RouterModule } from '@angular/router';

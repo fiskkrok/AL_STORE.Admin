@@ -1,7 +1,7 @@
 import { productReducer } from './product.reducer';
 import { ProductActions } from './product.actions';
 import { initialProductState, ProductState } from './product.state';
-import { Product, ProductStatus, ProductVisibility } from '../../shared/models/products/product.model';
+import { Product, ProductStatus, ProductVisibility } from '../../shared/models/product.model';
 
 describe('Product Reducer', () => {
     const mockProduct: Product = {

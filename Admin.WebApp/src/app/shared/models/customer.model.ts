@@ -1,5 +1,5 @@
 import { AuditableEntity } from "./auditableEntity.model";
-import { Address } from "./valueobjects/value-object.model";
+import { Address } from "./value-object.model";
 
 // Customer related interfaces
 interface Customer extends AuditableEntity {

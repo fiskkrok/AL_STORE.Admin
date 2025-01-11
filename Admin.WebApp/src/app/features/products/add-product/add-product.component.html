@@ -10,7 +10,8 @@
             <button mat-stroked-button type="button" class="btn btn-outline-secondary" (click)="reset()">
                 Clear Form
             </button>
-            <button mat-button type="submit" class="btn btn-primary" (click)="submit()">
+            <button *appHasPermission="'Products.Create'" mat-button type="submit" class="btn btn-primary"
+                (click)="submit()">
                 Add Product
             </button>
         </div>
