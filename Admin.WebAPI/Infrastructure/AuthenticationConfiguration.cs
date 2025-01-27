@@ -65,13 +65,13 @@ public static class AuthenticationConfiguration
         services.AddAuthentication("Bearer")
             .AddJwtBearer("Bearer", options =>
             {
-                options.Authority = "https://localhost:5001";
+                options.Authority = configuration["IdentityServer:Authority"];
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = true,
-                    ValidAudiences = new[] { "api" }, // Add both valid audiences
+                    ValidAudiences = new[] { "api", "admin_api" }, // Add both valid audiences
                     ValidateIssuer = true,
-                    ValidIssuer = "https://localhost:5001",
+                    ValidIssuer = configuration["IdentityServer:Authority"],
                     ValidateLifetime = true
                 };
                 options.Events = new JwtBearerEvents
@@ -218,7 +218,13 @@ public static class AuthorizationConfiguration
                     context.User.HasClaim(c =>
                         c is { Type: "scope", Value: "products.delete" or "api.full" } ||
                         context.User.IsInRole("SystemAdministrator")
-                    )));
+                    )))
+            .AddPolicy("StoreAccess", policy =>
+            policy.RequireAssertion(context =>
+                context.User.HasClaim(c =>
+                    c is { Type: "scope", Value: "products.read" } ||
+                    c is { Type: "scope", Value: "categories.read" }
+                )));
 
         return services;
     }
