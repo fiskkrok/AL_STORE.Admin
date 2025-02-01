@@ -50,7 +50,7 @@ public class Order : AuditableEntity
     public Payment? Payment { get; private set; }
     public ShippingInfo? ShippingInfo { get; private set; }
 
-    public void AddItem(Product product, int quantity, Money unitPrice)
+    public void AddItem(Product product,ProductVariant variant, int quantity, Money unitPrice)
     {
         Guard.Against.Null(product, nameof(product));
         Guard.Against.NegativeOrZero(quantity, nameof(quantity));
@@ -66,7 +66,7 @@ public class Order : AuditableEntity
         }
         else
         {
-            var orderItem = new OrderItem(product.Id, quantity, unitPrice);
+            var orderItem = new OrderItem(product.Id, variant.Id, quantity, unitPrice);
             _items.Add(orderItem);
         }
 
@@ -181,5 +181,26 @@ public class Order : AuditableEntity
             (OrderStatus.Shipped, OrderStatus.Delivered) => true,
             _ => false
         };
+    }
+
+    public void AddVariantItem(Product? product, ProductVariant? variant, int quantity, Money unitPrice)
+    {
+        Guard.Against.Null(product, nameof(product));
+        Guard.Against.Null(variant, nameof(variant));
+        Guard.Against.NegativeOrZero(quantity, nameof(quantity));
+        Guard.Against.Null(unitPrice, nameof(unitPrice));
+        if (_status != OrderStatus.Pending)
+            throw new InvalidOperationException("Cannot modify items of a non-pending order");
+        var existingItem = _items.FirstOrDefault(i => i.ProductId == product.Id && i.VariantId == variant.Id);
+        if (existingItem != null)
+        {
+            existingItem.UpdateQuantity(existingItem.Quantity + quantity);
+        }
+        else
+        {
+            var orderItem = new OrderItem(product.Id, variant.Id, quantity, unitPrice);
+            _items.Add(orderItem);
+        }
+        AddDomainEvent(new OrderItemAddedDomainEvent(this, product.Id, quantity));
     }
 }

@@ -76,7 +76,7 @@ builder.Services.AddCustomHealthChecks(builder.Configuration);
 
 
 
-   var app = builder.Build();
+var app = builder.Build();
 
 //app.MapDefaultEndpoints();
 
@@ -105,6 +105,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
         await context.Response.WriteAsJsonAsync(response);
     }
 });
+app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
 app.UseErrorHandling();
 // Detailed health check for specific components
 app.MapHealthChecks("/health/cache", new HealthCheckOptions

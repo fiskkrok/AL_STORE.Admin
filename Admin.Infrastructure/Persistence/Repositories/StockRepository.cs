@@ -156,6 +156,33 @@ public class StockRepository : Repository<StockItem>, IStockRepository
         }
     }
 
+    public async Task ReserveStockAsync(Guid productId, Guid? variantId, int quantity, Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var stockItem = await GetByProductIdAsync(productId, ct);
+            if (stockItem == null || !stockItem.TrackInventory)
+                return;
+            stockItem.ReserveStock( quantity, id);
+            await _context.SaveChangesAsync(ct);
+            _logger.LogInformation(
+                "Reserved {Quantity} stock for product {ProductId} ({VariantId}) for order {OrderId}",
+                quantity,
+                productId,
+                variantId,
+                id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Error reserving stock for product {ProductId} ({VariantId}) for order {OrderId}",
+                productId,
+                variantId,
+                id);
+            throw;
+        }
+    }
+
     public override async Task<StockItem?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)

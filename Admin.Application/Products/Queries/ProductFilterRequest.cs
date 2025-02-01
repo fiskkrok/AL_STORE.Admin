@@ -13,4 +13,5 @@ public record ProductFilterRequest
     public int PageSize { get; init; } = 10;
     public string? Status { get; set; }
     public string? Visibility { get; set; }
+    public DateTime? LastModifiedAfter { get; init; }
 }

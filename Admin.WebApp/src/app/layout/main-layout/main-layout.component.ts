@@ -23,7 +23,6 @@ import { GlobalLoadingComponent } from 'src/app/shared/components/global-loading
         <ng-content></ng-content>
       </div>
       <app-error-toast></app-error-toast>
-    <!-- <app-loading-spinner></app-loading-spinner> -->
     <app-global-loading></app-global-loading>
     <app-dialog></app-dialog>
   

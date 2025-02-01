@@ -10,20 +10,22 @@ public class OrderItem : AuditableEntity
 
     private OrderItem() { } // Required by EF Core
 
-    public OrderItem(Guid productId, int quantity, Money unitPrice)
+    public OrderItem(Guid productId, Guid variantId, int quantity, Money unitPrice)
     {
         Guard.Against.NegativeOrZero(quantity, nameof(quantity));
         Guard.Against.Null(unitPrice, nameof(unitPrice));
-
         ProductId = productId;
+        VariantId = variantId;
         _quantity = quantity;
         _unitPrice = unitPrice;
     }
 
     public Guid ProductId { get; private set; }
+
     public int Quantity => _quantity;
     public Money UnitPrice => _unitPrice;
     public Money Total => Money.From(_unitPrice.Amount * _quantity, _unitPrice.Currency);
+    public Guid VariantId { get; set; }
 
     public void UpdateQuantity(int newQuantity)
     {

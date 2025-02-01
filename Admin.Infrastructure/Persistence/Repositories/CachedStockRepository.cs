@@ -177,6 +177,11 @@ public class CachedStockRepository : IStockRepository
         return await _innerRepository.CheckStockAvailabilityAsync(productQuantities, cancellationToken);
     }
 
+    public async Task ReserveStockAsync(Guid productId, Guid? variantId, int quantity, Guid id, CancellationToken ct)
+    {
+        await _innerRepository.ReserveStockAsync(productId, variantId, quantity, id, ct);
+    }
+
     public async Task<StockReservation?> GetReservationAsync(Guid orderId, CancellationToken cancellationToken = default)
     {
         try

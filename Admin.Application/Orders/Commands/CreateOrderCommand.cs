@@ -57,7 +57,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
                 request.ShippingAddress.Street,
                 request.ShippingAddress.City,
                 request.ShippingAddress.State,
-            request.ShippingAddress.Country,
+                request.ShippingAddress.Country,
                 request.ShippingAddress.PostalCode);
 
             var billingAddress = new Address(
@@ -81,7 +81,11 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
                 if (product == null)
                     return Result<Guid>.Failure(new Error("Order.ProductNotFound", $"Product {item.ProductId} not found"));
 
-                order.AddItem(product, item.Quantity, product.Price);
+                var variant = await _productRepository.GetVariantByIdAsync(item.ProductId, cancellationToken);
+                if (variant == null)
+                    return Result<Guid>.Failure(new Error("Order.VariantNotFound", $"Variant for product {item.ProductId} not found"));
+
+                order.AddItem(product, variant, item.Quantity, product.Price);
             }
 
             await _orderRepository.AddAsync(order, cancellationToken);

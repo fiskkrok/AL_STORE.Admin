@@ -196,6 +196,9 @@ public class ProductRepository : Repository<Product>, IProductRepository
         if (!string.IsNullOrEmpty(filter.Visibility))
             query = query.Where(p => p.Visibility.ToString() == filter.Visibility);
 
+        if (filter.LastModifiedAfter.HasValue)
+            query = query.Where(p => p.LastModifiedAt >= filter.LastModifiedAfter.Value);
+
         return query;
     }
 
