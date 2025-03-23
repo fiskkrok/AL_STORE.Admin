@@ -1,6 +1,7 @@
 ﻿using Admin.Application.Common.Models;
 using Admin.Application.Products.DTOs;
 using Admin.Application.ProductVariants.Commands;
+using Admin.WebAPI.Endpoints.ProductsVariant.Models;
 
 using FastEndpoints;
 

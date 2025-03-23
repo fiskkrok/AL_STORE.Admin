@@ -14,12 +14,12 @@ import { RouterModule } from '@angular/router';
         <h2 style="color: white;">Quick Actions</h2>
         <div class="actions-grid">
           
-          <div class="action-card" [routerLink]="['/products/add']">
+          <div class="action-card" style="color: white;" [routerLink]="['/products/add']">
             <i class="bi bi-plus-circle"></i>
             <h3>Add Products</h3>
             <p>Add new products to your store</p>
           </div>
-          <div class="action-card" [routerLink]="['/statistics']">
+          <div class="action-card" style="color: white;" [routerLink]="['/statistics']">
             <i class="bi bi-graph-up"></i>
             <h3>View Statistics</h3>
             <p>Check your store's performance</p>

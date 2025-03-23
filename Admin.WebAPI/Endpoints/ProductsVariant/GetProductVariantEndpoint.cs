@@ -1,4 +1,5 @@
 ﻿using Admin.Application.ProductVariants.Queries;
+using Admin.WebAPI.Endpoints.ProductsVariant.Models;
 
 using FastEndpoints;
 
