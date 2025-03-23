@@ -1,5 +1,5 @@
 ﻿using Admin.Application.Common.Interfaces;
-using Admin.Infrastructure;
+using Admin.Infrastructure.Extensions;
 using Admin.Infrastructure.Persistence;
 using Admin.Infrastructure.Persistence.Repositories;
 using Admin.Infrastructure.Persistence.Seeder;
@@ -44,19 +44,7 @@ public static class DatabaseServicesConfiguration
 
     private static void RegisterRepositories(IServiceCollection services)
     {
-        // Register base repositories
-        //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-        // Register specific repositories
-        services.AddScoped<IProductRepository, ProductRepository>();
-        services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<IOrderRepository, OrderRepository>();
-        services.AddScoped<IStockRepository, StockRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
-
-        // Add repository decorators for caching
-        services.Decorate<IProductRepository, CachedProductRepository>();
-        services.Decorate<IStockRepository, CachedStockRepository>();
+        services.AddRepositories();
     }
 
     private static void RegisterSeeders(IServiceCollection services)

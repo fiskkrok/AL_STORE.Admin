@@ -1,10 +1,5 @@
-﻿using Admin.Application.Common.Interfaces;
-using Admin.Infrastructure.Middleware;
-using Admin.Infrastructure.Persistence.Repositories;
+﻿using Admin.Infrastructure.Middleware;
 using Admin.WebAPI.Configurations;
-using Admin.WebAPI.Infrastructure;
-
-using Microsoft.AspNetCore.Builder;
 
 namespace Admin.WebAPI.Extensions;
 

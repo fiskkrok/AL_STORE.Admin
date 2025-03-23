@@ -1,5 +1,4 @@
 ﻿using Admin.Domain.Common;
-using Admin.Domain.Enums;
 
 namespace Admin.Domain.Entities;
 

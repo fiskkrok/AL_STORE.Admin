@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Admin.Application.Common.Constants;
+﻿namespace Admin.Application.Common.Constants;
 public static class ErrorMessages
 {
     public static string GetMessage(string errorCode) => errorCode switch

@@ -3,8 +3,6 @@ using Admin.Infrastructure.Services.FileStorage;
 
 using Azure.Storage;
 using Azure.Storage.Blobs;
-
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Options;
 
 namespace Admin.WebAPI.Configurations;

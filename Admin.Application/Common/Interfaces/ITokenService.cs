@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Admin.Application.Common.Interfaces;
+﻿namespace Admin.Application.Common.Interfaces;
 public interface ITokenService
 {
     Task<TokenResult> GenerateTokenAsync(string userId, string username, IEnumerable<string> roles, IEnumerable<string> permissions);

@@ -3,7 +3,6 @@
 using Admin.Application.Common.Constants;
 using Admin.Application.Common.Exceptions;
 using Admin.Application.Common.Interfaces;
-using Admin.Application.Common.Models;
 using Admin.Domain.Entities;
 using Admin.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;

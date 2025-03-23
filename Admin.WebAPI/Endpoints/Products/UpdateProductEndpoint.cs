@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-using Admin.Application.Products.Commands.UpdateProduct;
+﻿using Admin.Application.Products.Commands.UpdateProduct;
 using Admin.Application.Products.DTOs;
 
 using FastEndpoints;

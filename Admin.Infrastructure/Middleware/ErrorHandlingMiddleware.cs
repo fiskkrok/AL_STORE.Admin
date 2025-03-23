@@ -2,7 +2,6 @@
 
 using Admin.Application.Common.Exceptions;
 using Admin.Application.Common.Models;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

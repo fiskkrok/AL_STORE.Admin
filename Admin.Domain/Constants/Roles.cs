@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace Admin.Domain.Constants;
+﻿namespace Admin.Domain.Constants;
 
 public static class Roles
 {
