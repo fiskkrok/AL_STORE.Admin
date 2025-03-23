@@ -15,10 +15,10 @@ export const environment = {
         },
         // Shop Portal API
         shop: {
-            baseUrl: 'http://localhost:5002/api',
-            products: 'http://localhost:5002/api/products',
-            cart: 'http://localhost:5002/api/cart',
-            orders: 'http://localhost:5002/api/orders'
+            baseUrl: 'http://localhost:7002/api',
+            products: 'http://localhost:7002/api/products',
+            cart: 'http://localhost:7002/api/cart',
+            orders: 'http://localhost:7002/api/orders'
         },
         // Shipping Portal API
         shipping: {

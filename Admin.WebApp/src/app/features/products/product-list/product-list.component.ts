@@ -1,5 +1,5 @@
 // src/app/features/products/product-list/product-list.component.ts
-import { Component, OnInit, OnDestroy, ViewChild, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -52,11 +52,11 @@ import { StockManagementComponent } from '../components/stock-management/stock-m
     ]
 })
 export class ProductListComponent implements OnInit, OnDestroy {
-    @ViewChild(MatSort) sort!: MatSort;
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
+    readonly sort = viewChild.required(MatSort);
+    readonly paginator = viewChild.required(MatPaginator);
 
     displayedColumns = ['image', 'name', 'category', 'price', 'stock', 'actions'];
-    private destroy$ = new Subject<void>();
+    private readonly destroy$ = new Subject<void>();
 
     products$: Observable<Product[]>;
     loading$: Observable<boolean>;
@@ -114,16 +114,18 @@ export class ProductListComponent implements OnInit, OnDestroy {
             distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
             takeUntil(this.destroy$)
         ).subscribe(([search, category, minPrice, maxPrice, inStock]) => {
+            const paginator = this.paginator();
+            const sort = this.sort();
             const filters = {
                 search: search || '',
                 categoryId: category || undefined,
                 minPrice: minPrice || undefined,
                 maxPrice: maxPrice || undefined,
                 inStock: inStock || undefined,
-                page: this.paginator?.pageIndex ? this.paginator.pageIndex + 1 : 1,
-                pageSize: this.paginator?.pageSize || 10,
-                sortColumn: this.sort?.active as keyof Product,
-                sortDirection: this.sort?.direction || undefined
+                page: paginator?.pageIndex ? paginator.pageIndex + 1 : 1,
+                pageSize: this.paginator()?.pageSize || 10,
+                sortColumn: sort?.active as keyof Product,
+                sortDirection: sort?.direction || undefined
             };
 
             this.store.dispatch(ProductActions.setFilters({ filters }));
@@ -171,16 +173,18 @@ export class ProductListComponent implements OnInit, OnDestroy {
     }
 
     private getCurrentFilters() {
+        const paginator = this.paginator();
+        const sort = this.sort();
         return {
             search: this.searchControl.value || '',
             categoryId: this.categoryFilter.value || undefined,
             minPrice: this.minPriceFilter.value || undefined,
             maxPrice: this.maxPriceFilter.value || undefined,
             inStock: this.inStockFilter.value || undefined,
-            page: this.paginator?.pageIndex ? this.paginator.pageIndex + 1 : 1,
-            pageSize: this.paginator?.pageSize || 10,
-            sortColumn: this.sort?.active as keyof Product,
-            sortDirection: this.sort?.direction || undefined
+            page: paginator?.pageIndex ? paginator.pageIndex + 1 : 1,
+            pageSize: this.paginator()?.pageSize || 10,
+            sortColumn: sort?.active as keyof Product,
+            sortDirection: sort?.direction || undefined
         };
     }
 
@@ -195,14 +199,16 @@ export class ProductListComponent implements OnInit, OnDestroy {
         this.maxPriceFilter.reset();
         this.inStockFilter.reset();
 
-        if (this.paginator) {
-            this.paginator.pageIndex = 0;
-            this.paginator.pageSize = 10;
+        const paginator = this.paginator();
+        if (paginator) {
+            paginator.pageIndex = 0;
+            paginator.pageSize = 10;
         }
 
-        if (this.sort) {
-            this.sort.active = '';
-            this.sort.direction = '';
+        const sort = this.sort();
+        if (sort) {
+            sort.active = '';
+            sort.direction = '';
         }
 
         this.store.dispatch(ProductActions.resetFilters());

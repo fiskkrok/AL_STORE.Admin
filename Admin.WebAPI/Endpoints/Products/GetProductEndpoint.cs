@@ -22,6 +22,7 @@ public class GetProductEndpoint : Endpoint<GetProductRequest, ProductDto>
     public override void Configure()
     {
         Get("/products/{Id}");
+        AllowAnonymous();
         Description(d => d
             .WithTags("Products")
             .Produces<ProductDto>(StatusCodes.Status200OK)

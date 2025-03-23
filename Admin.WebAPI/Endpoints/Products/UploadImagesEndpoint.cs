@@ -19,6 +19,7 @@ public class UploadImagesEndpoint : EndpointWithoutRequest<List<FileUploadResult
     public override void Configure()
     {
         Post("/products/upload-images");
+        AllowAnonymous();
         AllowFileUploads();
         Description(d => d
             .WithTags("Products")

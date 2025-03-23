@@ -36,7 +36,7 @@ interface ProductFormModel {
     FormlyBootstrapModule,
     ReactiveFormsModule,
     MatButtonModule,
-    HasPermissionDirective
+    // HasPermissionDirective
   ],
 })
 export class AddProductComponent implements OnInit {
