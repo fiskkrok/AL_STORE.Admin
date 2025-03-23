@@ -1,12 +1,12 @@
 ﻿using Admin.Application.Common.Interfaces;
-using Admin.Infrastructure.Persistence.Repositories;
+using Admin.Infrastructure.Configuration;
 using Admin.Infrastructure.Persistence;
+using Admin.Infrastructure.Persistence.Repositories;
+using Admin.Infrastructure.Services;
 using Admin.Infrastructure.Services.MessageBus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Admin.Infrastructure.Configuration;
-using Admin.Infrastructure.Services;
 
 namespace Admin.Infrastructure;
 
@@ -28,7 +28,7 @@ public static class DependencyInjection
                 }));
         services.AddEventHandling();
         services.AddOrderServices();
-        services.AddFileHandelingConfiguration( configuration);
+        services.AddFileHandelingConfiguration(configuration);
         services.AddErrorHandling();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, UserService>();
@@ -46,5 +46,5 @@ public static class DependencyInjection
         return services;
     }
 
-    
+
 }

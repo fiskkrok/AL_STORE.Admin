@@ -10,7 +10,7 @@ namespace Admin.UnitTests.Products
     {
         private readonly Mock<IProductRepository> _productRepositoryMock;
         private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
-        private readonly Mock<IFileStorage> _fileStorageMock;
+        // private readonly Mock<IFileStorage> _fileStorageMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<ICurrentUser> _currentUserMock;
         private readonly CreateProductCommandHandler _handler;

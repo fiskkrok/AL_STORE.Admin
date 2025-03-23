@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         services.AddAuthorization();
-       
+
         // Add FastEndpoints
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddScoped<ITokenService, JwtTokenService>();
@@ -42,7 +42,7 @@ public static class ServiceCollectionExtensions
             options.AddDefaultPolicy(builder =>  // Note: AddDefaultPolicy instead of AddPolicy
             {
                 builder
-                    .WithOrigins("http://localhost:4200")
+                    .WithOrigins("http://localhost:4100")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
@@ -136,7 +136,7 @@ public static class ServiceCollectionExtensions
                 typeof(CreateProductCommand).Assembly       // Application Assembly
             );
         });
-       
+
         services.AddScoped<ICategorySeeder, CategoryDbSeeder>();
         services.AddScoped<IProductSeeder, ProductDbSeeder>();
         services.AddScoped<IDbSeeder, MainDbSeeder>();
@@ -220,21 +220,21 @@ public static class ServiceCollectionExtensions
         return app;
     }
 
-        public static IServiceCollection AddCustomHealthChecks(
-            this IServiceCollection services,
-            IConfiguration configuration)
+    public static IServiceCollection AddCustomHealthChecks(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var rabbitHost = configuration["RabbitMQ:Host"];
+        var rabbitUsername = configuration["RabbitMQ:Username"];
+        var rabbitPassword = configuration["RabbitMQ:Password"];
+        var rabbitVirtualHost = configuration["RabbitMQ:VirtualHost"];
+
+        var rabbitConnectionString = $"amqp://{rabbitUsername}:{rabbitPassword}@{rabbitHost}/{rabbitVirtualHost}";
+
+        if (string.IsNullOrEmpty(rabbitConnectionString))
         {
-            var rabbitHost = configuration["RabbitMQ:Host"];
-            var rabbitUsername = configuration["RabbitMQ:Username"];
-            var rabbitPassword = configuration["RabbitMQ:Password"];
-            var rabbitVirtualHost = configuration["RabbitMQ:VirtualHost"];
-
-            var rabbitConnectionString = $"amqp://{rabbitUsername}:{rabbitPassword}@{rabbitHost}/{rabbitVirtualHost}";
-
-            if (string.IsNullOrEmpty(rabbitConnectionString))
-            {
-                throw new ArgumentNullException(nameof(rabbitConnectionString), "RabbitMQ connection string is not configured.");
-            }
+            throw new ArgumentNullException(nameof(rabbitConnectionString), "RabbitMQ connection string is not configured.");
+        }
         services.AddHealthChecks()
                 .AddCheck<RedisHealthCheck>(
                     "redis_health_check",
@@ -250,7 +250,6 @@ public static class ServiceCollectionExtensions
                     failureStatus: HealthStatus.Degraded,
                     tags: new[] { "messaging", "rabbitmq" });
 
-            return services;
-        }
+        return services;
     }
-   
+}

@@ -13,7 +13,6 @@ using Admin.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
@@ -44,7 +43,7 @@ builder.Services.AddAuthenticationServices(builder.Configuration);
 // Add Authorization policies
 builder.Services.AddAuthorizationPolicies();
 // For Aspire
-//builder.AddAzureBlobClient("alstoreblob");
+builder.AddAzureBlobClient("alstoreblob");
 //builder.AddRedisClient("redis");
 
 builder.Services.AddStackExchangeRedisCache(options =>

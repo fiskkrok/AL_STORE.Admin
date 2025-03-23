@@ -1,10 +1,10 @@
 ﻿using Admin.Application.Common.Interfaces;
+using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 using Admin.Domain.ValueObjects;
 using FluentValidation;
 using MediatR;
-using Admin.Application.Common.Models;
-using Admin.Application.Products.DTOs;
 
 namespace Admin.Application.Products.Commands.UpdateProduct;
 public record UpdateProductCommand : IRequest<Result<Unit>>
@@ -64,7 +64,6 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                 subCategory,
                 _currentUser.Id);
 
-            // Add this line:
             await _productRepository.UpdateAsync(product, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);

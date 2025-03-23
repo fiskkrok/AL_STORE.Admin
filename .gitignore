@@ -363,3 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 /Admin.AppHost/Admin.AppHost.csproj
 /Admin.ServiceDefaults/Admin.ServiceDefaults.csproj
+/Admin.WebAPI/Pics
+/Admin.WebAPI/appsettings.Development.json
+/Admin.WebAPI/appsettings.json
