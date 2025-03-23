@@ -1,15 +1,13 @@
 ﻿using Admin.Application.Orders.Queries;
+using Admin.Application.Common.Models;
+using Admin.Application.Orders.DTOs;
 using Admin.Domain.Enums;
-using Admin.WebAPI.Endpoints.Orders.Responses;
-using Admin.WebAPI.Endpoints.Products.Models;
-
 using FastEndpoints;
-
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Orders;
 
-public class GetOrdersEndpoint : EndpointWithoutRequest<PagedResponse<OrderResponse>>
+public class GetOrdersEndpoint : EndpointWithoutRequest<PagedList<OrderDto>>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetOrdersEndpoint> _logger;
@@ -25,7 +23,7 @@ public class GetOrdersEndpoint : EndpointWithoutRequest<PagedResponse<OrderRespo
         Get("/orders");
         Description(d => d
             .WithTags("Orders")
-            .Produces<PagedResponse<OrderResponse>>(StatusCodes.Status200OK)
+            .Produces<PagedList<OrderDto>>(StatusCodes.Status200OK)
             .WithName("GetOrders")
             .WithOpenApi());
         AllowAnonymous(); // TODO: Update with proper authorization
@@ -52,11 +50,7 @@ public class GetOrdersEndpoint : EndpointWithoutRequest<PagedResponse<OrderRespo
 
         if (result.IsSuccess)
         {
-            var response = PagedResponse<OrderResponse>.FromPagedList(
-                result.Value,
-                dto => new OrderResponse(dto));
-
-            await SendOkAsync(response, ct);
+            await SendOkAsync(result.Value, ct);
         }
         else
         {

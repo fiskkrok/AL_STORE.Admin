@@ -1,21 +1,33 @@
-﻿using Admin.Application.Products.Queries;
-using Admin.WebAPI.Endpoints.Products.Models;
+﻿using Admin.Application.Common.Models;
+using Admin.Application.Products.DTOs;
+using Admin.Application.Products.Queries;
 
 using FastEndpoints;
-
 using MediatR;
 
-namespace Admin.WebAPI.Endpoints.Products;
+public record GetProductsRequest
+{
+    public string? SearchTerm { get; init; }
+    public Guid? CategoryId { get; init; }
+    public Guid? SubCategoryId { get; init; }
+    public decimal? MinPrice { get; init; }
+    public decimal? MaxPrice { get; init; }
+    public bool? InStock { get; init; }
+    public string? Status { get; init; }
+    public string? Visibility { get; init; }
+    public string? SortBy { get; init; }
+    public bool SortDescending { get; init; }
+    public int Page { get; init; } = 1;
+    public int PageSize { get; init; } = 10;
+}
 
-public class GetProductsEndpoint : EndpointWithoutRequest<PagedResponse<ProductResponse>>
+public class GetProductsEndpoint : EndpointWithoutRequest<PagedList<ProductDto>>
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<GetProductsEndpoint> _logger;
 
-    public GetProductsEndpoint(IMediator mediator, ILogger<GetProductsEndpoint> logger)
+    public GetProductsEndpoint(IMediator mediator)
     {
         _mediator = mediator;
-        _logger = logger;
     }
 
     public override void Configure()
@@ -25,7 +37,7 @@ public class GetProductsEndpoint : EndpointWithoutRequest<PagedResponse<ProductR
         Description(d => d
             .WithTags("Products")
             .WithOpenApi()
-            .Produces<PagedResponse<ProductResponse>>(200));
+            .Produces<PagedList<ProductDto>>(200));
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -50,11 +62,7 @@ public class GetProductsEndpoint : EndpointWithoutRequest<PagedResponse<ProductR
 
         if (result.IsSuccess)
         {
-            var response = PagedResponse<ProductResponse>.FromPagedList(
-                result.Value,
-                dto => ProductResponse.FromDto(dto));
-
-            await SendOkAsync(response, ct);
+            await SendOkAsync(result.Value, ct);
         }
         else
         {

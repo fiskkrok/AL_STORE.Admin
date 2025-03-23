@@ -6,7 +6,13 @@ using MediatR;
 
 namespace Admin.WebAPI.Endpoints.ProductsVariant;
 
-public class DeleteProductVariantEndpoint : EndpointWithoutRequest
+public record DeleteProductVariantRequest
+{
+    public Guid ProductId { get; init; }
+    public Guid VariantId { get; init; }
+}
+
+public class DeleteProductVariantEndpoint : Endpoint<DeleteProductVariantRequest, IResult>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<DeleteProductVariantEndpoint> _logger;
@@ -19,7 +25,7 @@ public class DeleteProductVariantEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Delete("/products/{productId}/variants/{variantId}");
+        Delete("/products/{ProductId}/variants/{VariantId}");
         Description(d => d
             .WithTags("Product Variants")
             .Produces(StatusCodes.Status204NoContent)
@@ -30,12 +36,9 @@ public class DeleteProductVariantEndpoint : EndpointWithoutRequest
         Claims("products.edit");
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(DeleteProductVariantRequest req, CancellationToken ct)
     {
-        var command = new DeleteProductVariantCommand(
-            Route<Guid>("productId"),
-            Route<Guid>("variantId"));
-
+        var command = new DeleteProductVariantCommand(req.ProductId, req.VariantId);
         var result = await _mediator.Send(command, ct);
 
         if (result.IsSuccess)

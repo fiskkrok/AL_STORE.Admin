@@ -1,13 +1,21 @@
 ﻿using Admin.Application.Common.Models;
 using Admin.Application.Products.DTOs;
 using Admin.Application.ProductVariants.Commands;
-using Admin.WebAPI.Endpoints.ProductsVariant.Models;
 
 using FastEndpoints;
 
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.ProductsVariant;
+
+public record CreateProductVariantRequest
+{
+    public string Sku { get; init; } = string.Empty;
+    public decimal Price { get; init; }
+    public string Currency { get; init; } = "USD";
+    public int Stock { get; init; }
+    public List<ProductAttributeDto> Attributes { get; init; } = new();
+}
 
 public class CreateProductVariantEndpoint : Endpoint<CreateProductVariantRequest, Guid>
 {
@@ -22,7 +30,7 @@ public class CreateProductVariantEndpoint : Endpoint<CreateProductVariantRequest
 
     public override void Configure()
     {
-        Post("/products/{productId}/variants");
+        Post("/products/{ProductId}/variants");
         Description(d => d
             .WithTags("Product Variants")
             .Produces<Guid>(StatusCodes.Status201Created)
@@ -38,24 +46,19 @@ public class CreateProductVariantEndpoint : Endpoint<CreateProductVariantRequest
         try
         {
             var command = new CreateProductVariantCommand(
-                Route<Guid>("productId"),
+                Route<Guid>("ProductId"),
                 req.Sku,
                 req.Price,
                 req.Currency,
                 req.Stock,
-                req.Attributes.Select(o => new ProductAttributeDto()
-                {
-                    Name = o.Name,
-                    Value = o.Value,
-                    Type = o.Type
-                }).ToList());
+                req.Attributes);
 
             var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)
             {
                 await SendCreatedAtAsync<GetProductVariantEndpoint>(
-                    new { productId = Route<Guid>("productId"), variantId = result.Value },
+                    new { ProductId = Route<Guid>("ProductId"), VariantId = result.Value },
                     result.Value,
                     generateAbsoluteUrl: true,
                     cancellation: ct);

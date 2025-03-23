@@ -6,7 +6,12 @@ using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Categories;
 
-public class DeleteCategoryEndpoint : Endpoint<DeleteCategoryCommand, IResult>
+public record DeleteCategoryRequest
+{
+    public Guid Id { get; init; }
+}
+
+public class DeleteCategoryEndpoint : Endpoint<DeleteCategoryRequest, IResult>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<DeleteCategoryEndpoint> _logger;
@@ -19,7 +24,7 @@ public class DeleteCategoryEndpoint : Endpoint<DeleteCategoryCommand, IResult>
 
     public override void Configure()
     {
-        Delete("/categories/{id}");
+        Delete("/categories/{Id}");
         Description(d => d
             .WithTags("Categories")
             .Produces(StatusCodes.Status204NoContent)
@@ -29,11 +34,12 @@ public class DeleteCategoryEndpoint : Endpoint<DeleteCategoryCommand, IResult>
         Policies("ProductsDelete", "FullAdminAccess");
     }
 
-    public override async Task HandleAsync(DeleteCategoryCommand req, CancellationToken ct)
+    public override async Task HandleAsync(DeleteCategoryRequest req, CancellationToken ct)
     {
         try
         {
-            var result = await _mediator.Send(req, ct);
+            var command = new DeleteCategoryCommand(req.Id);
+            var result = await _mediator.Send(command, ct);
 
             if (result.IsSuccess)
             {

@@ -1,22 +1,22 @@
 ﻿using Admin.Application.Products.Queries;
-using Admin.WebAPI.Endpoints.Products.Models;
-
+using Admin.Application.Products.DTOs;
 using FastEndpoints;
-
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Products;
 
-public class GetProductEndpoint : Endpoint<GetProductByIdRequest, ProductDetailsResponse>
+public record GetProductRequest
 {
+    public Guid Id { get; init; }
+}
 
+public class GetProductEndpoint : Endpoint<GetProductRequest, ProductDto>
+{
     private readonly IMediator _mediator;
-    private readonly ILogger<GetProductEndpoint> _logger;
 
-    public GetProductEndpoint(IMediator mediator, ILogger<GetProductEndpoint> logger)
+    public GetProductEndpoint(IMediator mediator)
     {
         _mediator = mediator;
-        _logger = logger;
     }
 
     public override void Configure()
@@ -24,26 +24,23 @@ public class GetProductEndpoint : Endpoint<GetProductByIdRequest, ProductDetails
         Get("/products/{Id}");
         Description(d => d
             .WithTags("Products")
-            .Produces<ProductDetailsResponse>(StatusCodes.Status200OK)
+            .Produces<ProductDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("GetProductById")
             .WithOpenApi());
     }
 
-    public override async Task HandleAsync(GetProductByIdRequest req, CancellationToken ct)
+    public override async Task HandleAsync(GetProductRequest req, CancellationToken ct)
     {
         var query = new GetProductQuery(req.Id);
         var result = await _mediator.Send(query, ct);
 
         if (result.IsSuccess)
         {
-            var response = ProductDetailsResponse.FromDto(result.Value);
-            await SendOkAsync(response, ct);
+            await SendOkAsync(result.Value, ct);
         }
         else
         {
             await SendNotFoundAsync(ct);
         }
     }
-
 }

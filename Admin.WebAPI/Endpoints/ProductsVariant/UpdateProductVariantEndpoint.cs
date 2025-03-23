@@ -1,12 +1,20 @@
 ﻿using Admin.Application.Products.DTOs;
 using Admin.Application.ProductVariants.Commands;
-using Admin.WebAPI.Endpoints.ProductsVariant.Models;
 
 using FastEndpoints;
 
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.ProductsVariant;
+
+public record UpdateProductVariantRequest
+{
+    public string Sku { get; init; } = string.Empty;
+    public decimal Price { get; init; }
+    public string Currency { get; init; } = "USD";
+    public int Stock { get; init; }
+    public List<ProductAttributeDto> Attributes { get; init; } = new();
+}
 
 public class UpdateProductVariantEndpoint : Endpoint<UpdateProductVariantRequest, IResult>
 {
@@ -21,7 +29,7 @@ public class UpdateProductVariantEndpoint : Endpoint<UpdateProductVariantRequest
 
     public override void Configure()
     {
-        Put("/products/{productId}/variants/{variantId}");
+        Put("/products/{ProductId}/variants/{VariantId}");
         Description(d => d
             .WithTags("Product Variants")
             .Produces(StatusCodes.Status204NoContent)
@@ -38,18 +46,13 @@ public class UpdateProductVariantEndpoint : Endpoint<UpdateProductVariantRequest
         {
             var command = new UpdateProductVariantCommand
             {
-                ProductId = Route<Guid>("productId"),
-                VariantId = Route<Guid>("variantId"),
+                ProductId = Route<Guid>("ProductId"),
+                VariantId = Route<Guid>("VariantId"),
                 Sku = req.Sku,
                 Price = req.Price,
                 Currency = req.Currency,
                 Stock = req.Stock,
-                Attributes = req.Attributes.Select(o => new ProductAttributeDto()
-                {
-                    Name = o.Name,
-                    Value = o.Value,
-                    Type = o.Type
-                }).ToList()
+                Attributes = req.Attributes
             };
 
             var result = await _mediator.Send(command, ct);

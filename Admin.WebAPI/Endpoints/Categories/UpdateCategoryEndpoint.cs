@@ -19,7 +19,7 @@ public class UpdateCategoryEndpoint : Endpoint<UpdateCategoryCommand, IResult>
 
     public override void Configure()
     {
-        Put("/categories/{id}");
+        Put("/categories/{Id}");
         Description(d => d
             .WithTags("Categories")
             .Produces(StatusCodes.Status204NoContent)

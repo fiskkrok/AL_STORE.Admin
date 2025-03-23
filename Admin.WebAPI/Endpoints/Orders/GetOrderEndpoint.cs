@@ -1,13 +1,16 @@
 ﻿using Admin.Application.Orders.Queries;
-using Admin.WebAPI.Endpoints.Orders.Responses;
-
+using Admin.Application.Orders.DTOs;
 using FastEndpoints;
-
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Orders;
-public record GetOrderRequest(Guid Id);
-public class GetOrderEndpoint : Endpoint<GetOrderRequest, OrderResponse>
+
+public record GetOrderRequest
+{
+    public Guid Id { get; init; }
+}
+
+public class GetOrderEndpoint : Endpoint<GetOrderRequest, OrderDto>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetOrderEndpoint> _logger;
@@ -23,7 +26,7 @@ public class GetOrderEndpoint : Endpoint<GetOrderRequest, OrderResponse>
         Get("/orders/{Id}");
         Description(d => d
             .WithTags("Orders")
-            .Produces<OrderResponse>(StatusCodes.Status200OK)
+            .Produces<OrderDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .WithName("GetOrder")
             .WithOpenApi());
@@ -37,8 +40,7 @@ public class GetOrderEndpoint : Endpoint<GetOrderRequest, OrderResponse>
 
         if (result.IsSuccess)
         {
-            var response = new OrderResponse(result.Value);
-            await SendOkAsync(response, ct);
+            await SendOkAsync(result.Value, ct);
         }
         else
         {
@@ -46,5 +48,3 @@ public class GetOrderEndpoint : Endpoint<GetOrderRequest, OrderResponse>
         }
     }
 }
-
-

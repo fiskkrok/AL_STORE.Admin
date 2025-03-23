@@ -1,4 +1,6 @@
-﻿namespace Admin.Application.Products.DTOs;
+﻿using Admin.Application.Categories.DTOs;
+
+namespace Admin.Application.Products.DTOs;
 
 public record ProductDto
 {

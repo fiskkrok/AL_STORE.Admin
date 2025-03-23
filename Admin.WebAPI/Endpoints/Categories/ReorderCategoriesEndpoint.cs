@@ -1,11 +1,16 @@
 ﻿using Admin.Application.Categories.Commands;
-using Admin.WebAPI.Endpoints.Categories.Models;
 
 using FastEndpoints;
 
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Categories;
+
+public record ReorderCategoryRequest
+{
+    public Guid CategoryId { get; init; }
+    public int NewSortOrder { get; init; }
+}
 
 public class ReorderCategoriesEndpoint : Endpoint<List<ReorderCategoryRequest>, IResult>
 {

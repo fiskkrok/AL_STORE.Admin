@@ -5,8 +5,8 @@ using FastEndpoints;
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.ProductsVariant;
-public class BatchUpdateVariantsEndpoint
-    : Endpoint<BatchUpdateVariantsCommand, List<Guid>>
+
+public class BatchUpdateVariantsEndpoint : Endpoint<BatchUpdateVariantsCommand, List<Guid>>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<BatchUpdateVariantsEndpoint> _logger;

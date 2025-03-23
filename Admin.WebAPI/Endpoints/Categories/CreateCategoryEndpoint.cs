@@ -38,7 +38,7 @@ public class CreateCategoryEndpoint : Endpoint<CreateCategoryCommand, Guid>
             if (result.IsSuccess)
             {
                 await SendCreatedAtAsync<GetCategoryEndpoint>(
-                    new { id = result.Value },
+                    new { Id = result.Value },
                     result.Value,
                     generateAbsoluteUrl: true,
                     cancellation: ct);

@@ -1,5 +1,4 @@
 ﻿using Admin.Application.Products.Commands.DeleteProduct;
-using Admin.WebAPI.Endpoints.Products.Request;
 
 using FastEndpoints;
 
@@ -7,7 +6,12 @@ using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Products;
 
-public class DeleteProductEndpoint : Endpoint<DeleteProductRequest>
+public record DeleteProductRequest
+{
+    public Guid Id { get; init; }
+}
+
+public class DeleteProductEndpoint : Endpoint<DeleteProductRequest, IResult>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<DeleteProductEndpoint> _logger;

@@ -1,15 +1,27 @@
 ﻿using System.Globalization;
 
 using Admin.Application.Products.Commands.UpdateProduct;
-using Admin.WebAPI.Endpoints.Products.Request;
-using Admin.WebAPI.Infrastructure.Authorization;
+using Admin.Application.Products.DTOs;
 
 using FastEndpoints;
 
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.Products;
-[RequirePermission(Domain.Constants.Permissions.Products.Manage)]
+
+public record UpdateProductRequest
+{
+    public Guid Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string Description { get; init; } = string.Empty;
+    public decimal Price { get; init; }
+    public string Currency { get; init; } = "USD";
+    public Guid CategoryId { get; init; }
+    public Guid? SubCategoryId { get; init; }
+    public List<ProductImageDto>? NewImages { get; init; }
+    public List<Guid>? ImageIdsToRemove { get; init; }
+}
+
 public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, IResult>
 {
     private readonly IMediator _mediator;
@@ -43,12 +55,12 @@ public class UpdateProductEndpoint : Endpoint<UpdateProductRequest, IResult>
                 Id = req.Id,
                 Name = req.Name,
                 Description = req.Description,
-                Price = decimal.Parse(req.Price.ToString(), CultureInfo.InvariantCulture),
+                Price = req.Price,
                 Currency = req.Currency,
                 CategoryId = req.CategoryId,
-                SubCategoryId = req.SubCategoryId.Equals(Guid.Empty) ? req.CategoryId : req.SubCategoryId,
-                NewImages = req.NewImages ?? [],
-                ImageIdsToRemove = req.ImageIdsToRemove ?? []
+                SubCategoryId = req.SubCategoryId == Guid.Empty ? null : req.SubCategoryId,
+                NewImages = req.NewImages ?? new List<ProductImageDto>(),
+                ImageIdsToRemove = req.ImageIdsToRemove ?? new List<Guid>()
             };
 
             var result = await _mediator.Send(command, ct);

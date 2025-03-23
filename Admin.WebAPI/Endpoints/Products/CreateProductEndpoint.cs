@@ -26,8 +26,6 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateProduct")
             .WithOpenApi());
-
-        //Claims("products.create");
         Policies("ProductsCreate", "FullAdminAccess");
     }
 
@@ -41,7 +39,7 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
             {
                 _logger.LogInformation("Product created successfully with ID: {ProductId}", result.Value);
                 await SendCreatedAtAsync<GetProductEndpoint>(
-                    new { id = result.Value },
+                    new { Id = result.Value },
                     result.Value,
                     generateAbsoluteUrl: true,
                     cancellation: ct);

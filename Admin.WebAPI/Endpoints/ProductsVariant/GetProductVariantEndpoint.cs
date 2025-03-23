@@ -1,13 +1,17 @@
 ﻿using Admin.Application.ProductVariants.Queries;
-using Admin.WebAPI.Endpoints.ProductsVariant.Models;
-
+using Admin.Application.Products.DTOs;
 using FastEndpoints;
-
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.ProductsVariant;
 
-public class GetProductVariantEndpoint : Endpoint<GetProductVariantRequest, ProductVariantResponse>
+public record GetProductVariantRequest
+{
+    public Guid ProductId { get; init; }
+    public Guid VariantId { get; init; }
+}
+
+public class GetProductVariantEndpoint : Endpoint<GetProductVariantRequest, ProductVariantDto>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetProductVariantEndpoint> _logger;
@@ -20,10 +24,10 @@ public class GetProductVariantEndpoint : Endpoint<GetProductVariantRequest, Prod
 
     public override void Configure()
     {
-        Get("/products/{productId}/variants/{variantId}");
+        Get("/products/{ProductId}/variants/{VariantId}");
         Description(d => d
             .WithTags("Product Variants")
-            .Produces<ProductVariantResponse>(StatusCodes.Status200OK)
+            .Produces<ProductVariantDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .WithName("GetProductVariant")
             .WithOpenApi());
@@ -33,14 +37,12 @@ public class GetProductVariantEndpoint : Endpoint<GetProductVariantRequest, Prod
 
     public override async Task HandleAsync(GetProductVariantRequest req, CancellationToken ct)
     {
-        var query = new GetProductVariantQuery(Route<Guid>("productId"), Route<Guid>("variantId"));
+        var query = new GetProductVariantQuery(req.ProductId, req.VariantId);
         var result = await _mediator.Send(query, ct);
 
         if (result.IsSuccess)
         {
-            var response = new ProductVariantResponse();
-
-            await SendOkAsync(response, ct);
+            await SendOkAsync(result.Value, ct);
         }
         else
         {
