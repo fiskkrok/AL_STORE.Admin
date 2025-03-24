@@ -26,7 +26,8 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateProduct")
             .WithOpenApi());
-        Policies("ProductsCreate", "FullAdminAccess");
+        AllowAnonymous();
+        //Policies("ProductsCreate", "FullAdminAccess");
     }
 
     public override async Task HandleAsync(CreateProductCommand req, CancellationToken ct)
