@@ -1,7 +1,6 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Infrastructure.Extensions;
 using Admin.Infrastructure.Persistence;
-using Admin.Infrastructure.Persistence.Repositories;
 using Admin.Infrastructure.Persistence.Seeder;
 
 using Microsoft.EntityFrameworkCore;

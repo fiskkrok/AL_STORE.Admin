@@ -1,4 +1,6 @@
-﻿using Admin.Infrastructure.Middleware;
+﻿using Admin.Application;
+using Admin.Infrastructure.Extensions;
+using Admin.Infrastructure.Middleware;
 using Admin.WebAPI.Configurations;
 
 namespace Admin.WebAPI.Extensions;
@@ -13,7 +15,8 @@ public static class ConfigurationExtensions
     /// </summary>
     public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
     {
-
+        // Application 
+        builder.Services.AddApplication();
         // Core services
         builder.Services.AddCoreServices();
 
@@ -23,6 +26,7 @@ public static class ConfigurationExtensions
         builder.Services.AddMessagingServices(builder.Configuration);
         builder.Services.AddStorageServices(builder.Configuration);
         builder.Services.AddCachingServices(builder.Configuration);
+        builder.Services.AddInfrastructureServices(builder.Configuration);
 
         // API services
         builder.Services.AddApiServices(builder.Configuration);

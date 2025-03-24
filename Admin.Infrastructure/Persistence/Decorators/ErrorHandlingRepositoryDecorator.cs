@@ -1,6 +1,6 @@
-﻿using Admin.Application.Common.Interfaces;
+﻿using Admin.Application.Common.Exceptions;
+using Admin.Application.Common.Interfaces;
 using Admin.Domain.Common;
-using Admin.Infrastructure.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Admin.Infrastructure.Persistence.Decorators;

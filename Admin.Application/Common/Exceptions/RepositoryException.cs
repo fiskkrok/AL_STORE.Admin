@@ -1,4 +1,4 @@
-﻿namespace Admin.Infrastructure.Exceptions;
+﻿namespace Admin.Application.Common.Exceptions;
 public class RepositoryException : AppException
 {
     public RepositoryException(string message, Exception? innerException = null)

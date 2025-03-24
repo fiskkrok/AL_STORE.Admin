@@ -27,4 +27,9 @@ public static class ErrorCodes
     public const string DatabaseError = "SYS002";
     public const string ExternalServiceError = "SYS003";
     public const string CacheError = "SYS004";
+
+    // User errors
+    public const string UsernameAlreadyExists = "USR001";
+    public const string EmailAlreadyExists = "USR002";
+    public const string UserNotFound = "USR003";
 }

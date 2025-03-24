@@ -24,7 +24,7 @@ public static class AuthenticationServicesConfiguration
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
         // Add token service
-        services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<ITokenService, TokenService>();
 
         // Configure authentication
         services.AddAuthentication(options =>

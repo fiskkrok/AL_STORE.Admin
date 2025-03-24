@@ -1,4 +1,4 @@
-﻿namespace Admin.Infrastructure.Exceptions;
+﻿namespace Admin.Application.Common.Exceptions;
 public class DomainException : AppException
 {
     public DomainException(string rule, string message)

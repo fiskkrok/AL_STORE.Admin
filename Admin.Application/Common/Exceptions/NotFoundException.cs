@@ -1,6 +1,8 @@
 ﻿namespace Admin.Application.Common.Exceptions;
-public class NotFoundException : ApplicationException
+public class NotFoundException : AppException
 {
-    public NotFoundException(string name, object key)
-        : base($"Entity \"{name}\" ({key}) was not found.") { }
+    public NotFoundException(string entityName, object id)
+        : base("Entity.NotFound", $"{entityName} with id {id} was not found")
+    {
+    }
 }

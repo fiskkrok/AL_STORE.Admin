@@ -1,4 +1,5 @@
 ﻿using Admin.Application.Common.Interfaces;
+using Admin.Infrastructure.Extensions;
 using Admin.Infrastructure.Persistence.Seeder;
 using Admin.Infrastructure.Services;
 using Admin.WebAPI.Services;
@@ -20,13 +21,14 @@ public static class CoreServicesConfiguration
 
         // Add HttpContext
         services.AddHttpContextAccessor();
-
+        
         // Add system clock
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         // Register CurrentUser service
         services.AddScoped<ICurrentUser, CurrentUserService>();
-
+        // Add Application services
+        services.AddApplicationServices();
         return services;
     }
 
