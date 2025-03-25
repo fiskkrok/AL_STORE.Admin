@@ -1,8 +1,11 @@
 ﻿using Admin.Application.Products.Commands.CreateProduct;
+using Admin.WebAPI.Infrastructure.Authorization;
 
 using FastEndpoints;
 
 using MediatR;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Admin.WebAPI.Endpoints.Products;
 
@@ -26,8 +29,8 @@ public class CreateProductEndpoint : Endpoint<CreateProductCommand, Guid>
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateProduct")
             .WithOpenApi());
-        AllowAnonymous();
-        //Policies("ProductsCreate", "FullAdminAccess");
+        AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+        Policies(AuthConstants.CanManageProductsPolicy);
     }
 
     public override async Task HandleAsync(CreateProductCommand req, CancellationToken ct)

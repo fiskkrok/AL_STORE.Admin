@@ -1,4 +1,7 @@
-﻿using FastEndpoints;
+﻿using Admin.WebAPI.Infrastructure.Authorization;
+
+using FastEndpoints;
+
 using MediatR;
 
 namespace Admin.WebAPI.Endpoints.StoreAPI;
@@ -15,12 +18,12 @@ public class GetAllProductsEndpoint : EndpointWithoutRequest<BulkProductsRespons
     public override void Configure()
     {
         Get("/products/bulk");
-        AuthSchemes("ApiKey"); // Only use API key for this endpoint
         Description(d => d
             .WithTags("Products")
             .Produces<BulkProductsResponse>(200)
             .WithName("GetAllProducts")
             .WithOpenApi());
+        AuthSchemes(AuthConstants.ApiKeyScheme);
     }
 
     public override async Task HandleAsync(CancellationToken ct)

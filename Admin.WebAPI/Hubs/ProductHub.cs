@@ -3,64 +3,51 @@ using System.Security.Claims;
 
 using Admin.WebAPI.Hubs.Interface;
 using Admin.WebAPI.Hubs.Models;
+using Admin.WebAPI.Infrastructure.Authorization;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Admin.WebAPI.Hubs;
-//ProductHub.cs - Updated implementation
-//[Authorize]
+[Authorize(AuthenticationSchemes = $"{AuthConstants.JwtBearerScheme},{AuthConstants.ApiKeyScheme}")]
 public class ProductHub : Hub<IProductHubClient>
+
 {
     private readonly ILogger<ProductHub> _logger;
-    private readonly IConfiguration _configuration;
     private static readonly ConcurrentDictionary<string, UserConnection> _connections
         = new();
 
     public ProductHub(
-        ILogger<ProductHub> logger,
-        IConfiguration configuration)
+        ILogger<ProductHub> logger)
     {
         _logger = logger;
-        _configuration = configuration;
     }
 
     public override async Task OnConnectedAsync()
     {
         var user = Context.User;
-        if (user?.Identity?.Name != null)
+        if (user?.Identity?.IsAuthenticated == true)
         {
-            var connection = new UserConnection
+            // Check for admin using either role or full api access scope
+            var isAdmin = user.IsInRole(AuthConstants.SystemAdministratorRole) ||
+                          user.HasClaim(c => c.Type == "scope" && c.Value == AuthConstants.FullApiAccess);
+
+            if (isAdmin)
             {
-                    UserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-                Username = user.Identity.Name,
-                ConnectionId = Context.ConnectionId,
-                ConnectedAt = DateTime.UtcNow,
-                Roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList()
-            };
-
-            _connections.TryAdd(Context.ConnectionId, connection);
-
-            // Add to appropriate groups based on roles
-            //if (user.IsInRole("SystemAdministrator"))
                 await Groups.AddToGroupAsync(Context.ConnectionId, "SystemAdministrators");
-
-            //if (user.IsInRole("Inventory")) 
-            //if (user.IsInRole("SystemAdministrator"))
-                await Groups.AddToGroupAsync(Context.ConnectionId, "Inventory");
-
-            // Notify admins of new connection
-            if (connection.Roles.Contains("SystemAdministrator"))
-            {
-                await Clients.Group("SystemAdministrators").UserConnected(new
-                {
-                    connection.Username,
-                    connection.ConnectedAt
-                });
+                _logger.LogInformation("Admin connected to ProductHub");
             }
 
-            _logger.LogInformation(
-                "User {Username} connected with connection ID {ConnectionId}",
-                connection.Username,
-                connection.ConnectionId);
+            // Check for inventory access
+            var hasInventoryAccess = isAdmin ||
+                                     user.IsInRole(AuthConstants.InventoryManagerRole) ||
+                                     user.HasClaim(c => c.Type == "Permission" && c.Value == "Inventory.Manage");
+
+            if (hasInventoryAccess)
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, "Inventory");
+                _logger.LogInformation("Inventory manager connected to ProductHub");
+            }
         }
 
         await base.OnConnectedAsync();

@@ -18,17 +18,23 @@ public static class DatabaseServicesConfiguration
     public static IServiceCollection AddDatabaseServices(this IServiceCollection services, IConfiguration configuration)
     {
 
-        // Configure DbContext
         services.AddDbContext<AdminDbContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
-                b =>
+                sqlOptions =>
                 {
-                    b.MigrationsAssembly(typeof(AdminDbContext).Assembly.FullName);
-                    b.EnableRetryOnFailure();
-                    b.CommandTimeout(30);
+                    sqlOptions.MigrationsAssembly(typeof(AdminDbContext).Assembly.FullName);
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                    sqlOptions.CommandTimeout(30);
+                    // Use connection pooling effectively
+                    sqlOptions.MinBatchSize(5);
+                    sqlOptions.MaxBatchSize(200);
+                    // Add query splitting to prevent cartesian explosions on complex joins
+                    sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                 }));
-
         // Add unit of work
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AdminDbContext>());
 

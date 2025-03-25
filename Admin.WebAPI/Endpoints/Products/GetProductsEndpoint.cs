@@ -1,8 +1,10 @@
 ﻿using Admin.Application.Common.Models;
 using Admin.Application.Products.DTOs;
 using Admin.Application.Products.Queries;
+using Admin.WebAPI.Infrastructure.Authorization;
 
 using FastEndpoints;
+
 using MediatR;
 
 public record GetProductsRequest
@@ -33,11 +35,13 @@ public class GetProductsEndpoint : EndpointWithoutRequest<PagedList<ProductDto>>
     public override void Configure()
     {
         Get("/products");
-        AllowAnonymous();
         Description(d => d
             .WithTags("Products")
             .WithOpenApi()
             .Produces<PagedList<ProductDto>>(200));
+
+        AuthSchemes(AuthConstants.JwtBearerScheme, AuthConstants.ApiKeyScheme);
+        Policies(AuthConstants.CanReadProductsPolicy);
     }
 
     public override async Task HandleAsync(CancellationToken ct)

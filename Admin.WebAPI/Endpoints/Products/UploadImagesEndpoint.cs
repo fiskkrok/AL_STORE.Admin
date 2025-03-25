@@ -3,6 +3,8 @@ using Admin.Application.Common.Models;
 
 using FastEndpoints;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 namespace Admin.WebAPI.Endpoints.Products;
 
 public class UploadImagesEndpoint : EndpointWithoutRequest<List<FileUploadResult>>
@@ -19,7 +21,7 @@ public class UploadImagesEndpoint : EndpointWithoutRequest<List<FileUploadResult
     public override void Configure()
     {
         Post("/products/upload-images");
-        AllowAnonymous();
+        AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
         AllowFileUploads();
         Description(d => d
             .WithTags("Products")

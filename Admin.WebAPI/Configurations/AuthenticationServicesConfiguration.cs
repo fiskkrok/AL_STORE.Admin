@@ -1,8 +1,11 @@
 ﻿using System.Security.Claims;
 using System.Text.Encodings.Web;
+
 using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Settings;
 using Admin.Infrastructure.Services;
+using Admin.WebAPI.Infrastructure.Authorization;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
@@ -15,9 +18,6 @@ namespace Admin.WebAPI.Configurations;
 /// </summary>
 public static class AuthenticationServicesConfiguration
 {
-    /// <summary>
-    /// Adds authentication services, including JWT and API Key authentication
-    /// </summary>
     public static IServiceCollection AddAuthenticationServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Configure JWT settings
@@ -26,33 +26,29 @@ public static class AuthenticationServicesConfiguration
         // Add token service
         services.AddScoped<ITokenService, TokenService>();
 
-        // Configure authentication
-        services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = "ApiKey";
-            options.DefaultChallengeScheme = "ApiKey";
-        })
-        .AddJwtBearer("Bearer", options =>
-        {
-            options.Authority = configuration["IdentityServer:Authority"];
-            options.TokenValidationParameters = new TokenValidationParameters
+        // Configure authentication with multiple schemes - but don't set defaults
+        // This lets each endpoint specify which scheme(s) it accepts
+        services.AddAuthentication()
+            .AddJwtBearer(AuthConstants.JwtBearerScheme, options =>
             {
-                ValidateAudience = true,
-                ValidAudiences = new[] { "api", "admin_api" },
-                ValidateIssuer = true,
-                ValidIssuer = configuration["IdentityServer:Authority"],
-                ValidateLifetime = true
-            };
-            options.Events = ConfigureJwtBearerEvents();
-        })
-        .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>("ApiKey", _ => { });
+                options.Authority = configuration["IdentityServer:Authority"];
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = true,
+                    ValidAudiences = new[] { "api", "admin_api" },
+                    ValidateIssuer = true,
+                    ValidIssuer = configuration["IdentityServer:Authority"],
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(5)
+                };
+                options.Events = ConfigureJwtBearerEvents();
+            })
+            .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+                AuthConstants.ApiKeyScheme, _ => { });
 
         return services;
     }
 
-    /// <summary>
-    /// Configures JWT Bearer events for logging and debugging
-    /// </summary>
     private static JwtBearerEvents ConfigureJwtBearerEvents()
     {
         return new JwtBearerEvents
@@ -60,38 +56,38 @@ public static class AuthenticationServicesConfiguration
             OnAuthenticationFailed = context =>
             {
                 var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                logger.LogError(context.Exception, "Authentication failed");
+                logger.LogError(context.Exception, "JWT authentication failed");
                 return Task.CompletedTask;
             },
             OnTokenValidated = context =>
             {
                 var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                logger.LogInformation("Token validated successfully");
-                return Task.CompletedTask;
-            },
-            OnChallenge = context =>
-            {
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                logger.LogWarning("OnChallenge: {Error}", context.Error);
+                logger.LogInformation("JWT token validated for {Subject}",
+                    context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier));
                 return Task.CompletedTask;
             },
             OnMessageReceived = context =>
             {
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                logger.LogInformation("Token received: {Token}", context.Token);
+                // Special handling for SignalR
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (context.HttpContext.Request.Path.StartsWithSegments("/hubs")))
+                {
+                    // Read token from query string for SignalR connections
+                    context.Token = accessToken;
+                }
+
                 return Task.CompletedTask;
             }
         };
     }
 }
 
-/// <summary>
-/// API Key authentication handler
-/// </summary>
 public class ApiKeyAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     private const string ApiKeyHeaderName = "X-API-Key";
     private readonly IConfiguration _configuration;
+    private readonly ILogger<ApiKeyAuthenticationHandler> _logger;
 
     public ApiKeyAuthenticationHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
@@ -102,10 +98,12 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<AuthenticationS
         : base(options, logger, encoder, clock)
     {
         _configuration = configuration;
+        _logger = logger.CreateLogger<ApiKeyAuthenticationHandler>();
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        // Check if API key is in the request header
         if (!Request.Headers.TryGetValue(ApiKeyHeaderName, out var apiKeyHeaderValues))
         {
             return Task.FromResult(AuthenticateResult.NoResult());
@@ -119,15 +117,30 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<AuthenticationS
 
         if (store == null)
         {
+            _logger.LogWarning("Invalid API key: {ApiKey}", providedApiKey);
             return Task.FromResult(AuthenticateResult.Fail("Invalid API Key"));
         }
 
-        var claims = new[]
+        _logger.LogInformation("API key authenticated: {StoreName}", store.Name);
+
+        // Create claims similar to JWT for consistent authorization
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, store.Name),
-            new Claim("scope", "products.read"),
-            new Claim("scope", "categories.read")
+            new(ClaimTypes.Name, store.Name),
+            new(ClaimTypes.NameIdentifier, store.Name),
+            // Add standard scopes for API keys
+            new("scope", AuthConstants.ProductsRead),
+            new("scope", AuthConstants.CategoriesRead)
         };
+
+        // Add additional configured scopes
+        foreach (var scope in store.AllowedScopes)
+        {
+            if (!claims.Exists(c => c.Type == "scope" && c.Value == scope))
+            {
+                claims.Add(new Claim("scope", scope));
+            }
+        }
 
         var identity = new ClaimsIdentity(claims, Scheme.Name);
         var principal = new ClaimsPrincipal(identity);
@@ -137,9 +150,6 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<AuthenticationS
     }
 }
 
-/// <summary>
-/// Store configuration model used for API Key authentication
-/// </summary>
 public class StoreConfiguration
 {
     public string Name { get; set; } = string.Empty;
