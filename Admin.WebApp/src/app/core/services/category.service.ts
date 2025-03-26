@@ -1,5 +1,5 @@
 // src/app/core/services/category.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, shareReplay } from 'rxjs/operators';
@@ -13,6 +13,7 @@ import {
 import { Store } from '@ngrx/store';
 import * as signalR from '@microsoft/signalr';
 import { CategoryActions } from 'src/app/store/category/category.actions';
+import { AuthService } from './auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -20,6 +21,7 @@ import { CategoryActions } from 'src/app/store/category/category.actions';
 export class CategoryService {
     private readonly apiUrl = environment.apiUrls.admin.categories;
     private hubConnection: signalR.HubConnection | undefined;
+    private readonly authService = inject(AuthService);
 
     constructor(
         private readonly http: HttpClient,
@@ -27,13 +29,63 @@ export class CategoryService {
     ) {
         this.initializeSignalR();
     }
+
     private initializeSignalR() {
+        this.authService.getAccessToken().subscribe(token => {
+            if (!token) {
+                console.warn('No auth token available for Category SignalR connection');
+                return;
+            }
+
+            this.hubConnection = new signalR.HubConnectionBuilder()
+                .withUrl(environment.signalR.category, {
+                    accessTokenFactory: () => token
+                })
+                .withAutomaticReconnect()
+                .build();
+
+            this.hubConnection.start().catch(err => console.error('Error starting SignalR:', err));
+
+            this.hubConnection.on('CategoryCreated', (category: Category) => {
+                this.store.dispatch(CategoryActions.createCategorySuccess({ category }));
+            });
+
+            this.hubConnection.on('CategoryUpdated', (category: Category) => {
+                this.store.dispatch(CategoryActions.updateCategorySuccess({ category }));
+            });
+
+            this.hubConnection.on('CategoryDeleted', (categoryId: string) => {
+                this.store.dispatch(CategoryActions.deleteCategorySuccess({ id: categoryId }));
+            });
+        });
+
+        // Recreate connection when auth state changes
+        this.authService.authState$.subscribe(state => {
+            if (state.isAuthenticated && state.accessToken && (!this.hubConnection || this.hubConnection.state === signalR.HubConnectionState.Disconnected)) {
+                this.createConnection(state.accessToken);
+            }
+        });
+    }
+
+    private createConnection(token: string) {
+        // Close existing connection if open
+        if (this.hubConnection) {
+            this.hubConnection.stop().catch(err => console.error('Error stopping connection:', err));
+        }
+
         this.hubConnection = new signalR.HubConnectionBuilder()
-            .withUrl(environment.signalR.category)
+            .withUrl(environment.signalR.category, {
+                accessTokenFactory: () => token
+            })
             .withAutomaticReconnect()
             .build();
 
+        this.setupHubListeners();
         this.hubConnection.start().catch(err => console.error('Error starting SignalR:', err));
+    }
+
+    private setupHubListeners() {
+        if (!this.hubConnection) return;
 
         this.hubConnection.on('CategoryCreated', (category: Category) => {
             this.store.dispatch(CategoryActions.createCategorySuccess({ category }));
@@ -47,6 +99,7 @@ export class CategoryService {
             this.store.dispatch(CategoryActions.deleteCategorySuccess({ id: categoryId }));
         });
     }
+
     getCategory(id: string): Observable<Category> {
         return this.http.get<Category>(`${this.apiUrl}/${id}`).pipe(
             catchError(this.handleError)
@@ -103,5 +156,12 @@ export class CategoryService {
 
         console.error('Category service error:', error);
         return throwError(() => new Error(errorMessage));
+    }
+
+    // Clean up SignalR connection
+    ngOnDestroy() {
+        if (this.hubConnection) {
+            this.hubConnection.stop();
+        }
     }
 }

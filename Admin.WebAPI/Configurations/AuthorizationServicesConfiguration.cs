@@ -21,20 +21,18 @@ public static class AuthorizationServicesConfiguration
             .AddPolicy(AuthConstants.CanManageProductsPolicy, policy =>
                 policy.RequireAssertion(context =>
                     context.User.HasClaim(c =>
-                        c.Type == "scope" && (
-                            c.Value == AuthConstants.ProductsCreate ||
-                            c.Value == AuthConstants.ProductsUpdate ||
-                            c.Value == AuthConstants.ProductsDelete ||
-                            c.Value == AuthConstants.FullApiAccess)) ||
+                        c is { Type: "scope", Value: AuthConstants.ProductsCreate or 
+                            AuthConstants.ProductsUpdate or 
+                            AuthConstants.ProductsDelete or 
+                            AuthConstants.FullApiAccess
+                        }) ||
                     context.User.IsInRole(AuthConstants.SystemAdministratorRole) ||
                     context.User.IsInRole(AuthConstants.ProductManagerRole)))
 
             .AddPolicy(AuthConstants.CanReadProductsPolicy, policy =>
                 policy.RequireAssertion(context =>
                     context.User.HasClaim(c =>
-                        c.Type == "scope" && (
-                            c.Value == AuthConstants.ProductsRead ||
-                            c.Value == AuthConstants.FullApiAccess)) ||
+                        c.Type == "scope" && c.Value is AuthConstants.ProductsRead or AuthConstants.FullApiAccess) ||
                     context.User.IsInRole(AuthConstants.SystemAdministratorRole) ||
                     context.User.IsInRole(AuthConstants.ProductManagerRole)))
 

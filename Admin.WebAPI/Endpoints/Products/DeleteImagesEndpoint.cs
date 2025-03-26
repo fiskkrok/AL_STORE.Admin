@@ -1,6 +1,9 @@
 ﻿using Admin.Application.Common.Interfaces;
+using Admin.WebAPI.Infrastructure.Authorization;
 
 using FastEndpoints;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Admin.WebAPI.Endpoints.Products;
 
@@ -24,7 +27,8 @@ public class DeleteImagesEndpoint : Endpoint<DeleteImagesRequest, IResult>
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("DeleteProductImage")
             .WithOpenApi());
-        Policies("ProductEdit", "FullAdminAccess");
+        AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+        Policies(AuthConstants.CanManageProductsPolicy);
     }
 
     public override async Task HandleAsync(DeleteImagesRequest req, CancellationToken ct)

@@ -1,8 +1,11 @@
 ﻿using Admin.Application.Products.Commands.DeleteProduct;
+using Admin.WebAPI.Infrastructure.Authorization;
 
 using FastEndpoints;
 
 using MediatR;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Admin.WebAPI.Endpoints.Products;
 
@@ -31,7 +34,8 @@ public class DeleteProductEndpoint : Endpoint<DeleteProductRequest, IResult>
             .Produces(StatusCodes.Status404NotFound)
             .WithName("DeleteProduct")
             .WithOpenApi());
-        Policies("ProductsDelete", "FullAdminAccess");
+        AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+        Policies(AuthConstants.CanManageProductsPolicy);
     }
 
     public override async Task HandleAsync(DeleteProductRequest req, CancellationToken ct)

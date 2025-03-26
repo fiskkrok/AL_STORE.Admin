@@ -92,7 +92,26 @@ public class ProductRepository : BaseRepository<Product>, IProductRepository
         if (filter.CategoryId.HasValue)
             query = query.Where(p => p.CategoryId == filter.CategoryId);
 
-        // ... other filters ...
+        if (filter.SubCategoryId.HasValue)
+            query = query.Where(p => p.SubCategoryId == filter.SubCategoryId);
+
+        if (filter.MinPrice.HasValue)
+            query = query.Where(p => p.Price.Amount >= filter.MinPrice);
+
+        if (filter.MaxPrice.HasValue)
+            query = query.Where(p => p.Price.Amount <= filter.MaxPrice);
+
+        if (filter.InStock.HasValue)
+            query = query.Where(p => filter.InStock.Value ? p.Stock > 0 : p.Stock == 0);
+
+        if (!string.IsNullOrEmpty(filter.Status))
+            query = query.Where(p => p.Status.ToString() == filter.Status);
+
+        if (!string.IsNullOrEmpty(filter.Visibility))
+            query = query.Where(p => p.Visibility.ToString() == filter.Visibility);
+
+        if (filter.LastModifiedAfter.HasValue)
+            query = query.Where(p => p.LastModifiedAt >= filter.LastModifiedAfter.Value);
 
         return query;
     }
@@ -105,7 +124,17 @@ public class ProductRepository : BaseRepository<Product>, IProductRepository
             "name" => filter.SortDescending ?
                 query.OrderByDescending(p => p.Name) :
                 query.OrderBy(p => p.Name),
-            // ... other sorting options ...
+            "price" => filter.SortDescending ?
+                query.OrderByDescending(p => p.Price.Amount) :
+                query.OrderBy(p => p.Price.Amount),
+
+            "stock" => filter.SortDescending ?
+                query.OrderByDescending(p => p.Stock) :
+                query.OrderBy(p => p.Stock),
+
+            "status" => filter.SortDescending ?
+                query.OrderByDescending(p => p.Status) :
+                query.OrderBy(p => p.Status),
             _ => query.OrderByDescending(p => p.CreatedAt)
         };
     }

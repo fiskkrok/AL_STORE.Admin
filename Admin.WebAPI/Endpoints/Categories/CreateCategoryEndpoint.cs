@@ -1,8 +1,11 @@
 ﻿using Admin.Application.Categories.Commands;
+using Admin.WebAPI.Infrastructure.Authorization;
 
 using FastEndpoints;
 
 using MediatR;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Admin.WebAPI.Endpoints.Categories;
 
@@ -26,7 +29,8 @@ public class CreateCategoryEndpoint : Endpoint<CreateCategoryCommand, Guid>
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("CreateCategory")
             .WithOpenApi());
-        Policies("ProductsCreate", "FullAdminAccess");
+        AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+        Policies(AuthConstants.CanManageProductsPolicy, AuthConstants.IsAdminPolicy);
     }
 
     public override async Task HandleAsync(CreateCategoryCommand req, CancellationToken ct)

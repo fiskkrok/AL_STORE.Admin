@@ -1,9 +1,11 @@
 ﻿using Admin.WebAPI.Hubs.Interface;
+using Admin.WebAPI.Infrastructure.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Admin.WebAPI.Hubs;
 
-// OrderHub implementation
+[Authorize(AuthenticationSchemes = $"{AuthConstants.JwtBearerScheme},{AuthConstants.ApiKeyScheme}")]
 public class OrderHub : Hub<IOrderHubClient>
 {
     private readonly ILogger<OrderHub> _logger;

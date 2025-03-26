@@ -1,9 +1,11 @@
 ﻿using Admin.WebAPI.Hubs.Interface;
+using Admin.WebAPI.Infrastructure.Authorization;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Admin.WebAPI.Hubs;
-
+[Authorize(AuthenticationSchemes = $"{AuthConstants.JwtBearerScheme},{AuthConstants.ApiKeyScheme}")]
 public class ProductVariantHub : Hub<IVariantHubClient>
 {
     private readonly ILogger<ProductVariantHub> _logger;

@@ -1,5 +1,5 @@
 // src/app/core/services/stock.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -7,6 +7,7 @@ import * as signalR from '@microsoft/signalr';
 import { Store } from '@ngrx/store';
 import { StockActions } from '../../store/stock/stock.actions';
 import { BatchStockAdjustment, StockAdjustment, StockItem } from 'src/app/shared/models/stock.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,7 @@ import { BatchStockAdjustment, StockAdjustment, StockItem } from 'src/app/shared
 export class StockService {
     private readonly apiUrl = environment.apiUrls.admin.products;
     private hubConnection: signalR.HubConnection | undefined;
+    private readonly authService = inject(AuthService);
 
     constructor(
         private readonly http: HttpClient,
@@ -23,12 +25,42 @@ export class StockService {
     }
 
     private initializeSignalR() {
+        this.authService.getAccessToken().subscribe(token => {
+            if (!token) {
+                console.warn('No auth token available for Stock SignalR connection');
+                return;
+            }
+
+            this.createConnection(token);
+        });
+
+        // Recreate connection when auth state changes
+        this.authService.authState$.subscribe(state => {
+            if (state.isAuthenticated && state.accessToken && (!this.hubConnection || this.hubConnection.state === signalR.HubConnectionState.Disconnected)) {
+                this.createConnection(state.accessToken);
+            }
+        });
+    }
+
+    private createConnection(token: string) {
+        // Close existing connection if open
+        if (this.hubConnection) {
+            this.hubConnection.stop().catch(err => console.error('Error stopping connection:', err));
+        }
+
         this.hubConnection = new signalR.HubConnectionBuilder()
-            .withUrl(environment.signalR.product)
+            .withUrl(environment.signalR.product, {
+                accessTokenFactory: () => token
+            })
             .withAutomaticReconnect()
             .build();
 
+        this.setupHubListeners();
         this.hubConnection.start().catch(err => console.error('Error starting SignalR:', err));
+    }
+
+    private setupHubListeners() {
+        if (!this.hubConnection) return;
 
         this.hubConnection.on('StockUpdated', (stock: StockItem) => {
             this.store.dispatch(StockActions.stockUpdated({ stock }));

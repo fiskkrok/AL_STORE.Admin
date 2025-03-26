@@ -1,8 +1,11 @@
 ﻿using Admin.Application.Categories.Commands;
+using Admin.WebAPI.Infrastructure.Authorization;
 
 using FastEndpoints;
 
 using MediatR;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Admin.WebAPI.Endpoints.Categories;
 
@@ -31,7 +34,8 @@ public class DeleteCategoryEndpoint : Endpoint<DeleteCategoryRequest, IResult>
             .Produces(StatusCodes.Status404NotFound)
             .WithName("DeleteCategory")
             .WithOpenApi());
-        Policies("ProductsDelete", "FullAdminAccess");
+        AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
+        Policies(AuthConstants.CanManageProductsPolicy, AuthConstants.IsAdminPolicy);
     }
 
     public override async Task HandleAsync(DeleteCategoryRequest req, CancellationToken ct)
