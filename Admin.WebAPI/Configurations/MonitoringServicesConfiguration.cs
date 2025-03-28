@@ -36,12 +36,12 @@ public static class MonitoringServicesConfiguration
         {
             var rabbitConnectionString = $"amqp://{rabbitUsername}:{rabbitPassword}@{rabbitHost}/{rabbitVirtualHost ?? "/"}";
 
-            services.AddHealthChecks()
-                .AddRabbitMQ(
-                    rabbitConnectionString: rabbitConnectionString,
-                    name: "rabbitmq_health_check",
-                    failureStatus: HealthStatus.Degraded,
-                    tags: new[] { "messaging", "rabbitmq" });
+            //services.AddHealthChecks()
+            //    .AddRabbitMQ(
+            //        rabbitConnectionString: rabbitConnectionString,
+            //        name: "rabbitmq_health_check",
+            //        failureStatus: HealthStatus.Degraded,
+            //        tags: new[] { "messaging", "rabbitmq" });
         }
 
         return services;

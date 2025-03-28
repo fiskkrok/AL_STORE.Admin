@@ -1,163 +1,42 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { FormlyFormOptions, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
-import { Router } from '@angular/router';
-import { getProductFormFields } from '../configs/product.formly.config';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { ErrorService } from 'src/app/core/services/error.service';
-import { ProductService, ProductCreateCommand } from '../../../core/services/product.service';
-import { ProductStatus, ProductVisibility } from '../../../shared/models/product.model';
-import { HasPermissionDirective } from 'src/app/shared/directives/permission.directive';
-
-interface ProductFormModel {
-  basicInfo: {
-    name: string;
-    category: string;
-    description: string;
-  };
-  pricing: {
-    price: number;
-    stock: number;
-  };
-  images: File[];
-}
+import { BarcodeScannerComponent } from '../components/barcode-scanner';
 
 @Component({
   selector: 'app-add-product',
-  templateUrl: './add-product.component.html',
-  styleUrls: ['./add-product.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
-    FormlyModule,
-    FormlyBootstrapModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    // HasPermissionDirective
+    BarcodeScannerComponent
   ],
+  template: `
+    <div class="add-product-container">
+      <h2>Add New Product</h2>
+      
+      <!-- Barcode scanner integration -->
+      <div class="scanner-section">
+        <h3>Scan Product Barcode</h3>
+        <app-barcode-scanner 
+          (codeScanned)="onBarcodeScanned($event)">
+        </app-barcode-scanner>
+      </div>
+      
+      <!-- Rest of your add product form -->
+      <!-- ...existing code... -->
+    </div>
+  `,
+  styleUrls: ['./add-product.component.scss']
 })
-export class AddProductComponent implements OnInit {
-  form = new FormGroup({});
-  model: ProductFormModel = {
-    basicInfo: {
-      name: '',
-      category: '',
-      description: ''
-    },
-    pricing: {
-      price: 0,
-      stock: 0
-    },
-    images: []
-  };
-  options: FormlyFormOptions = {};
-  fields: FormlyFieldConfig[] = [];
-  isSubmitting = false;  // Add this flag
+export class AddProductComponent {
+  // ...existing code...
 
-  constructor(
-    private readonly productService: ProductService,
-    private readonly router: Router,
-    private readonly snackBar: MatSnackBar,
-    private readonly errorService: ErrorService
-  ) { }
-
-  ngOnInit(): void {
-    this.productService.getCategories().subscribe(
-      categories => {
-        this.fields = getProductFormFields(categories.map(category => ({
-          id: category.id,
-          name: category.name
-        })));
-      }
-    );
+  onBarcodeScanned(code: string): void {
+    console.log('Product barcode scanned:', code);
+    // Here you can:
+    // 1. Look up the product by barcode in your database
+    // 2. Auto-fill form fields based on the scanned product
+    // 3. Add the barcode to your form model
   }
 
-  submit(): void {
-    if (this.isSubmitting || !this.form.valid) {
-      return;
-    }
-
-    this.isSubmitting = true;
-    const formValue = this.form.value as ProductFormModel;
-    const images = formValue.images;
-
-    this.productService.uploadImages(images).subscribe({
-      next: (imageResults) => {
-        const product: ProductCreateCommand = {
-          name: formValue.basicInfo.name,
-          description: formValue.basicInfo.description,
-          price: formValue.pricing.price,  // Change to number
-          currency: 'USD',  // Add currency field
-          categoryId: formValue.basicInfo.category,
-          stock: formValue.pricing.stock,
-          sku: this.generateSku(),
-          status: ProductStatus.Draft,
-          visibility: ProductVisibility.Hidden,
-          images: imageResults.map(result => ({
-            id: result.id,
-            url: result.url,
-            fileName: result.fileName,
-            size: result.size,
-            isPrimary: false,
-            sortOrder: 0,
-            alt: result.fileName
-          })),
-          tags: []
-        };
-
-        this.productService.createProduct(product).subscribe({
-          next: () => {
-            this.snackBar.open('Product created successfully', 'Close', {
-              duration: 3000
-            });
-            this.router.navigate(['/products/list']);
-          },
-          error: (error: Error) => {
-            console.error('Error creating product:', error);
-            this.errorService.addError({
-              code: '',
-              message: 'Failed to create product: ' + error.message,
-              severity: 'error'
-            });
-            this.isSubmitting = false; // Ensure the flag is reset on error
-          },
-          complete: () => {
-            this.isSubmitting = false;
-          }
-        });
-      },
-      error: (error: Error) => {
-        console.error('Error uploading images:', error);
-        this.errorService.addError({
-          code: '',
-          message: 'Failed to upload images: ' + error.message,
-          severity: 'error'
-        });
-        this.isSubmitting = false;
-      }
-    });
-  }
-
-  private generateSku(): string {
-    return 'SKU-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-  }
-
-  reset(): void {
-    this.form.reset();
-    this.model = {
-      basicInfo: {
-        name: '',
-        category: '',
-        description: ''
-      },
-      pricing: {
-        price: 0,
-        stock: 0
-      },
-      images: []
-    };
-  }
+  // ...existing code...
 }

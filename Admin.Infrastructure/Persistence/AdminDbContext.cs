@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Admin.Infrastructure.Persistence;
 
-public class AdminDbContext : DbContext, IUnitOfWork
+public class AdminDbContext : DbContext, IApplicationDbContext, IUnitOfWork
 {
     private readonly IDomainEventService _domainEventService;
     private readonly ICurrentUser _currentUser;
@@ -25,6 +25,7 @@ public class AdminDbContext : DbContext, IUnitOfWork
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<User> Users => Set<User>();
@@ -39,6 +40,23 @@ public class AdminDbContext : DbContext, IUnitOfWork
         // Make sure we're not doing anything weird with tracking
         optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
     }
+    
+    public async Task<TEntity?> FindEntityAsync<TEntity>(Guid id, CancellationToken cancellationToken = default)
+        where TEntity : class
+    {
+        return await Set<TEntity>().FindAsync(new object[] { id }, cancellationToken);
+    }
+
+    public void AttachEntity<TEntity>(TEntity entity) where TEntity : class
+    {
+        Set<TEntity>().Attach(entity);
+    }
+
+    public IQueryable<TEntity> QuerySet<TEntity>() where TEntity : class
+    {
+        return Set<TEntity>();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
@@ -47,7 +65,7 @@ public class AdminDbContext : DbContext, IUnitOfWork
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Dispatch domain events before saving
+        // Handle domain events
         var domainEvents = ChangeTracker.Entries<AuditableEntity>()
             .SelectMany(x => x.Entity.DomainEvents)
             .ToList();
@@ -58,6 +76,12 @@ public class AdminDbContext : DbContext, IUnitOfWork
         foreach (var domainEvent in domainEvents)
         {
             await _domainEventService.PublishAsync(domainEvent, cancellationToken);
+        }
+
+        // Clear events
+        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+        {
+            entry.Entity.ClearDomainEvents();
         }
 
         return result;

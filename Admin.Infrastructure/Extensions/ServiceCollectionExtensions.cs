@@ -27,14 +27,15 @@ public static class ServiceCollectionExtensions
             var service = new DomainEventService(
                 sp.GetRequiredService<IPublisher>(),
                 sp.GetRequiredService<IMessageBusService>(),
-                sp.GetRequiredService<IDomainEventMapper>());
+                sp.GetRequiredService<IDomainEventMapper>(),
+                sp.GetRequiredService<ILogger<DomainEventService>>()); // Fixing the error by adding the missing ILogger dependency
 
-            //if (enableLogging)
-            //{
-            //    return new LoggingDomainEventServiceDecorator(
-            //        service,
-            //        sp.GetRequiredService<ILogger<LoggingDomainEventServiceDecorator>>());
-            //}
+            if (enableLogging)
+            {
+                return new LoggingDomainEventServiceDecorator(
+                    service,
+                    sp.GetRequiredService<ILogger<LoggingDomainEventServiceDecorator>>());
+            }
 
             return service;
         });

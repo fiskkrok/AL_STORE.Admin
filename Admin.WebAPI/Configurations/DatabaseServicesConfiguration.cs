@@ -4,6 +4,7 @@ using Admin.Infrastructure.Persistence;
 using Admin.Infrastructure.Persistence.Seeder;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Admin.WebAPI.Configurations;
 
@@ -37,7 +38,10 @@ public static class DatabaseServicesConfiguration
                 }));
         // Add unit of work
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AdminDbContext>());
-
+        // In Program.cs or Startup.cs
+        
+        services.AddScoped<IApplicationDbContext>(provider =>
+            provider.GetRequiredService<AdminDbContext>());
         // Add repositories
         RegisterRepositories(services);
 

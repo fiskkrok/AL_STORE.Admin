@@ -1,17 +1,17 @@
-﻿using Admin.Application.Common.Interfaces;
+﻿using System.Security.Cryptography;
+using Admin.Application.Common.CQRS;
+using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
 using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
-using Admin.Domain.ValueObjects;
-
 using FluentValidation;
-
-using MediatR;
-
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Admin.Application.Products.Commands.CreateProduct;
 
-public record CreateProductCommand : IRequest<Result<Guid>>
+// Command definition
+public record CreateProductCommand : ICommand<Guid>
 {
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
@@ -35,72 +35,80 @@ public record CreateProductCommand : IRequest<Result<Guid>>
     public List<string> Tags { get; init; } = new();
 }
 
-
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
+// Command handler
+public class CreateProductCommandHandler : CommandHandler<CreateProductCommand, Guid>
 {
-    private readonly IProductRepository _productRepository;
-    private readonly ICategoryRepository _categoryRepository;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUser _currentUser;
+    private readonly IApplicationDbContext _dbContext;
 
     public CreateProductCommandHandler(
-        IProductRepository productRepository,
-        ICategoryRepository categoryRepository,
-        IFileStorage fileStorage,
-        IUnitOfWork unitOfWork,
-        ICurrentUser currentUser)
+        IApplicationDbContext dbContext,
+        ILogger<CreateProductCommandHandler> logger,
+        ICurrentUser currentUser) : base(dbContext, logger)
     {
-        _productRepository = productRepository;
-        _categoryRepository = categoryRepository;
-        _unitOfWork = unitOfWork;
         _currentUser = currentUser;
+        _dbContext = dbContext;
     }
 
-    public async Task<Result<Guid>> Handle(CreateProductCommand command, CancellationToken cancellationToken)
+    public override async Task<Result<Guid>> Handle(
+        CreateProductCommand command,
+        CancellationToken cancellationToken)
     {
         try
         {
-            // Validate category
-            var category = await _categoryRepository.GetByIdAsync(command.CategoryId, cancellationToken);
+            // Validate category exists
+            var category = await _dbContext.Categories
+                .FirstOrDefaultAsync(c => c.Id == command.CategoryId, cancellationToken);
+
             if (category == null)
-                return Result<Guid>.Failure(new Error("Category.NotFound", $"Category with ID {command.CategoryId} was not found"));
+                return Result<Guid>.Failure(
+                    new Error("Category.NotFound", $"Category with ID {command.CategoryId} was not found"));
 
             // Validate subcategory if provided
-            Category? subCategory = null;
             if (command.SubCategoryId.HasValue)
             {
-                subCategory = await _categoryRepository.GetByIdAsync(command.SubCategoryId.Value, cancellationToken);
+                var subCategory = await _dbContext.Categories
+                    .FirstOrDefaultAsync(c => c.Id == command.SubCategoryId.Value, cancellationToken);
+
                 if (subCategory == null)
-                    return Result<Guid>.Failure(new Error("SubCategory.NotFound", $"SubCategory with ID {command.SubCategoryId} was not found"));
+                    return Result<Guid>.Failure(
+                        new Error("SubCategory.NotFound", $"SubCategory with ID {command.SubCategoryId} was not found"));
             }
 
             // Create product
             var product = new Product(
                 command.Name,
                 command.Description,
-                Money.From(command.Price),
-                currency: command.Currency,
-                sku: command.Sku,
-                stock: command.Stock,
-                categoryId: command.CategoryId,
-                id: command.SubCategoryId,
-                createdBy: _currentUser.Id);
+                command.Price,
+                command.Currency,
+                command.Sku,
+                command.Stock,
+                command.CategoryId,
+                null,
+                command.SubCategoryId,
+                _currentUser.Id);
 
-            //Handle images
+            // Handle images
             foreach (var image in command.Images)
             {
                 product.AddImage(image.Url, image.FileName, image.Size, _currentUser.Id);
             }
 
-            await _productRepository.AddAsync(product, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // Add product to DbContext
+            _dbContext.Products.Add(product);
+
+            // Save changes
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            Logger.LogInformation("Created new product {ProductId}", product.Id);
 
             return Result<Guid>.Success(product.Id);
         }
         catch (Exception ex) when (ex is not ValidationException)
         {
-            // Log the exception here
-            return Result<Guid>.Failure(new Error("Product.CreateFailed", "Failed to create product due to an unexpected error"));
+            Logger.LogError(ex, "Error creating product");
+            return Result<Guid>.Failure(
+                new Error("Product.CreateFailed", "Failed to create product due to an unexpected error"));
         }
     }
 }

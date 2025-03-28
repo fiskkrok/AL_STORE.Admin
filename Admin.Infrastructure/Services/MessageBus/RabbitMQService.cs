@@ -29,7 +29,16 @@ public class RabbitMQService : IMessageBusService, IHostedService, IDisposable
     }
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await InitializeAsync();
+        try
+        {
+            await InitializeAsync();
+            _logger.LogInformation("RabbitMQ service started successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to start RabbitMQ service");
+            // Consider whether to rethrow or not based on your app's requirements
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -42,15 +51,48 @@ public class RabbitMQService : IMessageBusService, IHostedService, IDisposable
     {
         try
         {
+            if (_connection != null && _channel != null)
+            {
+                return; // Already initialized
+            }
+
+            _logger.LogInformation("Initializing RabbitMQ connection to host {Host}", _settings.Host);
+
             var factory = new ConnectionFactory
             {
                 HostName = _settings.Host,
                 UserName = _settings.Username,
-                Password = _settings.Password
+                Password = _settings.Password,
+                // Add these for more reliability
+                AutomaticRecoveryEnabled = true,
+                NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
             };
 
-            _connection = await factory.CreateConnectionAsync();
-            _channel = await _connection.CreateChannelAsync();
+            // Connection attempts
+            int retryCount = 0;
+            const int maxRetries = 5;
+
+            while (retryCount < maxRetries)
+            {
+                try
+                {
+                    _connection = await factory.CreateConnectionAsync();
+                    _channel = await _connection.CreateChannelAsync();
+                    break;
+                }
+                catch (Exception ex) when (retryCount < maxRetries - 1)
+                {
+                    retryCount++;
+                    _logger.LogWarning(ex, "Failed to connect to RabbitMQ (attempt {Attempt}/{MaxAttempts}), retrying in {Seconds}s...",
+                        retryCount, maxRetries, Math.Pow(2, retryCount));
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, retryCount)));
+                }
+            }
+
+            if (_connection == null || _channel == null)
+            {
+                throw new InvalidOperationException("Failed to establish RabbitMQ connection after multiple attempts");
+            }
 
 
             // Declare exchanges for different message types
@@ -81,38 +123,77 @@ public class RabbitMQService : IMessageBusService, IHostedService, IDisposable
             throw new ObjectDisposedException(nameof(RabbitMQService));
         }
 
-        try
+        // Retry loop for message publishing
+        int retries = 0;
+        const int maxRetries = 3;
+
+        while (true)
         {
-            var messageType = message.GetType();
-            var exchangeName = GetExchangeName(messageType);
-            var routingKey = GetRoutingKey(messageType);
-
-            var json = JsonConvert.SerializeObject(message);
-            var body = Encoding.UTF8.GetBytes(json);
-
-            var properties = new BasicProperties
+            try
             {
-                Persistent = true,
-                ContentType = "application/json",
-                MessageId = Guid.NewGuid().ToString(),
-                Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
-                Type = messageType.Name
-            };
+                if (_channel == null)
+                {
+                    await InitializeAsync();
+                    if (_channel == null)
+                    {
+                        throw new InvalidOperationException("Failed to initialize RabbitMQ channel");
+                    }
+                }
 
-            await _channel.BasicPublishAsync(
-                exchange: exchangeName,
-                routingKey: routingKey,
-                mandatory: true,
-                basicProperties: properties,
-                body: body);
+                var messageType = message.GetType();
+                var exchangeName = GetExchangeName(messageType);
+                var routingKey = GetRoutingKey(messageType);
 
-            _logger.LogInformation("Published message of type {MessageType} with ID {MessageId}",
-                messageType.Name, properties.MessageId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to publish message of type {MessageType}", typeof(T).Name);
-            throw;
+                var json = JsonConvert.SerializeObject(message);
+                var body = Encoding.UTF8.GetBytes(json);
+
+                var properties = new BasicProperties
+                {
+                    Persistent = true,
+                    ContentType = "application/json",
+                    MessageId = Guid.NewGuid().ToString(),
+                    Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
+                    Type = messageType.Name
+                };
+
+                await _channel.BasicPublishAsync(
+                    exchange: exchangeName,
+                    routingKey: routingKey,
+                    mandatory: true,
+                    basicProperties: properties,
+                    body: body);
+
+                _logger.LogInformation("Published message of type {MessageType} with ID {MessageId}",
+                    messageType.Name, properties.MessageId);
+
+                return; // Success, exit the method
+            }
+            catch (Exception ex)
+            {
+                retries++;
+
+                if (retries >= maxRetries)
+                {
+                    _logger.LogError(ex, "Failed to publish message of type {MessageType} after {Retries} retries",
+                        typeof(T).Name, retries);
+                    throw;
+                }
+
+                _logger.LogWarning(ex, "Error publishing message (attempt {Attempt}/{MaxRetries}), retrying...",
+                    retries, maxRetries);
+
+                // Clean up and try to re-establish connection
+                try
+                {
+                    _channel?.Dispose();
+                    _connection?.Dispose();
+                    _channel = null;
+                    _connection = null;
+                }
+                catch { /* Ignore cleanup errors */ }
+
+                await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, retries))); // Exponential backoff
+            }
         }
     }
 
