@@ -1,7 +1,9 @@
-@forward 'functions';
-@forward 'mixins';
-@forward 'theme';
+// _index.scss
 @forward 'reset';
-@forward 'variables';
-@forward 'typography';
-@forward 'theme-colors';
+@forward 'color-system';
+@forward 'typography-system';
+@forward 'spacing-system';
+@forward 'layout-system';
+@forward 'components-system';
+@forward 'functions';
+// @forward 'mixins';

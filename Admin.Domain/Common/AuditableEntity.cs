@@ -4,7 +4,7 @@
 /// </summary>
 public abstract class AuditableEntity
 {
-    private readonly List<DomainEvent> _domainEvents = new();
+    private readonly List<DomainEvent> _domainEvents = [];
     private Guid _id;
 
     public Guid Id

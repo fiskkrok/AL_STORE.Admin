@@ -2,6 +2,8 @@
 using Admin.Application.Products.Queries;
 using Admin.Domain.Entities;
 
+using MassTransit;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Admin.Infrastructure.Persistence.Repositories;
@@ -31,7 +33,12 @@ public class ProductRepository : BaseRepository<Product>, IProductRepository
             .Include(v => v.Attributes)
             .FirstOrDefaultAsync(v => v.Id == variantId, cancellationToken);
     }
-
+    public async Task<Product?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await DbContext.Products
+            .Include(p => p.Images)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
     public async Task<IEnumerable<ProductVariant>> GetVariantsByProductIdAsync(Guid productId, CancellationToken cancellationToken = default)
     {
         return await DbContext.Set<ProductVariant>()
@@ -63,6 +70,11 @@ public class ProductRepository : BaseRepository<Product>, IProductRepository
             .Where(p => !p.IsArchived)
             .AsSplitQuery()
             .AsQueryable();
+
+        if (filter.IncludeInactive != true)
+        {
+            query = query.Where(p => p.IsActive);
+        }
 
         query = ApplyFilters(query, filter);
         var totalCount = await query.CountAsync(cancellationToken);

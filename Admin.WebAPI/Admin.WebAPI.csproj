@@ -16,9 +16,11 @@
 		<LangVersion>preview</LangVersion>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Content Remove="Setup\product - Copy.json" />
 	  <Content Remove="Setup\product.json" />
 	</ItemGroup>
 	<ItemGroup>
+	  <None Include="Setup\product - Copy.json" />
 	  <None Include="Setup\product.json" />
 	</ItemGroup>
   <ItemGroup>

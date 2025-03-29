@@ -45,7 +45,7 @@ public static class StorageServicesConfiguration
             if (settings.ConnectionString == "UseDevelopmentStorage=true")
             {
                 return new BlobServiceClient(
-                    new Uri("http://127.0.0.1:10000/devstoreaccount1"),
+                    new Uri("http://localhost:10000/devstoreaccount1"),
                     new StorageSharedKeyCredential(
                         "devstoreaccount1",
                         "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="));

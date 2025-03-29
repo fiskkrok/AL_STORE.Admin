@@ -5,6 +5,7 @@ using Admin.Domain.Common;
 using Admin.Domain.Enums;
 using Admin.Domain.Events.Product;
 using Admin.Domain.ValueObjects;
+
 using Ardalis.GuardClauses;
 
 namespace Admin.Domain.Entities;
@@ -35,7 +36,7 @@ public class Product : AuditableEntity
         Guid? id = null,
         Guid? subCategoryId = null,
         string? createdBy = null) : base(id)
-        
+
     {
         Guard.Against.NullOrWhiteSpace(name, nameof(name));
         Guard.Against.NullOrWhiteSpace(description, nameof(description));
@@ -207,7 +208,7 @@ public class Product : AuditableEntity
     public void Delete(string? modifiedBy = null)
     {
         if (!IsActive) return;
-
+        
         SetInactive(modifiedBy);
         AddDomainEvent(new ProductDeletedDomainEvent(this));
     }
@@ -319,21 +320,74 @@ public class ProductJsonConverter : JsonConverter<Product>
 
         using (JsonDocument document = JsonDocument.ParseValue(ref reader))
         {
+
+
             var root = document.RootElement;
+
+            // DEBUG: Log the entire JSON to understand its structure
+            string jsonString = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
+            System.Diagnostics.Debug.WriteLine("===== INCOMING JSON DATA =====");
+            System.Diagnostics.Debug.WriteLine(jsonString);
+            System.Diagnostics.Debug.WriteLine("==============================");
 
             try
             {
-                // Get the ID first
-                var id = root.GetProperty("id").GetGuid();
+                // Get the ID first with fallback
+                Guid id;
+                if (!root.TryGetProperty("id", out var idProperty) || !idProperty.TryGetGuid(out id))
+                {
+                    id = Guid.NewGuid();
+                }
 
-                // Get other required properties for constructor
-                var name = root.GetProperty("name").GetString() ?? "";
-                var description = root.GetProperty("description").GetString() ?? "";
-                var price = root.GetProperty("price").GetProperty("amount").GetDecimal();
-                var currency = root.GetProperty("currency").GetString() ?? "USD";
-                var sku = root.GetProperty("sku").GetString() ?? "";
-                var stock = root.GetProperty("stock").GetInt32();
-                var categoryId = root.GetProperty("categoryId").GetGuid();
+                // Get other properties with fallbacks
+                string name = "";
+                if (root.TryGetProperty("name", out var nameProperty))
+                {
+                    name = nameProperty.GetString() ?? "";
+                }
+
+                string description = "";
+                if (root.TryGetProperty("description", out var descProperty))
+                {
+                    description = descProperty.GetString() ?? "";
+                }
+
+                decimal price = 0;
+                if (root.TryGetProperty("price", out var priceProperty))
+                {
+                    if (priceProperty.ValueKind == JsonValueKind.Object && priceProperty.TryGetProperty("amount", out var amountProperty))
+                    {
+                        price = amountProperty.GetDecimal();
+                    }
+                    else
+                    {
+                        price = priceProperty.GetDecimal();
+                    }
+                }
+
+                string currency = "USD";
+                if (root.TryGetProperty("currency", out var currencyProperty))
+                {
+                    currency = currencyProperty.GetString() ?? "USD";
+                }
+
+                string sku = "";
+                if (root.TryGetProperty("sku", out var skuProperty))
+                {
+                    sku = skuProperty.GetString() ?? "";
+                }
+
+                int stock = 0;
+                if (root.TryGetProperty("stock", out var stockProperty))
+                {
+                    stock = stockProperty.GetInt32();
+                }
+
+                Guid categoryId;
+                if (!root.TryGetProperty("categoryId", out var categoryIdProperty) || !categoryIdProperty.TryGetGuid(out categoryId))
+                {
+                    categoryId = Guid.Parse("FAB8190A-7BF6-4277-99B4-3BD000EDD45B"); // Default category
+                }
 
                 var product = new Product(
                     name: name,
@@ -343,12 +397,10 @@ public class ProductJsonConverter : JsonConverter<Product>
                     sku: sku,
                     stock: stock,
                     categoryId: categoryId,
-                    id: id, 
+                    id: id,
                     createdBy: null
                 );
 
-
-             
                 // Handle optional properties
                 if (root.TryGetProperty("shortDescription", out var shortDesc))
                 {
@@ -370,14 +422,62 @@ public class ProductJsonConverter : JsonConverter<Product>
                     typeof(Product).GetProperty("SubCategoryId")?.SetValue(product, subCategoryId.GetGuid());
                 }
 
+
                 // Handle collections if present
                 if (root.TryGetProperty("images", out var images))
                 {
-                    foreach (var image in images.EnumerateArray())
+                    // Check if images is an array or a single object
+                    if (images.ValueKind == JsonValueKind.Array)
                     {
-                        var url = image.GetProperty("url").GetString();
-                        var fileName = image.GetProperty("fileName").GetString();
-                        var size = image.GetProperty("size").GetInt64();
+                        // Process array of images
+                        foreach (var image in images.EnumerateArray())
+                        {
+                            string? url = null;
+                            string? fileName = null;
+                            long size = 0;
+
+                            if (image.TryGetProperty("url", out var urlProperty))
+                            {
+                                url = urlProperty.GetString();
+                            }
+
+                            if (image.TryGetProperty("fileName", out var fileNameProperty))
+                            {
+                                fileName = fileNameProperty.GetString();
+                            }
+
+                            if (image.TryGetProperty("size", out var sizeProperty))
+                            {
+                                size = sizeProperty.GetInt64();
+                            }
+
+                            if (url != null && fileName != null)
+                            {
+                                product.AddImage(url, fileName, size);
+                            }
+                        }
+                    }
+                    else if (images.ValueKind == JsonValueKind.Object)
+                    {
+                        // Process single image object
+                        string? url = null;
+                        string? fileName = null;
+                        long size = 0;
+
+                        if (images.TryGetProperty("url", out var urlProperty))
+                        {
+                            url = urlProperty.GetString();
+                        }
+
+                        if (images.TryGetProperty("fileName", out var fileNameProperty))
+                        {
+                            fileName = fileNameProperty.GetString();
+                        }
+
+                        if (images.TryGetProperty("size", out var sizeProperty))
+                        {
+                            size = sizeProperty.GetInt64();
+                        }
 
                         if (url != null && fileName != null)
                         {
@@ -390,6 +490,10 @@ public class ProductJsonConverter : JsonConverter<Product>
             }
             catch (Exception ex)
             {
+                // Log the exception with context
+                System.Diagnostics.Debug.WriteLine($"Error while deserializing JSON: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"JSON data causing the error: {jsonString}");
+
                 throw new JsonException($"Error deserializing Product: {ex.Message}", ex);
             }
         }

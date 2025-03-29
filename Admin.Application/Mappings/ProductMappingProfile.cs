@@ -53,7 +53,10 @@ public class ProductMappingProfile : Profile
                 opt.MapFrom(src => src.Price.Currency));
 
         CreateMap<ProductAttribute, ProductAttributeDto>();
-        CreateMap<ProductImage, ProductImageDto>();
+        CreateMap<ProductImage, ProductImageDto>()
+            .ForMember(dest => dest.IsPrimary, opt => opt.MapFrom(src => src.IsPrimary))
+            .ForMember(dest => dest.SortOrder, opt => opt.MapFrom(src => src.SortOrder))
+            .ForMember(dest => dest.Alt, opt => opt.MapFrom(src => src.Alt));
         CreateMap<ProductSeo, ProductSeoDto>();
         CreateMap<ProductDimensions, ProductDimensionsDto>();
     }

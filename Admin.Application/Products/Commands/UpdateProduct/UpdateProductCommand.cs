@@ -27,19 +27,22 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
     private readonly IFileStorage _fileStorage;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUser _currentUser;
+    private readonly IApplicationDbContext _dbContext;
+    
 
     public UpdateProductCommandHandler(
         IProductRepository productRepository,
         ICategoryRepository categoryRepository,
         IFileStorage fileStorage,
         IUnitOfWork unitOfWork,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser, IApplicationDbContext dbContext)
     {
         _productRepository = productRepository;
         _categoryRepository = categoryRepository;
         _fileStorage = fileStorage;
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
+        _dbContext = dbContext;
     }
 
     public async Task<Result<Unit>> Handle(UpdateProductCommand command, CancellationToken cancellationToken)
@@ -63,10 +66,8 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                 category,
                 subCategory,
                 _currentUser.Id);
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
-            await _productRepository.UpdateAsync(product, cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result<Unit>.Success(Unit.Value);
         }
         catch (Exception ex) when (ex is not ValidationException)

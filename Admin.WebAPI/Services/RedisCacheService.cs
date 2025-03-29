@@ -26,13 +26,25 @@ public class RedisCacheService : ICacheService
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            // Add these options to handle complex types better
             IncludeFields = true,
-            ReferenceHandler = ReferenceHandler.Preserve,
+            // Remove this line to stop generating $id and $values
+            // ReferenceHandler = ReferenceHandler.Preserve,
             MaxDepth = 32,
-            // Add a custom converter for entities with constructors
             Converters = { new ProductJsonConverter(), new CategoryJsonConverter() }
         };
+
+        //TODO Option B (better long-term) - Use DTOs for caching:
+        //Create a ProductCacheDto for serialization
+        //    Use AutoMapper to convert between Product and ProductCacheDto
+        //    Cache the DTOs instead of domain entities
+        
+
+        //This is a better approach because:
+
+
+        //It separates your domain model from serialization concerns
+        //It avoids circular references entirely
+        //    It's more efficient for caching (only storing what you need)
     }
 
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T : class

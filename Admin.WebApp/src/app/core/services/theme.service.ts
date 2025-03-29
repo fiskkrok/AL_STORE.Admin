@@ -1,3 +1,4 @@
+// theme.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { OverlayContainer } from '@angular/cdk/overlay';
@@ -29,7 +30,11 @@ export class ThemeService {
   setTheme(isDark: boolean) {
     this.darkTheme.next(isDark);
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+    // Use the data-theme attribute for switching themes
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+    // Apply theme to overlay container (for modals, dialogs, etc.)
     this.applyThemeToOverlay(isDark);
   }
 
@@ -51,6 +56,7 @@ export class ThemeService {
 
   private applyThemeToOverlay(isDark: boolean) {
     const overlayContainerClasses = this.overlayContainer.getContainerElement().classList;
+
     if (isDark) {
       overlayContainerClasses.add('dark-theme');
       overlayContainerClasses.remove('light-theme');

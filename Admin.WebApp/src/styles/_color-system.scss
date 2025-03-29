@@ -1,0 +1,206 @@
+// _color-system.scss
+
+// Base color definitions (HSL for better manipulation)
+$color-primary-hue: 210; // Blue hue retained for brand continuity
+$color-primary-saturation: 80%; // Increased from 67% for more vibrance
+$color-primary-lightness-base: 45%; // Midpoint lightness for primary base color
+
+$color-neutral-hue: 210; // Slightly blue-tinted neutrals for cohesion
+$color-neutral-saturation: 10%; // Low saturation for neutrality
+$color-neutral-lightness-base: 20%; // Base lightness for neutral colors
+
+$color-accent-hue: 150; // Teal/green as complementary accent
+$color-accent-saturation: 65%;
+$color-accent-lightness-base: 40%;
+
+$color-warning-hue: 35; // Amber orange
+$color-warning-saturation: 90%;
+$color-warning-lightness-base: 50%;
+
+$color-success-hue: 140; // Green
+$color-success-saturation: 65%;
+$color-success-lightness-base: 35%;
+
+$color-error-hue: 355; // Red
+$color-error-saturation: 80%;
+$color-error-lightness-base: 45%;
+
+// Color palette generator function
+@function generate-palette($hue, $saturation, $lightness-base) {
+    $palette: (
+        5: hsl($hue, $saturation, 5%),
+        10: hsl($hue, $saturation, 10%),
+        20: hsl($hue, $saturation, 20%),
+        30: hsl($hue, $saturation, 30%),
+        40: hsl($hue, $saturation, 40%),
+        50: hsl($hue, $saturation, 50%),
+        60: hsl($hue, $saturation, 60%),
+        70: hsl($hue, $saturation, 70%),
+        80: hsl($hue, $saturation, 80%),
+        90: hsl($hue, $saturation, 90%),
+        95: hsl($hue, $saturation, 95%),
+        98: hsl($hue, $saturation, 98%),
+        100: hsl($hue, 0%, 100%),
+        base: hsl($hue, $saturation, $lightness-base),
+    );
+@return $palette;
+}
+
+// Generate color palettes
+$palette-primary: generate-palette($color-primary-hue, $color-primary-saturation, $color-primary-lightness-base);
+$palette-neutral: generate-palette($color-neutral-hue, $color-neutral-saturation, $color-neutral-lightness-base);
+$palette-accent: generate-palette($color-accent-hue, $color-accent-saturation, $color-accent-lightness-base);
+$palette-warning: generate-palette($color-warning-hue, $color-warning-saturation, $color-warning-lightness-base);
+$palette-success: generate-palette($color-success-hue, $color-success-saturation, $color-success-lightness-base);
+$palette-error: generate-palette($color-error-hue, $color-error-saturation, $color-error-lightness-base);
+
+// Semantic tokens for light mode
+$semantic-colors-light: (
+    // Background colors
+    bg-primary: map-get($palette-neutral, 98),
+    bg-secondary: map-get($palette-neutral, 95),
+    bg-tertiary: map-get($palette-neutral, 90),
+    bg-surface: white,
+    bg-elevated: white,
+
+    // Text colors
+    text-primary: map-get($palette-neutral, 10),
+    text-secondary: map-get($palette-neutral, 40),
+    text-tertiary: map-get($palette-neutral, 60),
+    text-disabled: map-get($palette-neutral, 70),
+    text-on-primary: white,
+    text-on-accent: white,
+
+    // Border colors
+    border-subtle: map-get($palette-neutral, 80),
+    border-default: map-get($palette-neutral, 70),
+    border-strong: map-get($palette-neutral, 40),
+
+    // Action colors
+    action-primary: map-get($palette-primary, base),
+    action-primary-hover: map-get($palette-primary, 40),
+    action-primary-active: map-get($palette-primary, 30),
+    action-accent: map-get($palette-accent, base),
+    action-accent-hover: map-get($palette-accent, 40),
+    action-accent-active: map-get($palette-accent, 30),
+
+    // Feedback colors
+    feedback-success: map-get($palette-success, base),
+    feedback-warning: map-get($palette-warning, base),
+    feedback-error: map-get($palette-error, base),
+    feedback-info: map-get($palette-primary, 50),
+
+    // Feedback background colors - low contrast for subtlety
+    feedback-success-bg: hsl($color-success-hue, $color-success-saturation, 95%),
+    feedback-warning-bg: hsl($color-warning-hue, $color-warning-saturation, 95%),
+    feedback-error-bg: hsl($color-error-hue, $color-error-saturation, 95%),
+    feedback-info-bg: hsl($color-primary-hue, $color-primary-saturation, 95%),
+);
+
+// Semantic tokens for dark mode
+$semantic-colors-dark: (
+    // Background colors
+    bg-primary: map-get($palette-neutral, 5),
+    bg-secondary: map-get($palette-neutral, 10),
+    bg-tertiary: map-get($palette-neutral, 20),
+    bg-surface: map-get($palette-neutral, 10),
+    bg-elevated: map-get($palette-neutral, 20),
+
+    // Text colors
+    text-primary: map-get($palette-neutral, 98),
+    text-secondary: map-get($palette-neutral, 80),
+    text-tertiary: map-get($palette-neutral, 60),
+    text-disabled: map-get($palette-neutral, 50),
+    text-on-primary: white,
+    text-on-accent: white,
+
+    // Border colors
+    border-subtle: map-get($palette-neutral, 30),
+    border-default: map-get($palette-neutral, 40),
+    border-strong: map-get($palette-neutral, 50),
+
+    // Action colors
+    action-primary: map-get($palette-primary, 50),
+    action-primary-hover: map-get($palette-primary, 60),
+    action-primary-active: map-get($palette-primary, 70),
+    action-accent: map-get($palette-accent, 50),
+    action-accent-hover: map-get($palette-accent, 60),
+    action-accent-active: map-get($palette-accent, 70),
+
+    // Feedback colors
+    feedback-success: map-get($palette-success, 50),
+    feedback-warning: map-get($palette-warning, 50),
+    feedback-error: map-get($palette-error, 50),
+    feedback-info: map-get($palette-primary, 60),
+
+    // Feedback background colors - low contrast for subtlety
+    feedback-success-bg: hsl($color-success-hue, $color-success-saturation, 15%),
+    feedback-warning-bg: hsl($color-warning-hue, $color-warning-saturation, 15%),
+    feedback-error-bg: hsl($color-error-hue, $color-error-saturation, 15%),
+    feedback-info-bg: hsl($color-primary-hue, $color-primary-saturation, 15%),
+);
+
+// CSS variables generated from the semantic tokens
+:root {
+    @each $name, $color in $semantic-colors-light {
+        --color-#{$name}: #{$color};
+    }
+
+    // Material Design overrides
+    --mat-table-background-color: var(--color-bg-surface);
+    --mat-sys-color-primary: var(--color-action-primary);
+    --mat-sys-color-primary-container: var(--color-bg-tertiary);
+    --mat-sys-color-on-primary-container: var(--color-text-primary);
+    --mat-sys-color-surface: var(--color-bg-surface);
+    --mat-sys-color-surface-variant: var(--color-bg-secondary);
+    --mat-sys-color-on-surface: var(--color-text-primary);
+
+    // Store RGB values for opacity adjustments
+    --color-primary-rgb: #{red(map-get($palette-primary, base))},
+    #{green(map-get($palette-primary, base))},
+    #{blue(map-get($palette-primary, base))};
+    --color-accent-rgb: #{red(map-get($palette-accent, base))},
+    #{green(map-get($palette-accent, base))},
+    #{blue(map-get($palette-accent, base))};
+}
+
+// Applying dark mode via data attribute for theme switching
+[data-theme="dark"] {
+    @each $name, $color in $semantic-colors-dark {
+        --color-#{$name}: #{$color};
+    }
+
+    // Material Design dark theme overrides
+    --mat-table-background-color: var(--color-bg-surface);
+    --mat-sys-color-primary: var(--color-action-primary);
+    --mat-sys-color-primary-container: var(--color-bg-tertiary);
+    --mat-sys-color-on-primary-container: var(--color-text-primary);
+    --mat-sys-color-surface: var(--color-bg-surface);
+    --mat-sys-color-surface-variant: var(--color-bg-secondary);
+    --mat-sys-color-on-surface: var(--color-text-primary);
+
+    // Store RGB values for opacity adjustments
+    --color-primary-rgb: #{red(map-get($palette-primary, 50))},
+    #{green(map-get($palette-primary, 50))},
+    #{blue(map-get($palette-primary, 50))};
+    --color-accent-rgb: #{red(map-get($palette-accent, 50))},
+    #{green(map-get($palette-accent, 50))},
+    #{blue(map-get($palette-accent, 50))};
+}
+
+// Color contrast utility mixins
+@mixin color-contrast-on-light($bg-color) {
+    background-color: $bg-color;
+    color: if(lightness($bg-color) > 60%, var(--color-text-primary), white);
+}
+
+@mixin color-contrast-on-dark($bg-color) {
+    background-color: $bg-color;
+    color: if(lightness($bg-color) < 40%, white, var(--color-text-primary));
+}
+
+// Consistent focus styles
+@mixin focus-ring {
+    outline: 2px solid var(--color-action-primary);
+    outline-offset: 2px;
+}

@@ -1,0 +1,104 @@
+// _material-theme.scss
+
+@use '@angular/material' as mat;
+@use 'sass:map';
+@use 'sass:meta';
+@use 'theme-colors' as colors;
+
+// Define custom typography
+$custom-typography: map.merge(mat.$typography-config,
+        (font-family: var(--font-family-base),
+            headline-1: (font-size: var(--font-size-4xl),
+                line-height: 1.1,
+                font-weight: var(--font-weight-bold),
+            ),
+            headline-2: (font-size: var(--font-size-3xl),
+                line-height: 1.1,
+                font-weight: var(--font-weight-bold),
+            ),
+            headline-3: (font-size: var(--font-size-2xl),
+                line-height: 1.2,
+                font-weight: var(--font-weight-bold),
+            ),
+            headline-4: (font-size: var(--font-size-xl),
+                line-height: 1.2,
+                font-weight: var(--font-weight-semibold),
+            ),
+            headline-5: (font-size: var(--font-size-lg),
+                line-height: 1.2,
+                font-weight: var(--font-weight-semibold),
+            ),
+            headline-6: (font-size: var(--font-size-md),
+                line-height: 1.2,
+                font-weight: var(--font-weight-semibold),
+            ),
+            subtitle-1: (font-size: var(--font-size-md),
+                line-height: 1.5,
+                font-weight: var(--font-weight-medium),
+            ),
+            subtitle-2: (font-size: var(--font-size-base),
+                line-height: 1.5,
+                font-weight: var(--font-weight-medium),
+            ),
+            body-1: (font-size: var(--font-size-base),
+                line-height: 1.5,
+                font-weight: var(--font-weight-regular),
+            ),
+            body-2: (font-size: var(--font-size-sm),
+                line-height: 1.5,
+                font-weight: var(--font-weight-regular),
+            ),
+            button: (font-size: var(--font-size-base),
+                line-height: 1.2,
+                font-weight: var(--font-weight-medium),
+            ),
+            caption: (font-size: var(--font-size-xs),
+                line-height: 1.5,
+                font-weight: var(--font-weight-regular),
+            ),
+        ));
+
+// Import core Material styles
+@include mat.core();
+
+// Define primary, accent, and warn color palettes
+$primary-palette: colors.$primary-palette;
+$accent-palette: colors.$tertiary-palette;
+$warn-palette: (
+    100: #f8f7f7,
+    50: #de3730,
+    contrast: (100: rgba(0, 0, 0, 0.87),
+        50: rgba(255, 255, 255, 0.87),
+    )
+);
+
+// Configure light theme
+$theme: (
+    color: (primary: $primary-palette,
+        accent: $accent-palette,
+        warn: $warn-palette,
+    ),
+    typography: $custom-typography,
+    density: 0,
+);
+
+// Apply the default theme
+@include mat.all-component-themes($theme);
+
+// Apply the dark theme when the 'data-theme="dark"' attribute is present
+[data-theme="dark"] {
+    // Override specific component colors as needed for dark theme
+    @include mat.all-component-colors(map.merge($theme,
+            (color: (primary: $primary-palette,
+                    accent: $accent-palette,
+                    warn: $warn-palette,
+                    background: (background: map.get(colors.$_palettes, neutral, 12),
+                        card: map.get(colors.$_palettes, neutral, 10),
+                    ),
+                    foreground: (text: map.get(colors.$_palettes, neutral, 95),
+                        secondary-text: map.get(colors.$_palettes, neutral, 70),
+                        disabled-text: map.get(colors.$_palettes, neutral, 50),
+                    ),
+                ),
+            )));
+}

@@ -22,6 +22,15 @@ interface NavItem {
 })
 
 export class SidebarComponent implements OnInit {
+  toggleCollapse() {
+    throw new Error('Method not implemented.');
+  }
+  isGroupActive(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
+  toggleGroup(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
   isCollapsed = false;
   isDarkTheme = true;
   logo = '../../../assets/dashboardadmin.png';
@@ -82,6 +91,9 @@ export class SidebarComponent implements OnInit {
       ]
     },
   ];
+  expandedGroups: any;
+  newOrdersCount: any;
+  user: any;
 
   // Flattened navigation for mobile
   get mobileNavItems(): NavItem[] {

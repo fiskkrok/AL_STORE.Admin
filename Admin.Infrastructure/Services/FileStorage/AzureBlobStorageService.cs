@@ -45,9 +45,9 @@ public class AzureBlobStorageService : IFileStorage
 
             // Create a unique file name with original extension
             var extension = Path.GetExtension(file.FileName);
-            var blobName = $"{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid()}{extension}";
+            const string folderName = "Product_Pictures/";
+            var blobName = $"{folderName}{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid()}{extension}";
             var blobClient = _containerClient.GetBlobClient(blobName);
-
             var headers = new BlobHttpHeaders
             {
                 ContentType = file.ContentType

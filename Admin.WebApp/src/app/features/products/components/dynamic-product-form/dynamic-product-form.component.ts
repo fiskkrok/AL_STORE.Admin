@@ -269,7 +269,7 @@ interface ProductFormModel {
                     <h4>Attributes</h4>
                     <p *ngFor="let field of attributesFields">
                       <strong>{{ field.props?.label }}:</strong>
-                      {{ formatAttributeValue(field.key, model.attributes[getKeyAsString(field.key)]) }}
+                      {{ formatAttributeValue(field.key ?? "", model.attributes[getKeyAsString(field.key ?? "")]) }}
                     </p>
                   </div>
                   

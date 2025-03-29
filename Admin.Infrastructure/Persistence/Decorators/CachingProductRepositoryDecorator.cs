@@ -207,6 +207,11 @@ public class CachingProductRepositoryDecorator : IProductRepository
         }
     }
 
+    public async Task<Product?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _inner.GetByIdWithImagesAsync(id, cancellationToken);
+    }
+
 
     // For methods that need to invalidate cached items
     public async Task AddAsync(Product entity, CancellationToken cancellationToken = default)

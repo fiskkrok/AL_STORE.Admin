@@ -10,4 +10,5 @@ public interface IProductRepository : IRepository<Product>
     Task<bool> SlugExistsAsync(string slug, Guid? excludeProductId = null, CancellationToken cancellationToken = default);
     Task<(IEnumerable<Product> Products, int TotalCount)> GetProductsAsync(
         ProductFilterRequest filter, CancellationToken cancellationToken = default);
+    Task<Product?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken);
 }

@@ -1,0 +1,445 @@
+// _motion-system.scss
+
+// Base timing variables
+$motion-duration-instant: 100ms;
+$motion-duration-fast: 200ms;
+$motion-duration-normal: 300ms;
+$motion-duration-slow: 500ms;
+
+// Easing curves based on natural motion
+// Standard: General UI transitions
+// Decelerate: Entering elements (slowing down to rest)
+// Accelerate: Exiting elements (starting from rest)
+// Emphasized: Important state changes that need attention
+$motion-easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+$motion-easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+$motion-easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
+$motion-easing-emphasized: cubic-bezier(0.4, 0.0, 0.6, 1);
+
+// Motion presets for common UI patterns
+$transition-fade: opacity $motion-duration-normal $motion-easing-standard;
+$transition-transform: transform $motion-duration-normal $motion-easing-standard;
+$transition-color: color $motion-duration-fast $motion-easing-standard;
+$transition-background: background-color $motion-duration-fast $motion-easing-standard;
+$transition-border: border-color $motion-duration-fast $motion-easing-standard;
+$transition-shadow: box-shadow $motion-duration-fast $motion-easing-standard;
+$transition-all: all $motion-duration-normal $motion-easing-standard;
+
+// Compound transitions
+$transition-button: color $motion-duration-fast $motion-easing-standard,
+    background-color $motion-duration-fast $motion-easing-standard,
+    border-color $motion-duration-fast $motion-easing-standard,
+    box-shadow $motion-duration-fast $motion-easing-standard;
+
+$transition-expand: max-height $motion-duration-normal $motion-easing-decelerate,
+    opacity $motion-duration-normal $motion-easing-decelerate;
+
+$transition-collapse: max-height $motion-duration-normal $motion-easing-accelerate,
+    opacity $motion-duration-normal $motion-easing-accelerate;
+
+// Special purpose transitions
+$transition-drawer-open: transform $motion-duration-slow $motion-easing-decelerate;
+$transition-drawer-close: transform $motion-duration-normal $motion-easing-accelerate;
+$transition-modal-backdrop: opacity $motion-duration-normal $motion-easing-standard;
+$transition-toast-in: transform $motion-duration-normal $motion-easing-decelerate,
+    opacity $motion-duration-normal $motion-easing-decelerate;
+$transition-toast-out: transform $motion-duration-fast $motion-easing-accelerate,
+    opacity $motion-duration-fast $motion-easing-accelerate;
+
+// Generate CSS custom properties
+:root {
+    // Duration variables
+    --motion-duration-instant: #{$motion-duration-instant};
+    --motion-duration-fast: #{$motion-duration-fast};
+    --motion-duration-normal: #{$motion-duration-normal};
+    --motion-duration-slow: #{$motion-duration-slow};
+
+    // Easing curves
+    --motion-easing-standard: #{$motion-easing-standard};
+    --motion-easing-decelerate: #{$motion-easing-decelerate};
+    --motion-easing-accelerate: #{$motion-easing-accelerate};
+    --motion-easing-emphasized: #{$motion-easing-emphasized};
+
+    // Transition presets
+    --transition-fade: #{$transition-fade};
+    --transition-transform: #{$transition-transform};
+    --transition-color: #{$transition-color};
+    --transition-background: #{$transition-background};
+    --transition-border: #{$transition-border};
+    --transition-shadow: #{$transition-shadow};
+    --transition-all: #{$transition-all};
+    --transition-button: #{$transition-button};
+    --transition-expand: #{$transition-expand};
+    --transition-collapse: #{$transition-collapse};
+    --transition-drawer-open: #{$transition-drawer-open};
+    --transition-drawer-close: #{$transition-drawer-close};
+    --transition-modal-backdrop: #{$transition-modal-backdrop};
+    --transition-toast-in: #{$transition-toast-in};
+    --transition-toast-out: #{$transition-toast-out};
+}
+
+// Respect user preference for reduced motion
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --motion-duration-instant: 0ms;
+        --motion-duration-fast: 0ms;
+        --motion-duration-normal: 0ms;
+        --motion-duration-slow: 0ms;
+    }
+}
+
+// Common motion patterns
+
+// 1. Fade in/out
+.fade-in {
+    animation: fadeIn var(--motion-duration-normal) var(--motion-easing-standard);
+}
+
+.fade-out {
+    animation: fadeOut var(--motion-duration-fast) var(--motion-easing-accelerate);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+// 2. Slide transitions
+.slide-in-right {
+    animation: slideInRight var(--motion-duration-normal) var(--motion-easing-decelerate);
+}
+
+.slide-out-right {
+    animation: slideOutRight var(--motion-duration-normal) var(--motion-easing-accelerate);
+}
+
+.slide-in-left {
+    animation: slideInLeft var(--motion-duration-normal) var(--motion-easing-decelerate);
+}
+
+.slide-out-left {
+    animation: slideOutLeft var(--motion-duration-normal) var(--motion-easing-accelerate);
+}
+
+.slide-in-up {
+    animation: slideInUp var(--motion-duration-normal) var(--motion-easing-decelerate);
+}
+
+.slide-out-up {
+    animation: slideOutUp var(--motion-duration-normal) var(--motion-easing-accelerate);
+}
+
+.slide-in-down {
+    animation: slideInDown var(--motion-duration-normal) var(--motion-easing-decelerate);
+}
+
+.slide-out-down {
+    animation: slideOutDown var(--motion-duration-normal) var(--motion-easing-accelerate);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOutUp {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-100%);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOutDown {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(100%);
+    }
+}
+
+// 3. Scale transitions
+.scale-in {
+    animation: scaleIn var(--motion-duration-normal) var(--motion-easing-decelerate);
+}
+
+.scale-out {
+    animation: scaleOut var(--motion-duration-normal) var(--motion-easing-accelerate);
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    to {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+}
+
+// 4. Component-specific motion
+
+// Button hover effect
+.btn {
+    transition: var(--transition-button);
+
+    &:not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    &:not(:disabled):active {
+        transform: translateY(0);
+    }
+}
+
+// Card hover effect
+.card-interactive {
+    transition: transform var(--motion-duration-normal) var(--motion-easing-standard),
+        box-shadow var(--motion-duration-normal) var(--motion-easing-standard);
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+// Expandable panels
+.expandable-content {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: var(--transition-collapse);
+
+    &.expanded {
+        max-height: 500px; // Arbitrary large value, will stop at actual content height
+        opacity: 1;
+        transition: var(--transition-expand);
+    }
+}
+
+// Sidebar transition
+.sidebar {
+    transition: width var(--motion-duration-slow) var(--motion-easing-standard);
+
+    &.collapsed {
+
+        .nav-label,
+        .logo-text {
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity var(--motion-duration-fast) var(--motion-easing-accelerate),
+                transform var(--motion-duration-fast) var(--motion-easing-accelerate);
+        }
+    }
+
+    &.expanded {
+
+        .nav-label,
+        .logo-text {
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity var(--motion-duration-normal) var(--motion-easing-decelerate) 100ms,
+                transform var(--motion-duration-normal) var(--motion-easing-decelerate) 100ms;
+        }
+    }
+}
+
+// Status indicator pulse
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.status-indicator-pulse {
+    animation: pulse 2s infinite var(--motion-easing-emphasized);
+}
+
+// Loading spinner
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-spinner {
+    animation: rotate 1.5s infinite linear;
+}
+
+// Progress bar animation
+@keyframes progressBar {
+    0% {
+        width: 0%;
+    }
+
+    100% {
+        width: 100%;
+    }
+}
+
+.progress-animated .progress-bar {
+    animation: progressBar 2s var(--motion-easing-standard);
+}
+
+// Toast notification
+.toast {
+    &.toast-enter {
+        animation: toastEnter var(--motion-duration-normal) var(--motion-easing-decelerate) forwards;
+    }
+
+    &.toast-exit {
+        animation: toastExit var(--motion-duration-fast) var(--motion-easing-accelerate) forwards;
+    }
+}
+
+@keyframes toastEnter {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastExit {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+}
+
+// Page transition
+.page-transition {
+    &.page-enter {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    &.page-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity var(--motion-duration-normal) var(--motion-easing-decelerate),
+            transform var(--motion-duration-normal) var(--motion-easing-decelerate);
+    }
+
+    &.page-exit {
+        opacity: 1;
+    }
+
+    &.page-exit-active {
+        opacity: 0;
+        transition: opacity var(--motion-duration-fast) var(--motion-easing-accelerate);
+    }
+}

@@ -8,6 +8,7 @@ using MediatR;
 public record GetAllProductsQuery : IRequest<Result<BulkProductsResponse>>
 {
     public DateTime? Since { get; init; }
+    public bool? IncludeInactive { get; init; } = false;
 }
 
 public record BulkProductsResponse
@@ -33,7 +34,8 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, R
         var filter = new ProductFilterRequest
         {
             PageSize = int.MaxValue,
-            LastModifiedAfter = request.Since
+            LastModifiedAfter = request.Since,
+            IncludeInactive = request.IncludeInactive
         };
 
         var (products, _) = await _productRepository.GetProductsAsync(filter, ct);

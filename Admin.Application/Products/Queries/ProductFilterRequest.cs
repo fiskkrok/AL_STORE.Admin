@@ -14,4 +14,5 @@ public record ProductFilterRequest
     public string? Status { get; set; }
     public string? Visibility { get; set; }
     public DateTime? LastModifiedAfter { get; init; }
+    public bool? IncludeInactive { get; init; }
 }

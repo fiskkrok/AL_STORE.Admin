@@ -1,0 +1,309 @@
+// _typography-system.scss
+@use "sass:math";
+
+// Typography scale based on 1.2 ratio (minor third)
+// Uses a modular scale to establish visual hierarchy
+// Based on research showing optimal reading speed and recognition
+
+// Font families
+$font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-family-monospace: 'JetBrains Mono', 'SF Mono', 'Fira Mono', 'Roboto Mono', monospace;
+$font-family-tabular: 'Inter', 'SF Mono', 'Roboto Mono', monospace; // For data tables and numbers
+
+// Base size (16px is recommended by WCAG for body text)
+$font-size-base: 1rem;
+
+// Modular scale ratios for building a type hierarchy
+$type-scale-ratio: 1.2; // Minor third scale
+
+// Line heights - optimized for readability
+$line-height-tight: 1.2; // For headings
+$line-height-base: 1.5; // For body text (optimal for reading comprehension)
+$line-height-loose: 1.7; // For long-form text
+
+// Font weights 
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Letter spacing
+$letter-spacing-tight: -0.01em;
+$letter-spacing-normal: 0;
+$letter-spacing-wide: 0.01em;
+$letter-spacing-wider: 0.02em;
+
+// Function to calculate font sizes based on the modular scale
+@function type-scale($step) {
+    @return $font-size-base * math.pow($type-scale-ratio, $step);
+}
+
+// Typography scale
+$type-scale: (
+    xs: type-scale(-2),
+    // 0.69rem ~= 11px
+    sm: type-scale(-1),
+    // 0.83rem ~= 13px  
+    base: type-scale(0),
+    // 1.00rem = 16px
+    md: type-scale(1),
+    // 1.20rem ~= 19px
+    lg: type-scale(2),
+    // 1.44rem ~= 23px
+    xl: type-scale(3),
+    // 1.73rem ~= 28px
+    2xl: type-scale(4),
+    // 2.07rem ~= 33px
+    3xl: type-scale(5),
+    // 2.49rem ~= 40px
+    4xl: type-scale(6) // 2.99rem ~= 48px
+);
+
+// Generate CSS variables for the type system
+:root {
+    // Font families
+    --font-family-base: #{$font-family-base};
+    --font-family-monospace: #{$font-family-monospace};
+    --font-family-tabular: #{$font-family-tabular};
+
+    // Font sizes
+    @each $name, $size in $type-scale {
+        --font-size-#{$name}: #{$size};
+    }
+
+    // Line heights
+    --line-height-tight: #{$line-height-tight};
+    --line-height-base: #{$line-height-base};
+    --line-height-loose: #{$line-height-loose};
+
+    // Font weights
+    --font-weight-light: #{$font-weight-light};
+    --font-weight-regular: #{$font-weight-regular};
+    --font-weight-medium: #{$font-weight-medium};
+    --font-weight-semibold: #{$font-weight-semibold};
+    --font-weight-bold: #{$font-weight-bold};
+
+    // Letter spacing
+    --letter-spacing-tight: #{$letter-spacing-tight};
+    --letter-spacing-normal: #{$letter-spacing-normal};
+    --letter-spacing-wide: #{$letter-spacing-wide};
+    --letter-spacing-wider: #{$letter-spacing-wider};
+}
+
+// Semantic text styles
+// These styles match specific use cases in the interface
+
+// Heading styles
+h1,
+.h1 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: 1.5rem;
+    color: var(--color-text-primary);
+}
+
+h2,
+.h2 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: 1.25rem;
+    color: var(--color-text-primary);
+}
+
+h3,
+.h3 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+}
+
+h4,
+.h4 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-normal);
+    margin-bottom: 0.75rem;
+    color: var(--color-text-primary);
+}
+
+h5,
+.h5 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-normal);
+    margin-bottom: 0.5rem;
+    color: var(--color-text-primary);
+}
+
+h6,
+.h6 {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-normal);
+    margin-bottom: 0.5rem;
+    color: var(--color-text-primary);
+}
+
+// Body text styles
+.text-body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-base);
+    letter-spacing: var(--letter-spacing-normal);
+    color: var(--color-text-primary);
+}
+
+.text-body-large {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-base);
+    letter-spacing: var(--letter-spacing-normal);
+    color: var(--color-text-primary);
+}
+
+.text-body-small {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-base);
+    letter-spacing: var(--letter-spacing-normal);
+    color: var(--color-text-primary);
+}
+
+// Interactive text styles
+.text-button {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: none; // Research shows all-caps can reduce reading speed
+}
+
+.text-link {
+    font-family: var(--font-family-base);
+    color: var(--color-action-primary);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--color-action-primary-hover);
+        text-decoration: underline;
+    }
+
+    &:focus {
+        outline: 2px solid var(--color-action-primary);
+        outline-offset: 2px;
+    }
+}
+
+// Label styles
+.text-label {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-text-secondary);
+}
+
+// Code and data styles
+.text-code {
+    font-family: var(--font-family-monospace);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-base);
+    letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-tabular {
+    font-family: var(--font-family-tabular);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+// Utility text classes
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-wrap {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+// Text color utilities
+.text-primary {
+    color: var(--color-text-primary);
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+.text-tertiary {
+    color: var(--color-text-tertiary);
+}
+
+.text-disabled {
+    color: var(--color-text-disabled);
+}
+
+.text-success {
+    color: var(--color-feedback-success);
+}
+
+.text-warning {
+    color: var(--color-feedback-warning);
+}
+
+.text-error {
+    color: var(--color-feedback-error);
+}
+
+.text-info {
+    color: var(--color-feedback-info);
+}
+
+// Apply the base styles to the body
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-base);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

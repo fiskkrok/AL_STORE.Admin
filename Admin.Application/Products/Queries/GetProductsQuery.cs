@@ -30,9 +30,9 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Result<
 {
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
-    private readonly ILogger<GetProductQueryHandler> _logger;
+    private readonly ILogger<GetProductsQueryHandler> _logger;
 
-    public GetProductsQueryHandler(IProductRepository productRepository, IMapper mapper, ILogger<GetProductQueryHandler> logger)
+    public GetProductsQueryHandler(IProductRepository productRepository, IMapper mapper, ILogger<GetProductsQueryHandler> logger)
     {
         _productRepository = productRepository;
         _mapper = mapper;
