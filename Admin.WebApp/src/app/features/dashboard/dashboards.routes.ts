@@ -4,7 +4,8 @@ import { DashboardComponent } from "./dashboard.component";
 
 export const DASHBOARD_ROUTES: Routes = [
     {
-        path: '',
+        path: 'dashboards',
+        title: 'Dashboards',
         component: DashboardComponent,
         children: [
             {

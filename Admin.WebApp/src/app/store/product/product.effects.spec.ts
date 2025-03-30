@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Observable, of, throwError } from 'rxjs';
-import { Action } from '@ngrx/store';
+import { Action } from '@';
 import { ProductEffects } from './product.effects';
 import { ProductActions } from './product.actions';
 import { ProductService } from '../../core/services/product.service';
 import { Product, ProductStatus, ProductVisibility } from '../../shared/models/product.model';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@/testing';
 import { initialProductState } from './product.state';
 
 describe('ProductEffects', () => {

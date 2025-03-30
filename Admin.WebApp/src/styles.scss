@@ -1,23 +1,45 @@
-// Custom Theming for Angular Material
-// For more information: https://material.angular.io/guide/theming
-@use 'sass:map';
-@use '@angular/material' as mat;
-@use 'styles/index' as *;
-@use 'material-theme';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-html {
-    // Must specify color-scheme for theme to automatically work
-    color-scheme: light dark;
+/* Base styles */
+@layer base {
+    html {
+        @apply text-slate-900 bg-slate-50;
+    }
 
-    @include mat.theme((color: (primary: $primary-palette,
-                tertiary: $tertiary-palette,
-            ),
-            typography: (plain-family: system-ui,
-                brand-family: system-ui,
-                bold-weight: 700,
-                medium-weight: 500,
-                regular-weight: 400,
-            ),
-            density: 0,
-        ));
+    .dark {
+        @apply text-slate-200 bg-slate-900;
+    }
+
+    h1 {
+        @apply text-2xl font-bold text-slate-900 dark:text-white;
+    }
+
+    h2 {
+        @apply text-xl font-semibold text-slate-800 dark:text-slate-100;
+    }
+
+    h3 {
+        @apply text-lg font-medium text-slate-800 dark:text-slate-100;
+    }
+}
+
+/* Custom component styles */
+@layer components {
+    .btn-primary {
+        @apply px-4 py-2 font-medium text-white transition-colors bg-primary-600 rounded hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+    }
+
+    .btn-secondary {
+        @apply px-4 py-2 font-medium transition-colors bg-white border border-slate-300 rounded text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700;
+    }
+
+    .card {
+        @apply p-4 bg-white rounded-lg shadow-subtle dark:bg-slate-800;
+    }
+
+    .form-input {
+        @apply block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500;
+    }
 }

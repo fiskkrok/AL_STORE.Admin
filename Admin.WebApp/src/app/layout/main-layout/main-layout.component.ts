@@ -28,7 +28,6 @@ import { GlobalLoadingComponent } from 'src/app/shared/components/global-loading
   
     </div>
   `,
-  styleUrls: ['./main-layout.component.scss']
 })
 export class MainLayoutComponent implements OnInit {
   private readonly themeService = inject(ThemeService);
