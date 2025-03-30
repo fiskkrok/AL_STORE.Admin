@@ -1,20 +1,17 @@
 ﻿using Admin.Application.Products.Events;
 using Admin.WebAPI.Hubs;
-using Admin.WebAPI.Hubs.Interface;
-
 using MassTransit;
-
 using Microsoft.AspNetCore.SignalR;
 
 namespace Admin.WebAPI.Messaging.Consumers;
 
 public class StockUpdatedConsumer : IConsumer<ProductStockUpdatedIntegrationEvent>
 {
-    private readonly IHubContext<ProductHub, IProductHubClient> _hubContext;
+    private readonly IHubContext<StockHub> _hubContext;
     private readonly ILogger<StockUpdatedConsumer> _logger;
 
     public StockUpdatedConsumer(
-        IHubContext<ProductHub, IProductHubClient> hubContext,
+        IHubContext<StockHub> hubContext,
         ILogger<StockUpdatedConsumer> logger)
     {
         _hubContext = hubContext;
@@ -25,9 +22,11 @@ public class StockUpdatedConsumer : IConsumer<ProductStockUpdatedIntegrationEven
     {
         try
         {
-            await _hubContext.Clients.All.StockUpdated(
+            await _hubContext.Clients.All.SendAsync("StockUpdated", new
+            {
                 context.Message.ProductId,
-                context.Message.NewStock);
+                context.Message.NewStock
+            });
 
             _logger.LogInformation("Successfully notified clients about stock update for product {ProductId}",
                 context.Message.ProductId);

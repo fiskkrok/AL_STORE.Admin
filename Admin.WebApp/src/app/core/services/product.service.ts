@@ -12,8 +12,8 @@ import {
     ProductVariant,
 } from '../../shared/models/product.model';
 import { PagedResponse } from '../../shared/models/paged-response.model';
-import { DashboardStats } from 'src/app/features/statistics/statistics.component';
 import { Category } from 'src/app/shared/models/category.model';
+import { DashboardStats } from './statistics.service';
 
 // Enhanced filter options
 export interface ProductFilters {

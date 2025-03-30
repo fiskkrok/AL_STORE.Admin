@@ -1,0 +1,63 @@
+// material-theme.scss
+@use '@angular/material' as mat;
+
+// Define Material palettes based on your Tailwind colors
+$primary-palette: (
+    50: #eff6ff,
+    // Tailwind primary-50
+    100: #dbeafe,
+    // Tailwind primary-100
+    200: #bfdbfe,
+    300: #93c5fd,
+    400: #60a5fa,
+    500: #3b82f6,
+    // Tailwind primary-500 (base)
+    600: #2563eb,
+    700: #1d4ed8,
+    800: #1e40af,
+    900: #1e3a8a,
+    950: #172554,
+    contrast: (50: rgba(0, 0, 0, 0.87),
+        100: rgba(0, 0, 0, 0.87),
+        200: rgba(0, 0, 0, 0.87),
+        300: rgba(0, 0, 0, 0.87),
+        400: rgba(0, 0, 0, 0.87),
+        500: white,
+        600: white,
+        700: white,
+        800: white,
+        900: white,
+        950: white,
+    )
+);
+
+// Create the Material theme
+$app-primary: mat.define-palette($primary-palette);
+$app-accent: mat.define-palette(mat.$amber-palette, A200, A100, A400);
+$app-warn: mat.define-palette(mat.$red-palette);
+
+// Create light theme
+$app-light-theme: mat.define-light-theme((color: (primary: $app-primary,
+                accent: $app-accent,
+                warn: $app-warn,
+            ),
+            typography: mat.define-typography-config(),
+            density: 0,
+        ));
+
+// Create dark theme
+$app-dark-theme: mat.define-dark-theme((color: (primary: $app-primary,
+                accent: $app-accent,
+                warn: $app-warn,
+            ),
+            typography: mat.define-typography-config(),
+            density: 0,
+        ));
+
+// Apply the light theme by default
+@include mat.all-component-themes($app-light-theme);
+
+// Apply the dark theme to the .dark class
+.dark {
+    @include mat.all-component-colors($app-dark-theme);
+}

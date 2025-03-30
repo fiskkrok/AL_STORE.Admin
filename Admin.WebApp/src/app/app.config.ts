@@ -3,7 +3,6 @@ import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { FormlyModule } from '@ngx-formly/core';
-import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
@@ -24,7 +23,7 @@ import { StockEffects } from './store/stock/stock.effects';
 import { orderReducer } from './store/order/order.reducer';
 import { OrderEffects } from './store/order/order.effects';
 import { provideNativeDateAdapter } from '@angular/material/core';
-
+import { FormlyMaterialModule } from '@ngx-formly/material';;
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withViewTransitions()),
@@ -77,7 +76,7 @@ export const appConfig: ApplicationConfig = {
           { name: 'email', message: 'Invalid email address' }
         ],
       }),
-      FormlyBootstrapModule,
+      FormlyMaterialModule,
     ),
   ]
 };

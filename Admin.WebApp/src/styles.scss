@@ -43,3 +43,300 @@
         @apply block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500;
     }
 }
+
+/* 
+ * Tailwind CSS Utility Extensions
+ * Add these to your global styles.scss to enhance Tailwind with admin-specific utilities
+ */
+
+/* Card Variations */
+@layer components {
+
+    /* Standard card */
+    .card {
+        @apply bg-white dark:bg-slate-800 rounded-lg shadow-subtle overflow-hidden;
+    }
+
+    /* Dashboard stat card */
+    .stat-card {
+        @apply bg-white dark:bg-slate-800 rounded-lg shadow-subtle overflow-hidden p-4 transition-transform hover:translate-y-[-2px];
+    }
+
+    /* Status card variations */
+    .status-card {
+        @apply p-4 rounded-lg;
+
+        &.status-success {
+            @apply bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-500;
+        }
+
+        &.status-warning {
+            @apply bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500;
+        }
+
+        &.status-error {
+            @apply bg-rose-50 dark:bg-rose-900/20 border-l-4 border-rose-500;
+        }
+
+        &.status-info {
+            @apply bg-sky-50 dark:bg-sky-900/20 border-l-4 border-sky-500;
+        }
+    }
+
+    /* Card sections */
+    .card-header {
+        @apply px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center;
+    }
+
+    .card-body {
+        @apply p-6;
+    }
+
+    .card-footer {
+        @apply px-6 py-4 bg-slate-50 dark:bg-slate-750 border-t border-slate-200 dark:border-slate-700;
+    }
+}
+
+/* Form Utilities */
+@layer components {
+
+    /* Form group wrapper */
+    .form-group {
+        @apply mb-4;
+    }
+
+    /* Form label */
+    .form-label {
+        @apply block mb-1 text-sm font-medium text-slate-700 dark:text-slate-300;
+    }
+
+    /* Form hint text */
+    .form-hint {
+        @apply mt-1 text-xs text-slate-500 dark:text-slate-400;
+    }
+
+    /* Form error message */
+    .form-error {
+        @apply mt-1 text-xs text-rose-600 dark:text-rose-400;
+    }
+
+    /* Form actions container */
+    .form-actions {
+        @apply flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700;
+    }
+}
+
+/* Button Variants (in addition to Tailwind defaults) */
+@layer components {
+
+    /* Primary button - for main actions */
+    .btn-primary {
+        @apply bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors;
+    }
+
+    /* Secondary button - for secondary actions */
+    .btn-secondary {
+        @apply border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors;
+    }
+
+    /* Icon button - for compact actions */
+    .btn-icon {
+        @apply p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors;
+    }
+
+    /* Danger button - for destructive actions */
+    .btn-danger {
+        @apply bg-rose-600 text-white px-4 py-2 rounded-md hover:bg-rose-700 transition-colors;
+    }
+
+    /* Success button - for positive actions */
+    .btn-success {
+        @apply bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors;
+    }
+}
+
+/* Data visualization and status indicators */
+@layer components {
+
+    /* Status badge */
+    .status-badge {
+        @apply px-2 py-1 rounded-full text-xs font-medium inline-flex items-center;
+
+        &.status-active {
+            @apply bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400;
+        }
+
+        &.status-pending {
+            @apply bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400;
+        }
+
+        &.status-inactive {
+            @apply bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-400;
+        }
+
+        &.status-error {
+            @apply bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400;
+        }
+    }
+
+    /* Value indicators - for stats, metrics, etc. */
+    .value-indicator {
+        @apply flex items-center gap-1 text-sm;
+
+        &.trend-up {
+            @apply text-emerald-600 dark:text-emerald-400;
+        }
+
+        &.trend-down {
+            @apply text-rose-600 dark:text-rose-400;
+        }
+
+        &.trend-neutral {
+            @apply text-slate-600 dark:text-slate-400;
+        }
+    }
+}
+
+/* Table Enhancements */
+@layer components {
+
+    /* Data table container */
+    .table-container {
+        @apply w-full overflow-x-auto rounded-lg shadow-subtle;
+    }
+
+    /* Enhanced Material table styles */
+    .mat-mdc-table.data-table {
+        @apply w-full;
+
+        .mat-mdc-header-row {
+            @apply bg-slate-50 dark:bg-slate-700;
+        }
+
+        .mat-mdc-header-cell {
+            @apply py-4 px-4 font-medium text-slate-700 dark:text-slate-300;
+        }
+
+        .mat-mdc-row {
+            @apply hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors cursor-pointer;
+        }
+
+        .mat-mdc-row:not(:last-child) {
+            @apply border-b border-slate-200 dark:border-slate-700;
+        }
+
+        .mat-mdc-cell {
+            @apply py-3 px-4;
+        }
+    }
+}
+
+/* Page Layout Utilities */
+@layer components {
+
+    /* Page container */
+    .page-container {
+        @apply p-6 max-w-screen-2xl mx-auto;
+    }
+
+    /* Page header section */
+    .page-header {
+        @apply flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6;
+    }
+
+    /* Page title */
+    .page-title {
+        @apply text-2xl font-bold text-slate-900 dark:text-white;
+    }
+
+    /* Page description */
+    .page-description {
+        @apply text-sm text-slate-500 dark:text-slate-400;
+    }
+
+    /* Page content sections */
+    .page-section {
+        @apply mb-6;
+    }
+
+    /* Section title */
+    .section-title {
+        @apply text-lg font-medium text-slate-900 dark:text-white mb-4;
+    }
+}
+
+/* Empty States and Placeholders */
+@layer components {
+    .empty-state {
+        @apply flex flex-col items-center justify-center py-12 text-center;
+    }
+
+    .empty-state-icon {
+        @apply p-3 bg-slate-100 dark:bg-slate-700 rounded-full mb-4;
+    }
+
+    .empty-state-title {
+        @apply text-lg font-medium text-slate-900 dark:text-white mb-2;
+    }
+
+    .empty-state-message {
+        @apply text-sm text-slate-500 dark:text-slate-400 max-w-md mb-6;
+    }
+}
+
+/* Animations and Transitions */
+@layer utilities {
+    .animate-spin-slow {
+        animation: spin 3s linear infinite;
+    }
+
+    .animate-pulse-subtle {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .transition-fast {
+        @apply transition-all duration-150 ease-in-out;
+    }
+
+    .transition-normal {
+        @apply transition-all duration-300 ease-in-out;
+    }
+
+    .hover-lift {
+        @apply transition-transform duration-300;
+
+        &:hover {
+            @apply -translate-y-1;
+        }
+    }
+}
+
+/* Material Design Overrides */
+.mat-mdc-form-field {
+    &.mat-form-outline {
+        @apply w-full;
+
+        .mat-mdc-text-field-wrapper {
+            @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md;
+        }
+
+        .mat-mdc-form-field-flex {
+            @apply p-0;
+        }
+
+        .mat-mdc-form-field-infix {
+            @apply p-2;
+        }
+    }
+}
+
+/* Add responsiveness to Material dialogs */
+.mat-mdc-dialog-container {
+    .mat-mdc-dialog-surface {
+        @apply w-full max-w-full sm:max-w-lg md:max-w-xl;
+
+        @media (max-width: 599px) {
+            @apply m-4 !important;
+        }
+    }
+}

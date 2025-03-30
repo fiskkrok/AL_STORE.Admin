@@ -1,6 +1,6 @@
 // src/app/features/products/product-list/product-list.component.ts
 import { Component, OnInit, OnDestroy, signal, viewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -30,23 +30,27 @@ import { ErrorService } from 'src/app/core/services/error.service';
 import { MatIconModule } from '@angular/material/icon';
 import { StockActions } from 'src/app/store/stock/stock.actions';
 import { StockManagementComponent } from '../components/stock-management/stock-management.component';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
     selector: 'app-product-list',
     templateUrl: './product-list.component.html',
-    styleUrls: ['./product-list.component.scss'],
     standalone: true,
     imports: [
         CommonModule,
         ReactiveFormsModule,
         MatTableModule,
         MatSortModule,
+        MatTooltip,
+        NgIf,
         MatPaginatorModule,
         MatFormFieldModule,
         MatInputModule,
         MatButtonModule,
         MatCheckboxModule,
         MatSelectModule,
+        MatProgressSpinner,
         MatIconModule,
         StockManagementComponent
     ]

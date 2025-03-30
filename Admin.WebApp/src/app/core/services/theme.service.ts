@@ -31,8 +31,12 @@ export class ThemeService {
     this.darkTheme.next(isDark);
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
 
-    // Use the data-theme attribute for switching themes
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    // Toggle Tailwind dark mode class
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
 
     // Apply theme to overlay container (for modals, dialogs, etc.)
     this.applyThemeToOverlay(isDark);

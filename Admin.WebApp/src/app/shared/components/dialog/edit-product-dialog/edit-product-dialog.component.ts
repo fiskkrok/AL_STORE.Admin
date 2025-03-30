@@ -28,7 +28,6 @@ import { firstValueFrom } from 'rxjs';
   ],
 
   templateUrl: './edit-product-dialog.component.html',
-  styleUrls: ['./edit-product-dialog.component.scss']
 })
 export class EditProductDialogComponent {
   editProductForm: FormGroup;

@@ -21,7 +21,7 @@ export interface ErrorConfig {
     template: `
         <div class="error-container">
             <div class="error-content">
-                <mat-icon class="error-icon" [ngClass]="config.icon">{{config.icon}}</mat-icon>
+                <mat-icon class="error-icon" aria-hidden="false" aria-label={config.icon} [ngClass]="config.icon" fontIcon="{{config.icon}}"></mat-icon>
                 
                 <h1>{{config.title}}</h1>
                 <p class="error-message">{{config.message}}</p>

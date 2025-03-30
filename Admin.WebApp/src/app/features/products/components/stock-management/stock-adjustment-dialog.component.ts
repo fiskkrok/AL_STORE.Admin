@@ -6,9 +6,15 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
-import { StockItem } from '../../../../shared/models/stock.model';
 import { StockActions } from '../../../../store/stock/stock.actions';
+
+interface DialogData {
+    productId: string;
+    productName: string;
+    currentStock: number;
+}
 
 @Component({
     selector: 'app-stock-adjustment-dialog',
@@ -19,47 +25,90 @@ import { StockActions } from '../../../../store/stock/stock.actions';
         MatDialogModule,
         MatButtonModule,
         MatFormFieldModule,
-        MatInputModule
+        MatInputModule,
+        MatIconModule
     ],
     template: `
-        <h2 mat-dialog-title>Adjust Stock</h2>
-        
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <mat-dialog-content>
-                <div class="form-content">
-                    <p>Current Stock: {{ data.currentStock }}</p>
-                    
-                    <mat-form-field appearance="outline">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-lg">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Adjust Stock</h2>
+                <button 
+                    mat-icon-button 
+                    class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                    [mat-dialog-close]="false">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-slate-500 dark:text-slate-400">Product</span>
+                    <span class="font-medium text-slate-900 dark:text-white">{{ data.productName }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500 dark:text-slate-400">Current Stock</span>
+                    <span 
+                        class="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-slate-700 dark:text-slate-300 font-medium">
+                        {{ data.currentStock }}
+                    </span>
+                </div>
+            </div>
+            
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="space-y-4">
+                    <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Adjustment</mat-label>
-                        <input matInput type="number" formControlName="adjustment">
+                        <input 
+                            matInput 
+                            type="number" 
+                            formControlName="adjustment"
+                            placeholder="Enter amount to add or subtract">
                         <mat-hint>Use positive numbers to add stock, negative to remove</mat-hint>
+                        @if (form.get('adjustment')?.errors?.['required'] && form.get('adjustment')?.touched) {
+                            <mat-error>Adjustment value is required</mat-error>
+                        }
+                        @if (form.get('adjustment')?.errors?.['max']) {
+                            <mat-error>Cannot adjust by more than 10,000 units at once</mat-error>
+                        }
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Reason</mat-label>
-                        <textarea matInput formControlName="reason" rows="3"></textarea>
+                        <textarea 
+                            matInput 
+                            formControlName="reason" 
+                            rows="3"
+                            placeholder="Explain reason for adjustment"></textarea>
+                        @if (form.get('reason')?.errors?.['required'] && form.get('reason')?.touched) {
+                            <mat-error>Reason is required</mat-error>
+                        }
                     </mat-form-field>
                 </div>
-            </mat-dialog-content>
 
-            <mat-dialog-actions align="end">
-                <button mat-button type="button" (click)="onCancel()">Cancel</button>
-                <button mat-raised-button color="primary" 
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button 
+                        mat-stroked-button 
+                        type="button" 
+                        class="border border-slate-300 dark:border-slate-600 px-4 py-1 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                        [mat-dialog-close]="false">
+                        Cancel
+                    </button>
+                    <button 
+                        mat-raised-button 
+                        color="primary" 
                         type="submit"
+                        class="bg-primary-600 text-white px-4 py-1 rounded-md hover:bg-primary-700 transition-colors"
                         [disabled]="form.invalid || form.pristine">
-                    Adjust Stock
-                </button>
-            </mat-dialog-actions>
-        </form>
+                        <span class="flex items-center">
+                            Adjust Stock
+                            <mat-icon class="ml-1">save</mat-icon>
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
     `,
-    styles: [`
-        .form-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            min-width: 300px;
-        }
-    `]
+    styles: []
 })
 export class StockAdjustmentDialogComponent {
     form: FormGroup;
@@ -67,7 +116,7 @@ export class StockAdjustmentDialogComponent {
     constructor(
         private fb: FormBuilder,
         private dialogRef: MatDialogRef<StockAdjustmentDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { productId: string; currentStock: number },
+        @Inject(MAT_DIALOG_DATA) public data: DialogData,
         private store: Store
     ) {
         this.form = this.fb.group({
@@ -87,11 +136,8 @@ export class StockAdjustmentDialogComponent {
                     reason
                 }
             }));
-            this.dialogRef.close();
-        }
-    }
 
-    onCancel() {
-        this.dialogRef.close();
+            this.dialogRef.close(true);
+        }
     }
 }

@@ -1,22 +1,46 @@
-<div class="product-list-container">
-    <div class="d-flex justify-content-between align-items-center">
-
-        <button mat-button class="mb-2" (click)="resetFilters()">
-            Clear Filters
-        </button>
-        <mat-checkbox [formControl]="inStockFilter" class="mb-2">
-            In Stock Only
-        </mat-checkbox>
+<!-- Admin.WebApp/src/app/features/products/product-list/product-list.component.html -->
+<div class="p-6 max-w-screen-2xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Products</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Manage your product inventory</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <button mat-raised-button color="primary"
+                class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
+                routerLink="/products/add">
+                <mat-icon>add</mat-icon>
+                Add Product
+            </button>
+        </div>
     </div>
+
     <!-- Filters Section -->
-    <div class="filters-section">
-        <div class="filters-grid d-flex justify-content-evenly">
-            <mat-form-field class="col-3 ">
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-subtle p-4 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-medium text-slate-900 dark:text-white">Filters</h2>
+            <div class="flex items-center gap-4">
+                <button mat-stroked-button
+                    class="border border-slate-300 dark:border-slate-600 px-3 py-1 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    (click)="resetFilters()">
+                    <mat-icon class="text-sm mr-1">refresh</mat-icon>
+                    Clear Filters
+                </button>
+                <mat-checkbox [formControl]="inStockFilter" class="text-slate-700 dark:text-slate-200">
+                    In Stock Only
+                </mat-checkbox>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Search Products</mat-label>
                 <input matInput [formControl]="searchControl" placeholder="Search by name...">
+                <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
-            <mat-form-field class="col-3 ">
+            <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Category</mat-label>
                 <mat-select [formControl]="categoryFilter">
                     <mat-option [value]="''">All Categories</mat-option>
@@ -26,91 +50,166 @@
                 </mat-select>
             </mat-form-field>
 
-            <mat-form-field class="col-3 ">
+            <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Min Price</mat-label>
                 <input matInput type="number" [formControl]="minPriceFilter">
+                <span matPrefix class="mr-1 text-slate-500">$</span>
             </mat-form-field>
 
-            <mat-form-field class="col-3 ">
-                <mat-label for="">Max Price</mat-label>
-                <input type="number" id="maxPrice" matInput type="number" [formControl]="maxPriceFilter">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Max Price</mat-label>
+                <input matInput type="number" [formControl]="maxPriceFilter">
+                <span matPrefix class="mr-1 text-slate-500">$</span>
             </mat-form-field>
-
         </div>
-
     </div>
 
     <!-- Products Table -->
-    <div class="products-table">
-        <table mat-table [dataSource]="(products$ | async) || []" matSort (matSortChange)="sortChange($event)">
-            <!-- Image Column -->
-            <ng-container matColumnDef="image">
-                <th mat-header-cell *matHeaderCellDef>Image</th>
-                <td mat-cell *matCellDef="let product">
-                    @if (product.images?.length) {
-                    <img style="max-width: 50px;max-height: 50px;" [src]="product.images[0].url" [alt]="product.name"
-                        class="product-thumbnail" (click)="openImagePreview(product.images[0].url)">
-                    }
-                </td>
-            </ng-container>
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-subtle overflow-hidden">
+        <!-- Loading indicator -->
+        <div *ngIf="loading$ | async" class="flex justify-center items-center p-6">
+            <mat-spinner [diameter]="40"></mat-spinner>
+        </div>
 
-            <!-- Name Column -->
-            <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-                <td mat-cell *matCellDef="let product">{{ product.name }}</td>
-            </ng-container>
+        <!-- Error message -->
+        @if (error$ | async; as error) {
+        <div
+            class="bg-rose-50 dark:bg-slate-900 text-rose-600 dark:text-rose-400 p-4 border border-rose-200 dark:border-rose-800 rounded-md mb-4">
+            <div class="flex items-center">
+                <mat-icon class="mr-2 text-rose-500">error</mat-icon>
+                <span>{{ error }}</span>
+            </div>
+        </div>
+        }
 
-            <!-- Category Column -->
-            <ng-container matColumnDef="category">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-                <td mat-cell *matCellDef="let product">{{ product.category?.name }}</td>
-            </ng-container>
+        <!-- Empty state -->
+        @if ((products$ | async)?.length === 0 && !(loading$ | async)) {
+        <div class="flex flex-col items-center justify-center p-12 text-center">
+            <mat-icon class="text-6xl mb-4 text-slate-300 dark:text-slate-600">inventory_2</mat-icon>
+            <h3 class="text-xl font-medium mb-2 text-slate-800 dark:text-slate-200">No products found</h3>
+            <p class="text-slate-500 dark:text-slate-400 mb-6">Try changing your filters or add a new product.</p>
+            <button mat-raised-button color="primary"
+                class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
+                routerLink="/products/add">
+                <mat-icon>add</mat-icon>
+                Add Product
+            </button>
+        </div>
+        }
 
-            <!-- Price Column -->
-            <ng-container matColumnDef="price">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Price</th>
-                <td mat-cell *matCellDef="let product">
-                    {{ product.price | currency:product.price.currency }}
-                </td>
-            </ng-container>
+        <!-- Products table -->
+        <div class="overflow-x-auto" *ngIf="!!(products$ | async)">
+            <table mat-table [dataSource]="(products$ | async) || []" matSort (matSortChange)="sortChange($event)"
+                class="w-full">
+                <!-- Image Column -->
+                <ng-container matColumnDef="image">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="py-4 px-4 font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700">
+                        Image</th>
+                    <td mat-cell *matCellDef="let product"
+                        class="py-3 px-4 border-b border-slate-200 dark:border-slate-700">
+                        @if (product.images?.length) {
+                        <img class="w-12 h-12 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                            [src]="product.images[0].url" [alt]="product.name"
+                            (click)="openImagePreview(product.images[0].url)">
+                        } @else {
+                        <div
+                            class="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-700 rounded-md">
+                            <mat-icon class="text-slate-400 dark:text-slate-500">image_not_supported</mat-icon>
+                        </div>
+                        }
+                    </td>
+                </ng-container>
 
-            <!-- Stock Column -->
-            <ng-container matColumnDef="stock">
-                <th mat-header-cell *matHeaderCellDef>Stock</th>
-                <td mat-cell *matCellDef="let product">
-                    <app-stock-management [product]="product"></app-stock-management>
-                </td>
-            </ng-container>
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header
+                        class="py-4 px-4 font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700">
+                        Name</th>
+                    <td mat-cell *matCellDef="let product"
+                        class="py-3 px-4 border-b border-slate-200 dark:border-slate-700">
+                        <div class="font-medium text-slate-900 dark:text-white">{{ product.name }}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">SKU: {{ product.sku }}</div>
+                    </td>
+                </ng-container>
 
-            <!-- Actions Column -->
-            <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Actions</th>
-                <td mat-cell *matCellDef="let product">
-                    <button mat-icon-button (click)="editProduct(product)">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="deleteProduct(product)">
-                        <mat-icon>delete</mat-icon>
-                    </button>
-                </td>
-            </ng-container>
+                <!-- Category Column -->
+                <ng-container matColumnDef="category">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header
+                        class="py-4 px-4 font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700">
+                        Category</th>
+                    <td mat-cell *matCellDef="let product"
+                        class="py-3 px-4 border-b border-slate-200 dark:border-slate-700">
+                        <span
+                            class="px-2 py-1 text-xs rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                            {{ product.category?.name || 'Uncategorized' }}
+                        </span>
+                    </td>
+                </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                <!-- Price Column -->
+                <ng-container matColumnDef="price">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header
+                        class="py-4 px-4 font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700">
+                        Price</th>
+                    <td mat-cell *matCellDef="let product"
+                        class="py-3 px-4 border-b border-slate-200 dark:border-slate-700">
+                        <div class="font-medium text-slate-900 dark:text-white">
+                            {{ product.price | currency:product.currency }}
+                        </div>
+                        @if (product.compareAtPrice) {
+                        <div class="text-xs line-through text-slate-500 dark:text-slate-400">
+                            {{ product.compareAtPrice | currency:product.currency }}
+                        </div>
+                        }
+                    </td>
+                </ng-container>
 
-            <!-- No Data Row -->
-            <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" colspan="6">No products found</td>
-            </tr>
-        </table>
+                <!-- Stock Column -->
+                <ng-container matColumnDef="stock">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="py-4 px-4 font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700">
+                        Stock</th>
+                    <td mat-cell *matCellDef="let product"
+                        class="py-3 px-4 border-b border-slate-200 dark:border-slate-700">
+                        <app-stock-management [product]="product"></app-stock-management>
+                    </td>
+                </ng-container>
 
-        <mat-paginator [length]="(pagination$ | async)?.totalItems" [pageSize]="10" [pageSizeOptions]="[10, 25, 50]"
-            (page)="onPageChange($event)"></mat-paginator>
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="py-4 px-4 font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-700">
+                        Actions</th>
+                    <td mat-cell *matCellDef="let product"
+                        class="py-3 px-4 border-b border-slate-200 dark:border-slate-700">
+                        <div class="flex space-x-2">
+                            <button mat-icon-button
+                                class="text-primary-600 hover:bg-primary-50 dark:hover:bg-slate-700 rounded-full transition-colors"
+                                [matTooltip]="'Edit ' + product.name" (click)="editProduct(product)">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+                            <button mat-icon-button
+                                class="text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-700 rounded-full transition-colors"
+                                [matTooltip]="'Delete ' + product.name" (click)="deleteProduct(product)">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                    class="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors cursor-pointer"
+                    (click)="editProduct(row)">
+                </tr>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <mat-paginator class="border-t border-slate-200 dark:border-slate-700"
+            [length]="(pagination$ | async)?.totalItems" [pageSize]="10" [pageSizeOptions]="[10, 25, 50]"
+            (page)="onPageChange($event)">
+        </mat-paginator>
     </div>
-
-    @if (error$ | async; as error) {
-    <div class="error-alert">
-        {{ error }}
-    </div>
-    }
 </div>
