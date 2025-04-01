@@ -9,12 +9,12 @@ export interface Category {
     metaDescription?: string;
     imageUrl?: string;
     parentCategoryId?: string;
-    parentCategory?: Category;
+    parentCategory?: Category | null;
     subCategories: Category[];
     productCount: number;
-    createdAt: string;
+    createdAt: string; // ISO date string
     createdBy?: string;
-    lastModifiedAt?: string;
+    lastModifiedAt?: string; // ISO date string
     lastModifiedBy?: string;
 }
 

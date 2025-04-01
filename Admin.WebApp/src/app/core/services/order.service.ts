@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PagedResponse } from '../../shared/models/paged-response.model';
 import { Order, OrderStatus, PaymentStatus } from '../../shared/models/order.model';
@@ -46,16 +46,69 @@ export class OrderService {
 
     constructor(private readonly http: HttpClient) { }
 
-    getOrders(params: OrderListParams): Observable<PagedResponse<Order>> {
-        let httpParams = new HttpParams();
+    getOrder(id: string): Observable<Order> {
+        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+            map(this.mapOrderFromApi)
+        );
+    }
 
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
-                httpParams = httpParams.set(key, value.toString());
-            }
-        });
+    getOrders(params: any): Observable<any> {
+        return this.http.get<any>(this.apiUrl, { params }).pipe(
+            map(response => ({
+                ...response,
+                items: response.items.map(this.mapOrderFromApi)
+            }))
+        );
+    }
 
-        return this.http.get<PagedResponse<Order>>(this.apiUrl, { params: httpParams });
+    private mapOrderFromApi(order: any): Order {
+        return {
+            id: order.id,
+            orderNumber: order.orderNumber,
+            customerId: order.customerId,
+            status: order.status as OrderStatus,
+            subtotal: order.subtotal,
+            shippingCost: order.shippingCost,
+            tax: order.tax,
+            total: order.total,
+            currency: order.currency,
+            shippingAddress: order.shippingAddress,
+            billingAddress: order.billingAddress,
+            notes: order.notes,
+            cancelledAt: order.cancelledAt,
+            cancellationReason: order.cancellationReason,
+            items: (order.items || []).map((item: any) => ({
+                id: item.id,
+                productId: item.productId,
+                productName: item.productName,
+                sku: item.sku,
+                variantId: item.variantId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                currency: item.currency,
+                total: item.total
+            })),
+            payment: order.payment ? {
+                transactionId: order.payment.transactionId,
+                method: order.payment.method,
+                amount: order.payment.amount,
+                currency: order.payment.currency,
+                status: order.payment.status as PaymentStatus,
+                processedAt: order.payment.processedAt
+            } : undefined,
+            paymentStatus: order.paymentStatus as PaymentStatus,
+            paymentMethod: order.paymentMethod,
+            shippingInfo: order.shippingInfo ? {
+                carrier: order.shippingInfo.carrier,
+                trackingNumber: order.shippingInfo.trackingNumber,
+                estimatedDeliveryDate: order.shippingInfo.estimatedDeliveryDate,
+                actualDeliveryDate: order.shippingInfo.actualDeliveryDate
+            } : undefined,
+            createdAt: order.createdAt,
+            createdBy: order.createdBy,
+            lastModifiedAt: order.lastModifiedAt,
+            lastModifiedBy: order.lastModifiedBy
+        };
     }
 
     updateOrderStatus(orderId: string, request: UpdateOrderStatusRequest): Observable<void> {

@@ -44,7 +44,7 @@ public class AdminDbContext : DbContext, IApplicationDbContext, IUnitOfWork
     public async Task<TEntity?> FindEntityAsync<TEntity>(Guid id, CancellationToken cancellationToken = default)
         where TEntity : class
     {
-        return await Set<TEntity>().FindAsync(new object[] { id }, cancellationToken);
+        return await Set<TEntity>().FindAsync([id], cancellationToken);
     }
 
     public void AttachEntity<TEntity>(TEntity entity) where TEntity : class

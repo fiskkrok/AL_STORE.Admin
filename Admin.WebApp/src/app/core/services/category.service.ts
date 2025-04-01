@@ -2,7 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, shareReplay } from 'rxjs/operators';
+import { catchError, map, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Category } from 'src/app/shared/models/category.model';
 import {
@@ -29,7 +29,18 @@ export class CategoryService {
     ) {
         this.initializeSignalR();
     }
-
+    private mapCategoryFromApi(category: any): Category {
+        return {
+            ...category,
+            // Ensure collections are never null
+            subCategories: category.subCategories || [],
+            // Convert dates if needed
+            createdAt: category.createdAt,
+            lastModifiedAt: category.lastModifiedAt,
+            // Convert parent category recursively if it exists
+            parentCategory: category.parentCategory ? this.mapCategoryFromApi(category.parentCategory) : null
+        };
+    }
     private initializeSignalR() {
         this.authService.getAccessToken().subscribe(token => {
             if (!token) {
@@ -100,16 +111,15 @@ export class CategoryService {
         });
     }
 
-    getCategory(id: string): Observable<Category> {
-        return this.http.get<Category>(`${this.apiUrl}/${id}`).pipe(
-            catchError(this.handleError)
+    getCategories(): Observable<Category[]> {
+        return this.http.get<any[]>(this.apiUrl).pipe(
+            map(categories => categories.map(this.mapCategoryFromApi))
         );
     }
 
-    getCategories(): Observable<Category[]> {
-        return this.http.get<Category[]>(this.apiUrl).pipe(
-            shareReplay(1),
-            catchError(this.handleError)
+    getCategory(id: string): Observable<Category> {
+        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+            map(this.mapCategoryFromApi)
         );
     }
 

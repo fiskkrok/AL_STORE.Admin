@@ -5,5 +5,5 @@ public record ProductDimensionsDto
     public decimal Width { get; init; }
     public decimal Height { get; init; }
     public decimal Length { get; init; }
-    public string Unit { get; init; } = string.Empty;
+    public string Unit { get; init; } = "cm"; // Default to cm
 }

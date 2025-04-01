@@ -39,35 +39,36 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
 
     private static List<ProductTypeDto> GetPredefinedProductTypes()
     {
-        return new List<ProductTypeDto>
-        {
+        return
+        [
             new()
             {
                 Id = "clothing",
                 Name = "Clothing",
                 Description = "Apparel items including shirts, pants, dresses, etc.",
                 Icon = "checkroom",
-                Attributes = new List<ProductTypeAttributeDto>
-                {
+                Attributes =
+                [
                     new()
                     {
                         Id = "size",
                         Name = "Sizes",
                         Type = "multiselect",
                         IsRequired = true,
-                        Options = new List<ProductTypeAttributeOptionDto>
-                        {
+                        Options =
+                        [
                             new() { Label = "XS", Value = "XS" },
                             new() { Label = "S", Value = "S" },
                             new() { Label = "M", Value = "M" },
                             new() { Label = "L", Value = "L" },
                             new() { Label = "XL", Value = "XL" },
                             new() { Label = "XXL", Value = "XXL" }
-                        },
+                        ],
                         DisplayOrder = 1,
                         IsFilterable = true,
                         IsComparable = false
                     },
+
                     new()
                     {
                         Id = "color",
@@ -78,6 +79,7 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
                         IsFilterable = true,
                         IsComparable = false
                     },
+
                     new()
                     {
                         Id = "material",
@@ -88,34 +90,36 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
                         IsFilterable = true,
                         IsComparable = true
                     },
+
                     new()
                     {
                         Id = "gender",
                         Name = "Gender",
                         Type = "select",
                         IsRequired = true,
-                        Options = new List<ProductTypeAttributeOptionDto>
-                        {
+                        Options =
+                        [
                             new() { Label = "Men", Value = "men" },
                             new() { Label = "Women", Value = "women" },
                             new() { Label = "Unisex", Value = "unisex" },
                             new() { Label = "Boys", Value = "boys" },
                             new() { Label = "Girls", Value = "girls" }
-                        },
+                        ],
                         DisplayOrder = 4,
                         IsFilterable = true,
                         IsComparable = false
                     }
-                }
+                ]
             },
+
             new()
             {
                 Id = "electronics",
                 Name = "Electronics",
                 Description = "Electronic devices and accessories",
                 Icon = "devices",
-                Attributes = new List<ProductTypeAttributeDto>
-                {
+                Attributes =
+                [
                     new()
                     {
                         Id = "brand",
@@ -126,6 +130,7 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
                         IsFilterable = true,
                         IsComparable = true
                     },
+
                     new()
                     {
                         Id = "model",
@@ -136,6 +141,7 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
                         IsFilterable = true,
                         IsComparable = true
                     },
+
                     new()
                     {
                         Id = "warranty",
@@ -146,16 +152,17 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
                         IsFilterable = true,
                         IsComparable = true
                     }
-                }
+                ]
             },
+
             new()
             {
                 Id = "books",
                 Name = "Books",
                 Description = "Books, publications, and literature",
                 Icon = "menu_book",
-                Attributes = new List<ProductTypeAttributeDto>
-                {
+                Attributes =
+                [
                     new()
                     {
                         Id = "author",
@@ -166,6 +173,7 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
                         IsFilterable = true,
                         IsComparable = false
                     },
+
                     new()
                     {
                         Id = "isbn",
@@ -177,10 +185,12 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
                         IsComparable = false,
                         Validation = new ProductTypeAttributeValidationDto
                         {
-                            Pattern = "^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$",
+                            Pattern =
+                                "^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$",
                             Message = "Please enter a valid ISBN"
                         }
                     },
+
                     new()
                     {
                         Id = "pages",
@@ -191,8 +201,8 @@ public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery,
                         IsFilterable = false,
                         IsComparable = true
                     }
-                }
+                ]
             }
-        };
+        ];
     }
 }

@@ -1,6 +1,10 @@
-﻿using Admin.Application.Categories.DTOs;
+﻿// Admin.Application/Mappings/CategoryMappingProfile.cs
+using Admin.Application.Categories.DTOs;
 using Admin.Domain.Entities;
+
 using AutoMapper;
+
+using System.Collections.Generic;
 
 namespace Admin.Application.Mappings;
 public class CategoryMappingProfile : Profile
@@ -14,18 +18,49 @@ public class CategoryMappingProfile : Profile
                 opt => opt.MapFrom(src => src.ParentCategory))
             .ForMember(dest => dest.SubCategories,
                 opt => opt.MapFrom(src => src.SubCategories))
-            .AfterMap((src, dest) =>
-            {
-                // Ensure circular references are handled properly
+            .ConstructUsing((src, context) => {
+                // Create with initial values
+                return new CategoryDto
+                {
+                    Id = src.Id,
+                    Name = src.Name,
+                    Description = src.Description,
+                    Slug = src.Slug,
+                    SortOrder = src.SortOrder,
+                    MetaTitle = src.MetaTitle,
+                    MetaDescription = src.MetaDescription,
+                    ImageUrl = src.ImageUrl,
+                    ParentCategoryId = src.ParentCategoryId,
+                    ProductCount = src.Products.Count,
+                    CreatedAt = src.CreatedAt,
+                    CreatedBy = src.CreatedBy,
+                    LastModifiedAt = src.LastModifiedAt,
+                    LastModifiedBy = src.LastModifiedBy,
+                    // Initialize collections to empty
+                    SubCategories = new List<CategoryDto>(),
+                    // ParentCategory will be mapped separately
+                    ParentCategory = null
+                };
+            });
+
+        // Handle circular references in a post-processing step
+        CreateMap<CategoryDto, CategoryDto>()
+            .AfterMap((src, dest, context) => {
+                // Handle circular references by creating new instances
                 if (dest.ParentCategory != null)
                 {
-                    dest.ParentCategory.SubCategories.Clear();
-                    dest.ParentCategory.ParentCategory = null;
-                }
+                    var parentCopy = new CategoryDto
+                    {
+                        Id = dest.ParentCategory.Id,
+                        Name = dest.ParentCategory.Name,
+                        Description = dest.ParentCategory.Description,
+                        // Include necessary fields but don't continue the chain
+                        SubCategories = new List<CategoryDto>(),
+                        ParentCategory = null
+                    };
 
-                foreach (var sub in dest.SubCategories)
-                {
-                    sub.ParentCategory = null;
+                    // Replace the original reference
+                    dest = dest with { ParentCategory = parentCopy };
                 }
             });
     }

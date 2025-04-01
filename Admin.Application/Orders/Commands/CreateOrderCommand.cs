@@ -54,14 +54,14 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         {
             // Create shipping and billing addresses
             var shippingAddress = new Address(
-                request.ShippingAddress.Street,
+                request.ShippingAddress.AddressLine1,
                 request.ShippingAddress.City,
                 request.ShippingAddress.State,
                 request.ShippingAddress.Country,
                 request.ShippingAddress.PostalCode);
 
             var billingAddress = new Address(
-                request.BillingAddress.Street,
+                request.BillingAddress.AddressLine1,
                 request.BillingAddress.City,
                 request.BillingAddress.State,
                 request.BillingAddress.Country,

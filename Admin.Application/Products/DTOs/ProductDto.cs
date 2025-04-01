@@ -16,9 +16,9 @@ public record ProductDto
     public decimal? CompareAtPrice { get; init; }
     public int Stock { get; init; }
     public int? LowStockThreshold { get; init; }
-    public string Status { get; init; } = string.Empty;
+    public string Status { get; init; } = string.Empty; 
     public string Visibility { get; init; } = string.Empty;
-    public CategoryDto Category { get; set; } = null!;
+    public CategoryDto Category { get; init; } = null!;
     public CategoryDto? SubCategory { get; init; }
     public List<ProductImageDto> Images { get; init; } = new();
     public List<ProductVariantDto> Variants { get; init; } = new();

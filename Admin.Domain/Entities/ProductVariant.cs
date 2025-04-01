@@ -1,7 +1,10 @@
-﻿using Admin.Domain.Common;
+﻿using System.Text.Json.Serialization;
+
+using Admin.Domain.Common;
 using Admin.Domain.Common.Exceptions;
 using Admin.Domain.Events.ProductVariant;
 using Admin.Domain.ValueObjects;
+
 using Ardalis.GuardClauses;
 
 namespace Admin.Domain.Entities;
@@ -63,6 +66,7 @@ public class ProductVariant : AuditableEntity
     public int? LowStockThreshold => _lowStockThreshold;
     public int SortOrder => _sortOrder;
     public Guid ProductId { get; private set; }
+    [JsonIgnore]
     public Product Product { get; private set; } = null!;
     public IReadOnlyCollection<ProductAttribute> Attributes => _attributes.AsReadOnly();
     public IReadOnlyCollection<ProductImage> Images => _images.AsReadOnly();

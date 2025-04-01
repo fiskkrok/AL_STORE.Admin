@@ -88,32 +88,58 @@ export class ProductService {
         private readonly authService: AuthService
     ) { }
 
-    // Main CRUD operations
-    getProducts(filters?: ProductFilters): Observable<PagedResponse<Product>> {
-        let params = new HttpParams();
-
-        if (filters) {
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    if (Array.isArray(value)) {
-                        value.forEach(v => params = params.append(key, v));
-                    } else {
-                        params = params.set(key, value.toString());
-                    }
-                }
-            });
-        }
-
-        return this.http.get<PagedResponse<Product>>(this.apiUrl, { params }).pipe(
-            tap(response => this.productsSubject.next(response.items)),
-            catchError(this.handleError)
+    getProduct(id: string): Observable<Product> {
+        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+            map(this.mapProductFromApi)
         );
     }
 
-    getProduct(id: string): Observable<Product> {
-        return this.http.get<Product>(`${this.apiUrl}/${id}`).pipe(
-            catchError(this.handleError)
+    getProducts(filters?: any): Observable<any> {
+        return this.http.get<any>(this.apiUrl, { params: filters }).pipe(
+            map(response => ({
+                ...response,
+                items: response.items.map(this.mapProductFromApi)
+            }))
         );
+    }
+    private mapProductFromApi(product: any): Product {
+        return {
+            ...product,
+            // Map string values to enum values
+            status: product.status as ProductStatus,
+            visibility: product.visibility as ProductVisibility,
+            // Ensure collections are never null
+            images: product.images || [],
+            attributes: product.attributes || [],
+            tags: product.tags || [],
+            // Format dates if needed
+            createdAt: product.createdAt,
+            lastModifiedAt: product.lastModifiedAt,
+            variants: Array.isArray(product.variants)
+                ? product.variants.map((v: any) => this.mapVariantFromApi(v))
+                : []
+        };
+    }
+    private mapVariantFromApi(variant: any): ProductVariant {
+        return {
+            id: variant.id,
+            sku: variant.sku,
+            price: variant.price,
+            currency: variant.currency || 'USD',
+            compareAtPrice: variant.compareAtPrice,
+            costPrice: variant.costPrice,
+            barcode: variant.barcode,
+            stock: variant.stock,
+            trackInventory: variant.trackInventory ?? true,
+            allowBackorders: variant.allowBackorders ?? false,
+            lowStockThreshold: variant.lowStockThreshold,
+            sortOrder: variant.sortOrder || 0,
+            isLowStock: variant.isLowStock ?? false,
+            isOutOfStock: variant.isOutOfStock ?? false,
+            attributes: Array.isArray(variant.attributes) ? variant.attributes : [],
+            images: Array.isArray(variant.images) ? variant.images : [],
+            productId: variant.productId
+        };
     }
     getStats(): Observable<DashboardStats> {
         return this.http.get<DashboardStats>(`${this.apiUrl}/stats`);
@@ -123,16 +149,12 @@ export class ProductService {
             switchMap(token => {
                 if (!token) throw new Error('No authentication token available');
 
-                // const headers = new HttpHeaders()
-                //     .set('Authorization', `Bearer ${token}`)
-                //     .set('Content-Type', 'application/json');
-
                 // Generate slug if not provided
                 if (!command.slug) {
                     command.slug = this.generateSlug(command.name);
                 }
 
-                return this.http.post<Product>(this.apiUrl, command); // , { headers }
+                return this.http.post<Product>(this.apiUrl, command);
             }),
             tap(product => {
                 const currentProducts = this.productsSubject.value;

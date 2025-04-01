@@ -1,0 +1,31 @@
+<!-- Admin.WebApp/src/app/features/products/components/variant-details/variant-details.component.html -->
+<div class="variant-details">
+    <div class="header">
+        <h3>{{ variant.sku }}</h3>
+        <span class="badge" [class.badge-danger]="variant.isOutOfStock"
+            [class.badge-warning]="variant.isLowStock && !variant.isOutOfStock">
+            {{ getStockStatus() }}
+        </span>
+    </div>
+
+    <div class="pricing">
+        <p class="price">{{ variant.price | currency:variant.currency }}</p>
+        <p class="compare-price" *ngIf="variant.compareAtPrice">
+            {{ variant.compareAtPrice | currency:variant.currency }}
+        </p>
+        <p class="cost-price" *ngIf="variant.costPrice">
+            Cost: {{ variant.costPrice | currency:variant.currency }}
+        </p>
+    </div>
+
+    <div class="inventory">
+        <p>Stock: {{ variant.stock }}</p>
+        <p *ngIf="variant.trackInventory">Tracking enabled</p>
+        <p *ngIf="variant.allowBackorders">Backorders allowed</p>
+        <p *ngIf="variant.lowStockThreshold">
+            Low stock threshold: {{ variant.lowStockThreshold }}
+        </p>
+    </div>
+
+    <!-- Attributes and images sections -->
+</div>

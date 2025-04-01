@@ -11,4 +11,6 @@ public interface IProductRepository : IRepository<Product>
     Task<(IEnumerable<Product> Products, int TotalCount)> GetProductsAsync(
         ProductFilterRequest filter, CancellationToken cancellationToken = default);
     Task<Product?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken);
+    Task<IEnumerable<Product>> GetProductsByIdsAsync(IEnumerable<Guid> productIds, CancellationToken cancellationToken = default);
+
 }

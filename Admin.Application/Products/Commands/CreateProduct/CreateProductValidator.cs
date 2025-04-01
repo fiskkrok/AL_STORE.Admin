@@ -77,7 +77,7 @@ public class CreateProductValidator : AbstractValidator<CreateProductCommand>
 
     private static bool BeValidImage(ProductImageDto file)
     {
-        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        string[] allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         return allowedExtensions.Contains(extension);
     }

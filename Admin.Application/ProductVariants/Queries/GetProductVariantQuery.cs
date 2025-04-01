@@ -26,6 +26,14 @@ public class GetProductVariantQueryHandler : IRequestHandler<GetProductVariantQu
             return Result<ProductVariantDto>.Failure(new Error("Variant.NotFound", "Product variant not found"));
 
         var dto = _mapper.Map<ProductVariantDto>(variant);
+
+        // Ensure collections are initialized
+        dto = dto with
+        {
+            Attributes = dto.Attributes ?? [],
+            Images = dto.Images ?? []
+        };
+
         return Result<ProductVariantDto>.Success(dto);
     }
 }

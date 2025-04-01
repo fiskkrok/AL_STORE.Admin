@@ -1,8 +1,11 @@
-﻿using Admin.Application.Common.Interfaces;
+﻿using System.Text.Json.Serialization;
+
+using Admin.Application.Common.Interfaces;
 using Admin.Infrastructure.Extensions;
 using Admin.Infrastructure.Persistence.Seeder;
 using Admin.Infrastructure.Services;
 using Admin.WebAPI.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Admin.WebAPI.Configurations;
 
@@ -21,6 +24,16 @@ public static class CoreServicesConfiguration
 
         // Add HttpContext
         services.AddHttpContextAccessor();
+        services.ConfigureHttpJsonOptions(options => {
+            options.SerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
+            options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        });
+
+        // Also update Minimal API / Controllers options if using them
+        services.Configure<JsonOptions>(options => {
+            options.JsonSerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        });
         
         // Add system clock
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();

@@ -33,7 +33,7 @@ public static class ApiServicesConfiguration
     private static void AddCors(IServiceCollection services, IConfiguration configuration)
     {
         // Get allowed origins from configuration
-        var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
 
         services.AddCors(options =>
         {

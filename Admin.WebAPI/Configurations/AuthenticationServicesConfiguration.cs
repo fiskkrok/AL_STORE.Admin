@@ -35,7 +35,7 @@ public static class AuthenticationServicesConfiguration
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = true,
-                    ValidAudiences = new[] { "api", "admin_api" },
+                    ValidAudiences = ["api", "admin_api"],
                     ValidateIssuer = true,
                     ValidIssuer = configuration["IdentityServer:Authority"],
                     ValidateLifetime = true,
@@ -154,5 +154,5 @@ public class StoreConfiguration
 {
     public string Name { get; set; } = string.Empty;
     public string ApiKey { get; set; } = string.Empty;
-    public List<string> AllowedScopes { get; set; } = new();
+    public List<string> AllowedScopes { get; set; } = [];
 }

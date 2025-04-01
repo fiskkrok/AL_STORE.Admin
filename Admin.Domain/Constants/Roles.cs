@@ -9,29 +9,26 @@ public static class Roles
     public static readonly IReadOnlyDictionary<string, string[]> RolePermissions = new Dictionary<string, string[]>
     {
         {
-            Admin, new[]
-            {
+            Admin, [
                 Permissions.Users.Manage,
                 Permissions.Products.Manage,
                 Permissions.Orders.Manage,
                 Permissions.Categories.Manage
-            }
+            ]
         },
         {
-            Manager, new[]
-            {
+            Manager, [
                 Permissions.Products.Manage,
                 Permissions.Orders.Manage,
                 Permissions.Categories.View
-            }
+            ]
         },
         {
-            User, new[]
-            {
+            User, [
                 Permissions.Products.View,
                 Permissions.Orders.View,
                 Permissions.Categories.View
-            }
+            ]
         }
     };
 }

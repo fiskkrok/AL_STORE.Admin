@@ -11,7 +11,6 @@ public class GetCategoriesQuery : IRequest<Result<List<CategoryDto>>>
 
 }
 
-
 public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Result<List<CategoryDto>>>
 {
     private readonly ICategoryRepository _categoryRepository;
@@ -41,13 +40,24 @@ public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Res
                     Id = c.Id,
                     Name = c.Name,
                     Description = c.Description,
+                    Slug = c.Slug,
+                    SortOrder = c.SortOrder,
+                    MetaTitle = c.MetaTitle,
+                    MetaDescription = c.MetaDescription,
+                    ImageUrl = c.ImageUrl,
+                    ParentCategoryId = c.ParentCategoryId,
+                    ProductCount = c.Products.Count,
+                    CreatedAt = c.CreatedAt,
+                    CreatedBy = c.CreatedBy,
+                    LastModifiedAt = c.LastModifiedAt,
+                    LastModifiedBy = c.LastModifiedBy,
+                    SubCategories = []
                 }).ToList();
             },
             entryOptions,
-            new[] { "categories" },
+            ["categories"],
             cancellationToken);
 
         return Result<List<CategoryDto>>.Success(categories);
-    
-}
+    }
 }

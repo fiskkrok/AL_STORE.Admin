@@ -18,7 +18,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : Audi
 
     public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await EntitySet.FindAsync(new object[] { id }, cancellationToken);
+        return await EntitySet.FindAsync([id], cancellationToken);
     }
 
     public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default)

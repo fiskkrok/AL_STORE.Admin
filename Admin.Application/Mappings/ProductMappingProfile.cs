@@ -1,4 +1,5 @@
-﻿using Admin.Application.Categories.DTOs;
+﻿// Admin.Application/Mappings/ProductMappingProfile.cs
+using Admin.Application.Categories.DTOs;
 using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
 
@@ -18,45 +19,53 @@ public class ProductMappingProfile : Profile
             .ForMember(dest => dest.CompareAtPrice, opt =>
                 opt.MapFrom(src => src.CompareAtPrice != null ? src.CompareAtPrice.Amount : (decimal?)null))
             .ForMember(dest => dest.Status, opt =>
-                opt.MapFrom(src => src.Status.ToString()))
+                opt.MapFrom(src => src.Status.ToString().ToLowerInvariant()))
             .ForMember(dest => dest.Visibility, opt =>
-                opt.MapFrom(src => src.Visibility.ToString()))
+                opt.MapFrom(src => src.Visibility.ToString().ToLowerInvariant()))
             .ForMember(dest => dest.Category, opt =>
                 opt.MapFrom(src => src.Category))
             .ForMember(dest => dest.SubCategory, opt =>
                 opt.MapFrom(src => src.SubCategory))
-            .AfterMap((src, dest) => {
-                // Ensure Category is never null
-                if (dest.Category == null)
-                {
-                    dest.Category = new CategoryDto
-                    {
-                        Id = src.CategoryId,
-                        Name = "Unknown",
-                        Description = "Category not found"
-                    };
-                }
+            .ConstructUsing((src, context) => new ProductDto
+            {
+                Id = src.Id,
+                Name = src.Name,
+                Images = new List<ProductImageDto>(),
+                Variants = new List<ProductVariantDto>(),
+                Attributes = new List<ProductAttributeDto>(),
+                Tags = new List<string>()
             });
 
-        CreateMap<Category, CategoryDto>()
-            .ForMember(dest => dest.Id, opt =>
-                opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Name, opt =>
-                opt.MapFrom(src => src.Name))
-            .ForMember(dest => dest.Description, opt =>
-                opt.MapFrom(src => src.Description));
 
+
+        // Rest of the mappings remain the same
+        CreateMap<Category, CategoryDto>();
         CreateMap<ProductVariant, ProductVariantDto>()
             .ForMember(dest => dest.Price, opt =>
                 opt.MapFrom(src => src.Price.Amount))
             .ForMember(dest => dest.Currency, opt =>
-                opt.MapFrom(src => src.Price.Currency));
-
+                opt.MapFrom(src => src.Price.Currency))
+            .ForMember(dest => dest.CompareAtPrice, opt =>
+                opt.MapFrom(src => src.CompareAtPrice != null ? src.CompareAtPrice.Amount : (decimal?)null))
+            .ForMember(dest => dest.CostPrice, opt =>
+                opt.MapFrom(src => src.CostPrice != null ? src.CostPrice.Amount : (decimal?)null))
+            .ForMember(dest => dest.IsLowStock, opt =>
+                opt.MapFrom(src => src.IsLowStock()))
+            .ForMember(dest => dest.IsOutOfStock, opt =>
+                opt.MapFrom(src => src.IsOutOfStock()))
+            .ConstructUsing((src, context) => new ProductVariantDto
+            {
+                Id = src.Id,
+                Sku = src.Sku,
+                Price = src.Price.Amount,
+                Currency = src.Price.Currency,
+                // Other properties...
+                Attributes = new List<ProductAttributeDto>(),
+                Images = new List<ProductImageDto>(),
+                ProductId = src.ProductId
+            });
         CreateMap<ProductAttribute, ProductAttributeDto>();
-        CreateMap<ProductImage, ProductImageDto>()
-            .ForMember(dest => dest.IsPrimary, opt => opt.MapFrom(src => src.IsPrimary))
-            .ForMember(dest => dest.SortOrder, opt => opt.MapFrom(src => src.SortOrder))
-            .ForMember(dest => dest.Alt, opt => opt.MapFrom(src => src.Alt));
+        CreateMap<ProductImage, ProductImageDto>();
         CreateMap<ProductSeo, ProductSeoDto>();
         CreateMap<ProductDimensions, ProductDimensionsDto>();
     }

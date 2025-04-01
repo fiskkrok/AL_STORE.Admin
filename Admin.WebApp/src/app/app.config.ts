@@ -23,7 +23,8 @@ import { StockEffects } from './store/stock/stock.effects';
 import { orderReducer } from './store/order/order.reducer';
 import { OrderEffects } from './store/order/order.effects';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { FormlyMaterialModule } from '@ngx-formly/material';;
+import { FormlyMaterialModule } from '@ngx-formly/material';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withViewTransitions()),

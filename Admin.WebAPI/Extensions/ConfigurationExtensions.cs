@@ -1,6 +1,5 @@
 ﻿using Admin.Application;
 using Admin.Infrastructure.Extensions;
-using Admin.Infrastructure.Middleware;
 using Admin.WebAPI.Configurations;
 
 namespace Admin.WebAPI.Extensions;
@@ -62,7 +61,7 @@ public static class ConfigurationExtensions
         }
 
         // Global middleware
-        app.UseMiddleware<ErrorHandlingMiddleware>();
+        app.UseErrorHandling();
         app.UseRequestLogging();
         app.UseCors();
         app.UseHttpsRedirection();

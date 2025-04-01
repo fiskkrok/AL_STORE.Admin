@@ -14,17 +14,17 @@ import { MatIconModule } from '@angular/material/icon';
  * Use this as a starting point for new components or refactoring
  */
 @Component({
-    selector: 'app-example-component',
-    standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatIconModule
-    ],
-    template: `
+  selector: 'app-example-component',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule
+  ],
+  template: `
     <!-- Page/Section Container -->
     <div class="p-6 max-w-screen-lg mx-auto">
       <!-- Component Header -->
@@ -41,7 +41,7 @@ import { MatIconModule } from '@angular/material/icon';
           <button 
             mat-icon-button 
             class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-            <mat-icon>more_vert</mat-icon>
+            <mat-icon class="material-icons">more_vert</mat-icon>
           </button>
         </div>
         
@@ -88,7 +88,7 @@ import { MatIconModule } from '@angular/material/icon';
                   <!-- Item Icon/Image -->
                   <div class="flex-shrink-0">
                     <div class="p-2 bg-primary-100 dark:bg-primary-900 rounded-full">
-                      <mat-icon class="text-primary-600 dark:text-primary-400">{{ item.icon }}</mat-icon>
+                      <mat-icon class="material-icons text-primary-600 dark:text-primary-400">{{ item.icon }}</mat-icon>
                     </div>
                   </div>
                   
@@ -108,7 +108,7 @@ import { MatIconModule } from '@angular/material/icon';
                       mat-icon-button 
                       class="text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400"
                       (click)="onItemAction(item)">
-                      <mat-icon>chevron_right</mat-icon>
+                      <mat-icon class="material-icons">chevron_right</mat-icon>
                     </button>
                   </div>
                 </div>
@@ -154,43 +154,43 @@ import { MatIconModule } from '@angular/material/icon';
       </div>
     </div>
   `,
-    styles: []
+  styles: []
 })
 export class ExampleComponent {
-    @Input() title = 'Component Title';
-    @Input() description = 'Component description goes here';
-    @Input() showForm = true;
-    @Input() showList = true;
-    @Input() loading = false;
-    @Input() items: any[] = [];
+  @Input() title = 'Component Title';
+  @Input() description = 'Component description goes here';
+  @Input() showForm = true;
+  @Input() showList = true;
+  @Input() loading = false;
+  @Input() items: any[] = [];
 
-    @Output() formSubmit = new EventEmitter<any>();
-    @Output() cancelClick = new EventEmitter<void>();
-    @Output() itemClick = new EventEmitter<any>();
+  @Output() formSubmit = new EventEmitter<any>();
+  @Output() cancelClick = new EventEmitter<void>();
+  @Output() itemClick = new EventEmitter<any>();
 
-    form: FormGroup;
+  form: FormGroup;
 
-    constructor(private fb: FormBuilder) {
-        this.form = this.fb.group({
-            exampleField: ['', Validators.required],
-        });
+  constructor(private fb: FormBuilder) {
+    this.form = this.fb.group({
+      exampleField: ['', Validators.required],
+    });
+  }
+
+  onSubmit() {
+    if (this.form.valid) {
+      this.formSubmit.emit(this.form.value);
     }
+  }
 
-    onSubmit() {
-        if (this.form.valid) {
-            this.formSubmit.emit(this.form.value);
-        }
-    }
+  onCancel() {
+    this.cancelClick.emit();
+  }
 
-    onCancel() {
-        this.cancelClick.emit();
-    }
+  onItemAction(item: any) {
+    this.itemClick.emit(item);
+  }
 
-    onItemAction(item: any) {
-        this.itemClick.emit(item);
-    }
-
-    trackById(index: number, item: any): any {
-        return item.id || index;
-    }
+  trackById(index: number, item: any): any {
+    return item.id || index;
+  }
 }

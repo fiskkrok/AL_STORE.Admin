@@ -1,11 +1,13 @@
 ﻿using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Admin.Application.Common.Exceptions;
 using Admin.Application.Common.Models;
 
 using ValidationException = FluentValidation.ValidationException;
 
-namespace Admin.Infrastructure.Middleware;
+namespace Admin.WebAPI.Configurations;
 
 /// <summary>
 /// Global error handling middleware
@@ -102,7 +104,16 @@ public class ErrorHandlingMiddleware
             response.StatusCode,
             errorResponse.Code);
 
-        await response.WriteAsJsonAsync(errorResponse);
+
+        // Use a more controlled serialization approach
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
+        };
+
+        await context.Response.WriteAsJsonAsync(errorResponse, jsonOptions);
     }
 }
 

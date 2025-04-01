@@ -18,9 +18,9 @@ export interface StockReservation {
     orderId: string;
     quantity: number;
     status: 'Pending' | 'Confirmed' | 'Cancelled';
-    expiresAt: string;
-    confirmedAt?: string;
-    cancelledAt?: string;
+    expiresAt: string; // ISO date string
+    confirmedAt?: string; // ISO date string
+    cancelledAt?: string; // ISO date string
 }
 
 export interface StockAdjustment {

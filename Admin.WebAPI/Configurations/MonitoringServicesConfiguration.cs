@@ -20,11 +20,11 @@ public static class MonitoringServicesConfiguration
             .AddCheck<RedisHealthCheck>(
                 "redis_health_check",
                 failureStatus: HealthStatus.Degraded,
-                tags: new[] { "cache", "redis" })
+                tags: ["cache", "redis"])
             .AddDbContextCheck<AdminDbContext>(
                 "database_health_check",
                 failureStatus: HealthStatus.Unhealthy,
-                tags: new[] { "database", "sql" });
+                tags: ["database", "sql"]);
 
         // Add RabbitMQ health check if RabbitMQ is configured
         var rabbitHost = configuration["RabbitMQ:Host"];
