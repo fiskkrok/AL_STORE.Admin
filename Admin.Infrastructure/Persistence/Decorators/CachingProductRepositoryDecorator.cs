@@ -1,56 +1,88 @@
-﻿
-
-using Admin.Application.Common.Interfaces;
+﻿using Admin.Application.Common.Interfaces;
 using Admin.Application.Products.Queries;
 using Admin.Domain.Entities;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using Admin.Infrastructure.Services.Caching.DTOs;
 
-namespace Admin.Infrastructure.Persistence.Decorators;
+using AutoMapper;
+
+using Microsoft.Extensions.Logging;
+
+/// <summary>
+/// Enhanced caching decorator for ProductRepository that uses specialized cache DTOs
+/// </summary>
 public class CachingProductRepositoryDecorator : IProductRepository
 {
     private readonly IProductRepository _inner;
     private readonly ICacheService _cache;
-    private readonly ILogger _logger;
+    private readonly IMapper _mapper;
+    private readonly ILogger<CachingProductRepositoryDecorator> _logger;
     private readonly TimeSpan _cacheExpiration;
 
-    private const string ProductKeyPrefix = "product";
-    private const string ProductSlugKeyPrefix = "product:slug";
-    private const string VariantKeyPrefix = "variant";
-    private const string ProductsListKeyPrefix = "products:list";
+    // Cache key prefixes
+    private const string ProductKeyPrefix = "product:dto";
+    private const string ProductSlugKeyPrefix = "product:slug:dto";
+    private const string VariantKeyPrefix = "variant:dto";
+    private const string ProductsListKeyPrefix = "products:list:dto";
 
     public CachingProductRepositoryDecorator(
         IProductRepository inner,
         ICacheService cache,
-        ILogger logger,
+        IMapper mapper,
+        ILogger<CachingProductRepositoryDecorator> logger,
         TimeSpan cacheExpiration)
     {
         _inner = inner;
         _cache = cache;
+        _mapper = mapper;
         _logger = logger;
         _cacheExpiration = cacheExpiration;
     }
 
-    // Implement IRepository<Product> methods with caching
+    public class GuidWrapper
+    {
+        public Guid Value { get; set; }
+    }
+
     public async Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"{ProductKeyPrefix}:{id}";
 
         try
         {
-            var cached = await _cache.GetAsync<Product>(cacheKey, cancellationToken);
-            if (cached != null)
+            // Try to get from cache first
+            var cachedDto = await _cache.GetAsync<ProductCacheDto>(cacheKey, cancellationToken);
+            if (cachedDto != null)
             {
                 _logger.LogDebug("Cache hit for product with ID {Id}", id);
-                return cached;
+
+                // Map back to domain entity with minimal hydration
+                var map = _mapper.Map<Product>(cachedDto);
+
+                // For full entity with all relationships, we need to get from repository
+                // This is a trade-off between full caching and partial caching
+                if (map.Category == null || map.Variants.Count != cachedDto.Variants.Count)
+                {
+                    _logger.LogDebug("Cache hit for product {Id} but needs relationship hydration", id);
+                    return await _inner.GetByIdAsync(id, cancellationToken);
+                }
+
+                return map;
             }
 
             _logger.LogDebug("Cache miss for product with ID {Id}", id);
+
+            // Get from repository
             var product = await _inner.GetByIdAsync(id, cancellationToken);
 
             if (product != null)
             {
-                await _cache.SetAsync(cacheKey, product, _cacheExpiration, cancellationToken);
+                // Convert to cache DTO and store
+                var productDto = _mapper.Map<ProductCacheDto>(product);
+                await _cache.SetAsync(cacheKey, productDto, _cacheExpiration, cancellationToken);
+
+                // Also cache by slug for slug lookups
+                await _cache.SetAsync($"{ProductSlugKeyPrefix}:{product.Slug}",
+                    new GuidWrapper { Value = product.Id }, _cacheExpiration, cancellationToken);
             }
 
             return product;
@@ -62,26 +94,37 @@ public class CachingProductRepositoryDecorator : IProductRepository
         }
     }
 
-    // Implement other specialized methods with caching
     public async Task<Product?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"{ProductSlugKeyPrefix}:{slug}";
 
         try
         {
-            var cached = await _cache.GetAsync<Product>(cacheKey, cancellationToken);
-            if (cached != null)
+            // Check if we have the product ID cached by slug
+            var cachedGuidWrapper = await _cache.GetAsync<GuidWrapper>(cacheKey, cancellationToken);
+
+            if (cachedGuidWrapper != null)
             {
-                _logger.LogDebug("Cache hit for product slug {Slug}", slug);
-                return cached;
+                // If we have the ID, try to get the product by ID (which might also be cached)
+                var byIdAsync = await GetByIdAsync(cachedGuidWrapper.Value, cancellationToken);
+                if (byIdAsync != null)
+                {
+                    return byIdAsync;
+                }
             }
 
-            _logger.LogDebug("Cache miss for product slug {Slug}", slug);
+            // Cache miss or product not found by ID, get from repository
             var product = await _inner.GetBySlugAsync(slug, cancellationToken);
 
             if (product != null)
             {
-                await _cache.SetAsync(cacheKey, product, _cacheExpiration, cancellationToken);
+                // Cache the ID-by-slug mapping (lightweight)
+                await _cache.SetAsync(cacheKey, new GuidWrapper { Value = product.Id }, _cacheExpiration, cancellationToken);
+
+                // Also cache the full product
+                var productDto = _mapper.Map<ProductCacheDto>(product);
+                await _cache.SetAsync($"{ProductKeyPrefix}:{product.Id}",
+                    productDto, _cacheExpiration, cancellationToken);
             }
 
             return product;
@@ -93,32 +136,49 @@ public class CachingProductRepositoryDecorator : IProductRepository
         }
     }
 
+    public async Task<Product?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken)
+    {
+        // For methods requiring specific relationships, we go directly to repository
+        // Don't try to cache these as they're likely used in specific write scenarios
+        return await _inner.GetByIdWithImagesAsync(id, cancellationToken);
+    }
+
+    
+
     public async Task<ProductVariant?> GetVariantByIdAsync(Guid variantId, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"{VariantKeyPrefix}:{variantId}";
 
         try
         {
-            var cached = await _cache.GetAsync<ProductVariant>(cacheKey, cancellationToken);
-            if (cached != null)
+            // Try to get from cache first
+            var cachedDto = await _cache.GetAsync<ProductVariantCacheDto>(cacheKey, cancellationToken);
+            if (cachedDto != null)
             {
-                _logger.LogDebug("Cache hit for variant with ID {VariantId}", variantId);
-                return cached;
+                _logger.LogDebug("Cache hit for variant with ID {Id}", variantId);
+
+                // Map back to domain entity
+                var map = _mapper.Map<ProductVariant>(cachedDto);
+                return map;
             }
 
-            _logger.LogDebug("Cache miss for variant with ID {VariantId}", variantId);
+            _logger.LogDebug("Cache miss for variant with ID {Id}", variantId);
+
+            // Get from repository
             var variant = await _inner.GetVariantByIdAsync(variantId, cancellationToken);
 
             if (variant != null)
             {
-                await _cache.SetAsync(cacheKey, variant, _cacheExpiration, cancellationToken);
+                // Convert to cache DTO and store
+                var variantDto = _mapper.Map<ProductVariantCacheDto>(variant);
+                await _cache.SetAsync(cacheKey, variantDto, _cacheExpiration, cancellationToken);
             }
 
             return variant;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Error accessing cache for variant with ID {VariantId}, falling back to repository", variantId);
+            _logger.LogWarning(ex, "Error accessing cache for variant with ID {Id}, falling back to repository", variantId);
             return await _inner.GetVariantByIdAsync(variantId, cancellationToken);
         }
     }
@@ -129,100 +189,159 @@ public class CachingProductRepositoryDecorator : IProductRepository
 
         try
         {
-            var cached = await _cache.GetAsync<IEnumerable<ProductVariant>>(cacheKey, cancellationToken);
-            if (cached != null)
+            // Try to get from cache
+            var cachedDtos = await _cache.GetAsync<List<ProductVariantCacheDto>>(cacheKey, cancellationToken);
+            if (cachedDtos != null)
             {
-                _logger.LogDebug("Cache hit for variants of product with ID {ProductId}", productId);
-                return cached;
+                _logger.LogDebug("Cache hit for variants of product {ProductId}", productId);
+
+                // Map back to domain entities
+                var map = _mapper.Map<List<ProductVariant>>(cachedDtos);
+                return map;
             }
 
-            _logger.LogDebug("Cache miss for variants of product with ID {ProductId}", productId);
+            // Get from repository
             var variants = await _inner.GetVariantsByProductIdAsync(productId, cancellationToken);
 
-            if (variants != null)
+            // Cache the variants
+            if (variants != null && variants.Any())
             {
-                await _cache.SetAsync(cacheKey, variants, _cacheExpiration, cancellationToken);
+                var variantDtos = _mapper.Map<List<ProductVariantCacheDto>>(variants);
+                await _cache.SetAsync(cacheKey, variantDtos, _cacheExpiration, cancellationToken);
+
+                // Also cache individual variants
+                foreach (var variant in variants)
+                {
+                    var variantDto = _mapper.Map<ProductVariantCacheDto>(variant);
+                    await _cache.SetAsync($"{VariantKeyPrefix}:{variant.Id}",
+                        variantDto, _cacheExpiration, cancellationToken);
+                }
             }
 
             return variants;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Error accessing cache for variants of product with ID {ProductId}, falling back to repository", productId);
+            _logger.LogWarning(ex, "Error accessing cache for variants of product {ProductId}, falling back to repository", productId);
             return await _inner.GetVariantsByProductIdAsync(productId, cancellationToken);
         }
     }
 
     public async Task<bool> SlugExistsAsync(string slug, Guid? excludeProductId = null, CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"{ProductSlugKeyPrefix}:exists:{slug}:{excludeProductId}";
-
-        try
-        {
-            var cached = await _cache.GetAsync<string>(cacheKey, cancellationToken);
-            if (cached != null)
-            {
-                _logger.LogDebug("Cache hit for slug existence check for slug {Slug}", slug);
-                return bool.Parse(cached);
-            }
-
-            _logger.LogDebug("Cache miss for slug existence check for slug {Slug}", slug);
-            var exists = await _inner.SlugExistsAsync(slug, excludeProductId, cancellationToken);
-
-            await _cache.SetAsync(cacheKey, exists.ToString(), _cacheExpiration, cancellationToken);
-
-            return exists;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Error accessing cache for slug existence check for slug {Slug}, falling back to repository", slug);
-            return await _inner.SlugExistsAsync(slug, excludeProductId, cancellationToken);
-        }
+        // For simple existence checks, it's usually more efficient to go directly to database
+        return await _inner.SlugExistsAsync(slug, excludeProductId, cancellationToken);
     }
 
-    public async Task<(IEnumerable<Product> Products, int TotalCount)> GetProductsAsync(ProductFilterRequest filter, CancellationToken cancellationToken = default)
+    public async Task<(IEnumerable<Product> Products, int TotalCount)> GetProductsAsync(
+        ProductFilterRequest filter, CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"{ProductsListKeyPrefix}:{filter}";
+        // For filtered lists, we need a way to represent the filter in the cache key
+        var filterHash = ComputeFilterHash(filter);
+        var cacheKey = $"{ProductsListKeyPrefix}:{filterHash}";
 
         try
         {
-            var cached = await _cache.GetAsync<string>(cacheKey, cancellationToken);
-            if (cached != null)
+            // Try to get product IDs from cache first (lightweight approach)
+            var cachedResult = await _cache.GetAsync<ProductListCacheResult>(cacheKey, cancellationToken);
+            if (cachedResult != null)
             {
-                _logger.LogDebug("Cache hit for product list with filter {Filter}", filter);
-                return JsonConvert.DeserializeObject<(IEnumerable<Product> Products, int TotalCount)>(cached);
+                _logger.LogDebug("Cache hit for product list with filter hash {FilterHash}", filterHash);
+
+                // For product lists, we just cache IDs and total count to avoid massive objects
+                if (cachedResult.ProductIds.Count > 0)
+                {
+                    var products = await GetProductsByIdsAsync(cachedResult.ProductIds, cancellationToken);
+                    return (products, cachedResult.TotalCount);
+                }
             }
 
-            _logger.LogDebug("Cache miss for product list with filter {Filter}", filter);
-            var products = await _inner.GetProductsAsync(filter, cancellationToken);
+            // Get from repository
+            var result = await _inner.GetProductsAsync(filter, cancellationToken);
 
-            await _cache.SetAsync(cacheKey, JsonConvert.SerializeObject(products), _cacheExpiration, cancellationToken);
+            // Cache product IDs and total count
+            if (result.Products.Any())
+            {
+                var productIds = result.Products.Select(p => p.Id).ToList();
+                var cacheResult = new ProductListCacheResult
+                {
+                    ProductIds = productIds,
+                    TotalCount = result.TotalCount
+                };
 
-            return products;
+                await _cache.SetAsync(cacheKey, cacheResult, _cacheExpiration, cancellationToken);
+
+                // Also cache individual products
+                foreach (var product in result.Products)
+                {
+                    var productDto = _mapper.Map<ProductCacheDto>(product);
+                    await _cache.SetAsync($"{ProductKeyPrefix}:{product.Id}",
+                        productDto, _cacheExpiration, cancellationToken);
+                }
+            }
+
+            return result;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Error accessing cache for product list with filter {Filter}, falling back to repository", filter);
+            _logger.LogWarning(ex, "Error accessing cache for product list, falling back to repository");
             return await _inner.GetProductsAsync(filter, cancellationToken);
         }
     }
 
-    public async Task<Product?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Product>> GetProductsByIdsAsync(IEnumerable<Guid> productIds, CancellationToken cancellationToken = default)
     {
-        return await _inner.GetByIdWithImagesAsync(id, cancellationToken);
+        var result = new List<Product>();
+        var missingProductIds = new List<Guid>();
+
+        // Try to get each product from cache
+        foreach (var productId in productIds)
+        {
+            var product = await GetByIdAsync(productId, cancellationToken);
+            if (product != null)
+            {
+                result.Add(product);
+            }
+            else
+            {
+                missingProductIds.Add(productId);
+            }
+        }
+
+        // For any products not in cache, get them from repository
+        if (missingProductIds.Any())
+        {
+            var products = await _inner.GetProductsByIdsAsync(missingProductIds, cancellationToken);
+            result.AddRange(products);
+
+            // Cache these products
+            foreach (var product in products)
+            {
+                var productDto = _mapper.Map<ProductCacheDto>(product);
+                await _cache.SetAsync($"{ProductKeyPrefix}:{product.Id}",
+                    productDto, _cacheExpiration, cancellationToken);
+            }
+        }
+
+        return result;
     }
 
-
-    // For methods that need to invalidate cached items
+    // For write operations, we need to invalidate cache
     public async Task AddAsync(Product entity, CancellationToken cancellationToken = default)
     {
         await _inner.AddAsync(entity, cancellationToken);
+        // No need to cache yet - entity ID might not be generated
     }
 
     public async Task UpdateAsync(Product entity, CancellationToken cancellationToken = default)
     {
         await _inner.UpdateAsync(entity, cancellationToken);
         await InvalidateProductCacheAsync(entity, cancellationToken);
+
+        // After update, refresh the cache with new entity
+        var productDto = _mapper.Map<ProductCacheDto>(entity);
+        await _cache.SetAsync($"{ProductKeyPrefix}:{entity.Id}",
+            productDto, _cacheExpiration, cancellationToken);
     }
 
     public async Task RemoveAsync(Product entity, CancellationToken cancellationToken = default)
@@ -238,7 +357,8 @@ public class CachingProductRepositoryDecorator : IProductRepository
             var keysToInvalidate = new List<string>
             {
                 $"{ProductKeyPrefix}:{product.Id}",
-                $"{ProductSlugKeyPrefix}:{product.Slug}"
+                $"{ProductSlugKeyPrefix}:{product.Slug}",
+                $"{ProductKeyPrefix}:{product.Id}:variants"
             };
 
             // Invalidate variants cache if applicable
@@ -250,7 +370,7 @@ public class CachingProductRepositoryDecorator : IProductRepository
                 }
             }
 
-            // Invalidate list caches
+            // Invalidate product lists
             await _cache.RemoveByPrefixAsync(ProductsListKeyPrefix, cancellationToken);
 
             // Remove individual keys
@@ -265,4 +385,29 @@ public class CachingProductRepositoryDecorator : IProductRepository
             _logger.LogWarning(ex, "Error invalidating cache for product {ProductId}", product.Id);
         }
     }
+
+    private string ComputeFilterHash(ProductFilterRequest filter)
+    {
+        // Create a deterministic string representation of the filter for use as a cache key
+        return $"pg{filter.PageNumber}sz{filter.PageSize}" +
+               $"st{filter.SearchTerm}" +
+               $"c{filter.CategoryId}" +
+               $"sc{filter.SubCategoryId}" +
+               $"p{filter.MinPrice}-{filter.MaxPrice}" +
+               $"i{filter.InStock}" +
+               $"s{filter.SortBy}-{filter.SortDescending}" +
+               $"lm{filter.LastModifiedAfter?.Ticks}" +
+               $"st{filter.Status}" +
+               $"vs{filter.Visibility}" +
+               $"ii{filter.IncludeInactive}";
+    }
+}
+
+/// <summary>
+/// Class for caching product list results
+/// </summary>
+public class ProductListCacheResult
+{
+    public List<Guid> ProductIds { get; set; } = new();
+    public int TotalCount { get; set; }
 }

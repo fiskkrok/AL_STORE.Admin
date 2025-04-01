@@ -23,8 +23,6 @@ public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
     {
         var query = DbContext.Categories
             .Include(c => c.ParentCategory)
-            .Include(c => c.SubCategories)
-            .Include(c => c.Products)
             .AsQueryable();
 
         if (!includeInactive)

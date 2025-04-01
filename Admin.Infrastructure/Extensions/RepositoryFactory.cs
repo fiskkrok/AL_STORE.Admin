@@ -3,7 +3,7 @@ using Admin.Domain.Common;
 using Admin.Infrastructure.Persistence;
 using Admin.Infrastructure.Persistence.Decorators;
 using Admin.Infrastructure.Persistence.Repositories;
-
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -14,16 +14,18 @@ public class RepositoryFactory
     private readonly ICacheService _cacheService;
     private readonly ILoggerFactory _loggerFactory;
     private readonly CacheSettings _cacheSettings;
+    private readonly IMapper _iMapper;
 
     public RepositoryFactory(
         AdminDbContext dbContext,
         ICacheService cacheService,
         ILoggerFactory loggerFactory,
-        IOptions<CacheSettings> cacheSettings)
+        IOptions<CacheSettings> cacheSettings, IMapper iMapper)
     {
         _dbContext = dbContext;
         _cacheService = cacheService;
         _loggerFactory = loggerFactory;
+        _iMapper = iMapper;
         _cacheSettings = cacheSettings.Value;
     }
 
@@ -62,7 +64,7 @@ public class RepositoryFactory
     public IProductRepository CreateProductRepository(bool enableCaching = true)
     {
         var baseRepo = new ProductRepository(_dbContext);
-        var logger = _loggerFactory.CreateLogger<ProductRepository>();
+        var logger = _loggerFactory.CreateLogger<CachingProductRepositoryDecorator>();
 
         // Here we would add an error handling decorator if we had one for products
         IProductRepository repository = baseRepo;
@@ -73,6 +75,7 @@ public class RepositoryFactory
             repository = new CachingProductRepositoryDecorator(
                 repository,
                 _cacheService,
+                _iMapper,
                 logger,
                 _cacheSettings.DefaultExpiration);
         }
@@ -150,7 +153,7 @@ public class RepositoryFactory
     public ICategoryRepository CreateCategoryRepository(bool enableCaching = true)
     {
         var baseRepo = new CategoryRepository(_dbContext);
-        var logger = _loggerFactory.CreateLogger<CategoryRepository>();
+        var logger = _loggerFactory.CreateLogger<CachingCategoryRepositoryDecorator>();
 
         // Here we would add an error handling decorator if we had one for categories
         ICategoryRepository repository = baseRepo;
@@ -161,6 +164,7 @@ public class RepositoryFactory
             repository = new CachingCategoryRepositoryDecorator(
                 repository,
                 _cacheService,
+                _iMapper,
                 logger,
                 _cacheSettings.DefaultExpiration);
         }

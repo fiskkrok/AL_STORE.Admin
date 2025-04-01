@@ -1,4 +1,7 @@
 ﻿using Admin.Application.Common.Interfaces;
+using Admin.Infrastructure.Persistence.Decorators;
+using Admin.Infrastructure.Persistence.Repositories;
+using Admin.Infrastructure.Services.Caching.Mappings;
 using Admin.WebAPI.Services;
 
 using Microsoft.Extensions.Caching.Hybrid;
@@ -13,7 +16,7 @@ namespace Admin.WebAPI.Configurations;
 public static class CachingServicesConfiguration
 {
     /// <summary>
-    /// Adds caching services, including Redis and hybrid cache
+    /// Adds caching services, including Redis and hybrid cache with DTO-based caching
     /// </summary>
     public static IServiceCollection AddCachingServices(this IServiceCollection services, IConfiguration configuration)
     {
@@ -30,6 +33,11 @@ public static class CachingServicesConfiguration
         {
             options.Configuration = redisConnectionString;
             options.InstanceName = "Admin_";
+            if (options.ConfigurationOptions != null)
+            {
+                options.ConfigurationOptions.ConnectTimeout = 10000; // 10 seconds
+                options.ConfigurationOptions.SyncTimeout = 10000;
+            }
         });
 
         // Add cache service
@@ -48,9 +56,44 @@ public static class CachingServicesConfiguration
         });
 #pragma warning restore EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
+        // Register cache mapping profiles for DTO-based caching
+        services.AddAutoMapper(typeof(CacheMappingProfile).Assembly);
+
+        // Configure repository decorators with DTO-based caching
+        ConfigureRepositoryDecorators(services, configuration);
+
         // Add cache warming service
         services.AddHostedService<CacheWarmingService>();
 
+        // Add Redis health check
+        services.AddHealthChecks()
+            .AddCheck<RedisHealthCheck>("redis", tags: new[] { "cache", "redis" });
+
         return services;
+    }
+
+    private static void ConfigureRepositoryDecorators(IServiceCollection services, IConfiguration configuration)
+    {
+        // Configure cache expiration from settings
+        var cacheExpirationMinutes = configuration.GetValue("Redis:DefaultExpirationMinutes", 30);
+        var cacheExpiration = TimeSpan.FromMinutes(cacheExpirationMinutes);
+
+        // For Product repository
+        services.Decorate<IProductRepository>((inner, provider) =>
+            new CachingProductRepositoryDecorator(
+                inner,
+                provider.GetRequiredService<ICacheService>(),
+                provider.GetRequiredService<AutoMapper.IMapper>(),
+                provider.GetRequiredService<ILogger<CachingProductRepositoryDecorator>>(),
+                cacheExpiration));
+
+        // For Category repository
+        services.Decorate<ICategoryRepository>((inner, provider) =>
+            new CachingCategoryRepositoryDecorator(
+                inner,
+                provider.GetRequiredService<ICacheService>(),
+                provider.GetRequiredService<AutoMapper.IMapper>(),
+                provider.GetRequiredService<ILogger<CachingCategoryRepositoryDecorator>>(),
+                cacheExpiration));
     }
 }

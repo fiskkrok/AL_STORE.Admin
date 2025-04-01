@@ -39,6 +39,27 @@ public class ProductRepository : BaseRepository<Product>, IProductRepository
             .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
+
+    public async Task<IEnumerable<Product>> GetProductsByIdsAsync(IEnumerable<Guid> productIds, CancellationToken cancellationToken = default)
+    {
+        if (productIds == null || !productIds.Any())
+        {
+            return Enumerable.Empty<Product>();
+        }
+
+        return await DbContext.Products
+            .Include(p => p.Category)
+            .Include(p => p.SubCategory)
+            .Include(p => p.Images)
+            .Include(p => p.Variants)
+            .ThenInclude(v => v.Attributes)
+            .Include(p => p.Attributes)
+            .AsSplitQuery()
+            .Where(p => productIds.Contains(p.Id) && !p.IsArchived)
+            .ToListAsync(cancellationToken);
+    }
+
+
     public async Task<IEnumerable<ProductVariant>> GetVariantsByProductIdAsync(Guid productId, CancellationToken cancellationToken = default)
     {
         return await DbContext.Set<ProductVariant>()
