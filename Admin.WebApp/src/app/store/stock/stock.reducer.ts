@@ -36,7 +36,30 @@ export const stockReducer = createReducer(
             [stock.productId]: stock
         }
     })),
+    // Real-time Updates
+    on(StockActions.stockUpdated, (state, { stock }) => ({
+        ...state,
+        items: {
+            ...state.items,
+            [stock.productId]: stock
+        }
+    })),
 
+    on(StockActions.lowStockAlert, (state, { stock }) => ({
+        ...state,
+        lowStockAlerts: [
+            ...state.lowStockAlerts.filter(item => item.productId !== stock.productId),
+            stock
+        ]
+    })),
+
+    on(StockActions.outOfStockAlert, (state, { stock }) => ({
+        ...state,
+        outOfStockAlerts: [
+            ...state.outOfStockAlerts.filter(item => item.productId !== stock.productId),
+            stock
+        ]
+    })),
     on(StockActions.lowStockAlert, (state, { stock }) => ({
         ...state,
         lowStockAlerts: [

@@ -118,7 +118,7 @@ public static class MessagingServicesConfiguration
         endpoints.MapHub<OrderHub>("/hubs/orders");
         endpoints.MapHub<CategoryHub>("/hubs/categories");
         endpoints.MapHub<ProductVariantHub>("/hubs/productvariant");
-
+        endpoints.MapHub<StockHub>("/hubs/stock");
         return endpoints;
     }
 }

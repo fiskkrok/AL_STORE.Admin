@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
-namespace Admin.Infrastructure.Configuration;
+namespace Admin.Infrastructure.Persistence.Configurations;
 public class StockItemConfiguration : IEntityTypeConfiguration<StockItem>
 {
     public void Configure(EntityTypeBuilder<StockItem> builder)
@@ -34,10 +34,12 @@ public class StockItemConfiguration : IEntityTypeConfiguration<StockItem>
             .HasComputedColumnSql("[CurrentStock] - [ReservedStock]");
 
         builder.Property(x => x.IsLowStock)
-            .HasComputedColumnSql("CASE WHEN [CurrentStock] - [ReservedStock] <= [LowStockThreshold] THEN 1 ELSE 0 END");
+            .HasComputedColumnSql("CASE WHEN [CurrentStock] - [ReservedStock] <= [LowStockThreshold] THEN 1 ELSE 0 END")
+            .HasConversion<int>(); // Add this line
 
         builder.Property(x => x.IsOutOfStock)
-            .HasComputedColumnSql("CASE WHEN [CurrentStock] - [ReservedStock] <= 0 THEN 1 ELSE 0 END");
+            .HasComputedColumnSql("CASE WHEN [CurrentStock] - [ReservedStock] <= 0 THEN 1 ELSE 0 END")
+            .HasConversion<int>();
 
         // Relationships
         builder.HasMany<StockReservation>()

@@ -1,5 +1,7 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Domain.Entities;
+using Admin.Infrastructure.Services.Caching.DTOs;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 
 namespace Admin.Infrastructure.Persistence.Decorators;
@@ -11,6 +13,7 @@ public class CachingStockRepositoryDecorator : IStockRepository
     private readonly ILogger _logger;
     private readonly TimeSpan _cacheExpiration;
     private readonly TimeSpan _shortExpiration;
+    private readonly IMapper _mapper;
 
     private const string StockItemKeyPrefix = "stock:item";
     private const string StockProductKeyPrefix = "stock:product";
@@ -22,12 +25,13 @@ public class CachingStockRepositoryDecorator : IStockRepository
         IStockRepository inner,
         ICacheService cache,
         ILogger logger,
-        TimeSpan cacheExpiration)
+        TimeSpan cacheExpiration, IMapper mapper)
     {
         _inner = inner;
         _cache = cache;
         _logger = logger;
         _cacheExpiration = cacheExpiration;
+        _mapper = mapper;
         _shortExpiration = TimeSpan.FromMinutes(5); // Short expiration for frequently changing data
     }
 
@@ -61,17 +65,20 @@ public class CachingStockRepositoryDecorator : IStockRepository
         }
     }
 
+    // In CachingStockRepositoryDecorator.cs
     public async Task<StockItem?> GetByProductIdAsync(Guid productId, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"{StockProductKeyPrefix}:{productId}";
 
         try
         {
-            var cached = await _cache.GetAsync<StockItem>(cacheKey, cancellationToken);
-            if (cached != null)
+            // Try to get from cache as DTO
+            var cachedDto = await _cache.GetAsync<StockItemCacheDto>(cacheKey, cancellationToken);
+            if (cachedDto != null)
             {
                 _logger.LogDebug("Cache hit for product stock with ID {ProductId}", productId);
-                return cached;
+                // Map DTO back to domain entity
+                return _mapper.Map<StockItem>(cachedDto);
             }
 
             _logger.LogDebug("Cache miss for product stock with ID {ProductId}", productId);
@@ -79,7 +86,9 @@ public class CachingStockRepositoryDecorator : IStockRepository
 
             if (stockItem != null)
             {
-                await _cache.SetAsync(cacheKey, stockItem, _cacheExpiration, cancellationToken);
+                // Map domain entity to DTO for caching
+                var stockItemDto = _mapper.Map<StockItemCacheDto>(stockItem);
+                await _cache.SetAsync(cacheKey, stockItemDto, _cacheExpiration, cancellationToken);
             }
 
             return stockItem;

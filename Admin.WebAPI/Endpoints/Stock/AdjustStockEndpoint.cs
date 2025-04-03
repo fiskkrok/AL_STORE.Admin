@@ -30,7 +30,7 @@ public class AdjustStockEndpoint : Endpoint<AdjustStockRequest, FastEndpoints.Em
 
     public override void Configure()
     {
-        Post("/api/stock/{ProductId}/adjust");
+        Post("/stock/{ProductId}/adjust");
         Description(d => d
             .WithTags("Stock")
             .Produces(StatusCodes.Status200OK)
@@ -49,28 +49,49 @@ public class AdjustStockEndpoint : Endpoint<AdjustStockRequest, FastEndpoints.Em
             Adjustment = req.Adjustment,
             Reason = req.Reason
         };
-        
+
         var result = await _mediator.Send(command, ct);
-        
+
         if (!result.IsSuccess)
         {
             await SendErrorsAsync(400, ct);
             return;
         }
-            
-        // After successful stock adjustment, notify connected clients via SignalR
+
+        // Get updated stock information
         var updatedStock = await _mediator.Send(new GetStockItemQuery(req.ProductId), ct);
         if (updatedStock.IsSuccess)
         {
-            await _stockHub.Clients.All.SendAsync("StockUpdated", updatedStock.Value, ct);
-            
-            // If stock is low, send low stock alert
-            if (updatedStock.Value.IsLowStock)
+            try
             {
-                await _stockHub.Clients.All.SendAsync("LowStockAlert", updatedStock.Value, ct);
+                // Notify specific product group
+                await _stockHub.Clients.Group($"stock-product-{req.ProductId}")
+                    .SendAsync("StockUpdated", updatedStock.Value, cancellationToken: ct);
+
+                // If stock is low, send low stock alert
+                if (updatedStock.Value.IsLowStock)
+                {
+                    await _stockHub.Clients.Group("LowStockAlerts")
+                        .SendAsync("LowStockAlert", updatedStock.Value, cancellationToken: ct);
+                }
+
+                // If out of stock, notify about that too
+                if (updatedStock.Value.IsOutOfStock)
+                {
+                    await _stockHub.Clients.Group("LowStockAlerts")
+                        .SendAsync("OutOfStockAlert", updatedStock.Value, cancellationToken: ct);
+                }
+
+                // Also notify everyone for dashboards
+                await _stockHub.Clients.All.SendAsync("StockUpdated", updatedStock.Value, cancellationToken: ct);
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail the request if SignalR notification fails
+                _logger.LogError(ex, "Failed to send stock update notification for product {ProductId}", req.ProductId);
             }
         }
-            
+
         await SendOkAsync(ct);
     }
 }

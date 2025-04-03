@@ -25,7 +25,7 @@ public class GetStockItemEndpoint : Endpoint<GetStockItemRequest, StockItemDto>
 
     public override void Configure()
     {
-        Get("/api/stock/{Id}");
+        Get("/stock/{Id}");
         Description(d => d
             .WithTags("Stock")
             .Produces<StockItemDto>(StatusCodes.Status200OK)

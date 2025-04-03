@@ -20,7 +20,7 @@ public class GetLowStockItemsEndpoint : EndpointWithoutRequest<List<StockItemDto
 
     public override void Configure()
     {
-        Get("/api/stock/low-stock");
+        Get("/stock/low-stock");
         Description(d => d
             .WithTags("Stock")
             .Produces<List<StockItemDto>>(StatusCodes.Status200OK)

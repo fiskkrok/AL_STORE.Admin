@@ -22,19 +22,19 @@ public static class CoreServicesConfiguration
         // Add logging
         services.AddLogging();
 
-        // Add HttpContext
+        //// Add HttpContext
         services.AddHttpContextAccessor();
-        services.ConfigureHttpJsonOptions(options => {
-            options.SerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
-            options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        });
+        //services.ConfigureHttpJsonOptions(options => {
+        //    options.SerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
+        //    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        //});
 
-        // Also update Minimal API / Controllers options if using them
-        services.Configure<JsonOptions>(options => {
-            options.JsonSerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        });
-        
+        //// Also update Minimal API / Controllers options if using them
+        //services.Configure<JsonOptions>(options => {
+        //    options.JsonSerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
+        //    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        //});
+
         // Add system clock
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 

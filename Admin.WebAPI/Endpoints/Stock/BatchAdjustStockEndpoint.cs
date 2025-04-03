@@ -30,7 +30,7 @@ public class BatchAdjustStockEndpoint : Endpoint<BatchAdjustStockRequest, FastEn
 
     public override void Configure()
     {
-        Post("/api/stock/batch-adjust");
+        Post("/stock/batch-adjust");
         Description(d => d
             .WithTags("Stock")
             .Produces(StatusCodes.Status200OK)

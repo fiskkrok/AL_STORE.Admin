@@ -93,12 +93,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.initializeFilters();
         this.loadCategories();
-        this.loadProducts();
         this.products$.pipe(takeUntil(this.destroy$)).subscribe(products => {
             products.forEach(product => {
                 this.store.dispatch(StockActions.loadStock({ productId: product.id }));
             });
         });
+        this.loadProducts();
     }
 
     ngOnDestroy() {

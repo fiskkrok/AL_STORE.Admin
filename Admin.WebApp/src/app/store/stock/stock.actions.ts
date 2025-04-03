@@ -23,6 +23,7 @@ export const StockActions = createActionGroup({
         // Real-time Updates
         'Stock Updated': props<{ stock: StockItem }>(),
         'Low Stock Alert': props<{ stock: StockItem }>(),
+        'Out Of Stock Alert': props<{ stock: StockItem }>(),
 
         // Load Alerts
         'Load Low Stock Items': emptyProps(),

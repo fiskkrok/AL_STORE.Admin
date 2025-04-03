@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
-namespace Admin.Infrastructure.Configuration;
+namespace Admin.Infrastructure.Persistence.Configurations;
 public class StockReservationConfiguration : IEntityTypeConfiguration<StockReservation>
 {
     public void Configure(EntityTypeBuilder<StockReservation> builder)

@@ -20,7 +20,7 @@ public class GetOutOfStockItemsEndpoint : EndpointWithoutRequest<List<StockItemD
 
     public override void Configure()
     {
-        Get("/api/stock/out-of-stock");
+        Get("/stock/out-of-stock");
         Description(d => d
             .WithTags("Stock")
             .Produces<List<StockItemDto>>(StatusCodes.Status200OK)

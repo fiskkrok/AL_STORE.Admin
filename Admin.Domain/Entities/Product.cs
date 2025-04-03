@@ -93,12 +93,21 @@ public class Product : AuditableEntity
     public Money Price => Money.From(_price, _currency);
     public Money? CompareAtPrice => _compareAtPrice.HasValue ? Money.From(_compareAtPrice.Value, _currency) : null;
 
+   
+    [Obsolete("Use StockItem entity for inventory management instead")]
     public int Stock
     {
         get => field;
         private set => field = Guard.Against.Negative(value, nameof(Stock));
     }
+    public void SyncStockFromStockItem(StockItem stockItem)
+    {
+        if (stockItem == null || stockItem.ProductId != Id)
+            return;
 
+        // Keep the legacy Stock property synchronized
+        Stock = stockItem.CurrentStock;
+    }
     public int? LowStockThreshold { get; private set; }
     public ProductStatus Status { get; private set; } = ProductStatus.Draft;
     public ProductVisibility Visibility { get; private set; } = ProductVisibility.Hidden;

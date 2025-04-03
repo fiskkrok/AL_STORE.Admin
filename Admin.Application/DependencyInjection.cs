@@ -17,7 +17,7 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(assembly);
         });
         services.AddScoped<IRoleService, RoleService>();
-
+        services.AddScoped<StockManagementService>();
         services.AddAutoMapper(assembly);
         services.AddValidatorsFromAssembly(assembly);
 

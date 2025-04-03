@@ -99,7 +99,8 @@ public class RepositoryFactory
                 repository,
                 _cacheService,
                 logger,
-                _cacheSettings.DefaultExpiration);
+                _cacheSettings.DefaultExpiration,
+                _iMapper);
         }
 
         return repository;

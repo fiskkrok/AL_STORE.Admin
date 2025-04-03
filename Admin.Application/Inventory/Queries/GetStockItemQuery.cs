@@ -1,7 +1,10 @@
 ﻿using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
 using Admin.Application.Inventory.DTOs;
+using Admin.Application.Services;
+
 using MediatR;
+
 using Microsoft.Extensions.Logging;
 
 namespace Admin.Application.Inventory.Queries;
@@ -11,15 +14,18 @@ public class GetStockItemQueryHandler : IRequestHandler<GetStockItemQuery, Resul
 {
     private readonly IStockRepository _stockRepository;
     private readonly IProductRepository _productRepository;
+    private readonly StockManagementService _stockManagementService;
     private readonly ILogger<GetStockItemQueryHandler> _logger;
 
     public GetStockItemQueryHandler(
         IStockRepository stockRepository,
         IProductRepository productRepository,
+        StockManagementService stockManagementService,
         ILogger<GetStockItemQueryHandler> logger)
     {
         _stockRepository = stockRepository;
         _productRepository = productRepository;
+        _stockManagementService = stockManagementService;
         _logger = logger;
     }
 
@@ -27,19 +33,20 @@ public class GetStockItemQueryHandler : IRequestHandler<GetStockItemQuery, Resul
     {
         try
         {
-            var stockItem = await _stockRepository.GetByProductIdAsync(request.ProductId, cancellationToken);
-            if (stockItem == null)
-                return Result<StockItemDto>.Failure(new Error("StockItem.NotFound", "Stock item not found"));
+            // First check if the product exists
+            var product = await _productRepository.GetByIdAsync(request.ProductId, cancellationToken);
+            if (product == null)
+                return Result<StockItemDto>.Failure(new Error("Product.NotFound", "Product not found"));
 
-            // Get product name for frontend display
-            var product = await _productRepository.GetByIdAsync(stockItem.ProductId, cancellationToken);
-            string productName = product?.Name ?? "Unknown Product";
+            // Get or create the stock item
+            var stockItem = await _stockManagementService.GetOrCreateStockItemAsync(request.ProductId, cancellationToken);
 
+            // Map to DTO
             var dto = new StockItemDto
             {
                 Id = stockItem.Id,
                 ProductId = stockItem.ProductId,
-                ProductName = productName,
+                ProductName = product.Name,
                 CurrentStock = stockItem.CurrentStock,
                 ReservedStock = stockItem.ReservedStock,
                 AvailableStock = stockItem.AvailableStock,
