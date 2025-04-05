@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
     selector: 'app-save-preset-dialog',
@@ -17,66 +18,76 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
         MatFormFieldModule,
         MatInputModule,
         MatButtonModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        MatIconModule
     ],
     template: `
-        <h2 mat-dialog-title>Save Search Preset</h2>
-        
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <mat-dialog-content>
-                <div class="form-fields">
-                    <mat-form-field appearance="outline">
-                        <mat-label>Preset Name</mat-label>
-                        <input matInput formControlName="name" placeholder="Enter preset name">
-                        <mat-error *ngIf="form.get('name')?.errors?.['required']">
-                            Name is required
-                        </mat-error>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
-                        <mat-label>Description</mat-label>
-                        <textarea matInput formControlName="description" 
-                                  placeholder="Enter description (optional)"
-                                  rows="3"></textarea>
-                    </mat-form-field>
-
-                    <mat-checkbox formControlName="isGlobal">
-                        Share with all admin users
-                    </mat-checkbox>
-                </div>
-            </mat-dialog-content>
-
-            <mat-dialog-actions align="end">
-                <button mat-button type="button" (click)="onCancel()">Cancel</button>
-                <button mat-raised-button color="primary" 
-                        type="submit"
-                        [disabled]="!form.valid">
-                    Save Preset
+        <div class="save-preset-dialog">
+            <!-- Dialog Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                <h2 class="text-xl font-medium text-slate-900 dark:text-white">Save Search Preset</h2>
+                <button mat-icon-button (click)="onCancel()"
+                    class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                    <mat-icon>close</mat-icon>
                 </button>
-            </mat-dialog-actions>
-        </form>
-    `,
-    styles: [`
-        .form-fields {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            min-width: 300px;
-            max-width: 500px;
-        }
+            </div>
+            
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <!-- Dialog Content -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 gap-4">
+                        <mat-form-field  class="w-full">
+                            <mat-label>Preset Name</mat-label>
+                            <input matInput formControlName="name" placeholder="Enter preset name">
+                            <mat-error class="text-xs text-red-500"  *ngIf="form.get('name')?.errors?.['required']">
+                                Name is required
+                            </mat-error>
+                            <mat-error class="text-xs text-red-500"  *ngIf="form.get('name')?.errors?.['minlength']">
+                                Name should be at least 3 characters
+                            </mat-error>
+                        </mat-form-field>
 
-        mat-checkbox {
-            margin-top: 1rem;
-        }
-    `]
+                        <mat-form-field  class="w-full">
+                            <mat-label>Description</mat-label>
+                            <textarea matInput formControlName="description" 
+                                    placeholder="Enter description (optional)"
+                                    rows="3"></textarea>
+                        </mat-form-field>
+
+                        <div class="mt-2">
+                            <mat-checkbox formControlName="isGlobal" 
+                                        class="text-slate-700 dark:text-slate-300">
+                                Share with all admin users
+                            </mat-checkbox>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dialog Actions -->
+                <div class="flex justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700">
+                    <button mat-button type="button" (click)="onCancel()"
+                        class="border border-slate-300 dark:border-slate-600 px-4 py-1 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+                        Cancel
+                    </button>
+                    <button mat-raised-button color="primary" 
+                            type="submit"
+                            [disabled]="!form.valid"
+                            class="bg-primary-600 text-white px-4 py-1 rounded-md hover:bg-primary-700 transition-colors">
+                        Save Preset
+                    </button>
+                </div>
+            </form>
+        </div>
+    `,
+    styles: []
 })
 export class SavePresetDialogComponent {
     form: FormGroup;
 
     constructor(
-        private dialogRef: MatDialogRef<SavePresetDialogComponent>,
+        private readonly dialogRef: MatDialogRef<SavePresetDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { filters: any[] },
-        private fb: FormBuilder
+        private readonly fb: FormBuilder
     ) {
         this.form = this.fb.group({
             name: ['', [Validators.required, Validators.minLength(3)]],

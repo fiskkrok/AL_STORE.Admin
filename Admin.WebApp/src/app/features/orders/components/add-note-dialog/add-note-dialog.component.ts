@@ -26,7 +26,7 @@ import { MatSelectModule } from '@angular/material/select';
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <mat-dialog-content>
                 <div class="form-fields">
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Note Type</mat-label>
                         <mat-select formControlName="type">
                             <mat-option value="general">General Note</mat-option>
@@ -34,28 +34,28 @@ import { MatSelectModule } from '@angular/material/select';
                             <mat-option value="shipping">Shipping</mat-option>
                             <mat-option value="payment">Payment</mat-option>
                         </mat-select>
-                        <mat-error *ngIf="form.get('type')?.errors?.['required']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('type')?.errors?.['required']">
                             Note type is required
                         </mat-error>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Note Content</mat-label>
                         <textarea matInput formControlName="content" 
                                   placeholder="Enter note content"
                                   rows="4"></textarea>
-                        <mat-error *ngIf="form.get('content')?.errors?.['required']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('content')?.errors?.['required']">
                             Note content is required
                         </mat-error>
-                        <mat-error *ngIf="form.get('content')?.errors?.['minlength']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('content')?.errors?.['minlength']">
                             Note must be at least 3 characters
                         </mat-error>
-                        <mat-hint align="end">
+                        <mat-hint class="text-xs text-orange-500" align="end">
                             {{form.get('content')?.value?.length || 0}}/1000
                         </mat-hint>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Visibility</mat-label>
                         <mat-select formControlName="isInternal">
                             <mat-option [value]="true">Internal Only</mat-option>

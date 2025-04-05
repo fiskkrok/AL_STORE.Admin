@@ -29,80 +29,69 @@ interface DialogData {
         MatIconModule
     ],
     template: `
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-lg">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Adjust Stock</h2>
-                <button 
-                    mat-icon-button 
-                    class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
-                    [mat-dialog-close]="false">
+        <div class="stock-adjustment-dialog">
+            <!-- Dialog Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                <h2 class="text-xl font-medium text-slate-900 dark:text-white">Adjust Stock</h2>
+                <button mat-icon-button [mat-dialog-close]="false"
+                    class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
                     <mat-icon>close</mat-icon>
                 </button>
             </div>
-            
-            <div class="mb-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-slate-500 dark:text-slate-400">Product</span>
-                    <span class="font-medium text-slate-900 dark:text-white">{{ data.productName }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-500 dark:text-slate-400">Current Stock</span>
-                    <span 
-                        class="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-slate-700 dark:text-slate-300 font-medium">
-                        {{ data.currentStock }}
-                    </span>
+
+            <!-- Product Info -->
+            <div class="px-6 pt-6">
+                <div class="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 mb-6 border border-slate-200 dark:border-slate-700">
+                    <div class="grid grid-cols-2 gap-2">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Product:</p>
+                        <p class="text-sm font-medium text-slate-900 dark:text-white">{{ data.productName }}</p>
+
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Current Stock:</p>
+                        <p class="text-sm font-medium">
+                            <span class="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-slate-700 dark:text-slate-300 font-medium">
+                                {{ data.currentStock }}
+                            </span>
+                        </p>
+                    </div>
                 </div>
             </div>
-            
-            <form [formGroup]="form" (ngSubmit)="onSubmit()">
-                <div class="space-y-4">
-                    <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Adjustment</mat-label>
-                        <input 
-                            matInput 
-                            type="number" 
-                            formControlName="adjustment"
-                            placeholder="Enter amount to add or subtract">
-                        <mat-hint>Use positive numbers to add stock, negative to remove</mat-hint>
-                        @if (form.get('adjustment')?.errors?.['required'] && form.get('adjustment')?.touched) {
-                            <mat-error>Adjustment value is required</mat-error>
-                        }
-                        @if (form.get('adjustment')?.errors?.['max']) {
-                            <mat-error>Cannot adjust by more than 10,000 units at once</mat-error>
-                        }
+
+            <!-- Form -->
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="px-6 pb-6">
+                <div class="grid grid-cols-1 gap-4">
+                    <mat-form-field  class="w-full">
+                        <mat-label>Adjustment Amount</mat-label>
+                        <input matInput type="number" formControlName="adjustment" placeholder="Enter adjustment value">
+                        <mat-hint class="text-xs text-orange-500">Use positive value to add stock, negative to remove</mat-hint>
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('adjustment')?.errors?.['required']">
+                            Adjustment amount is required
+                        </mat-error>
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('adjustment')?.errors?.['max']">
+                            Adjustment cannot exceed 10,000 units
+                        </mat-error>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="w-full">
+                    <mat-form-field  class="w-full">
                         <mat-label>Reason</mat-label>
-                        <textarea 
-                            matInput 
-                            formControlName="reason" 
-                            rows="3"
+                        <textarea matInput formControlName="reason" rows="3"
                             placeholder="Explain reason for adjustment"></textarea>
-                        @if (form.get('reason')?.errors?.['required'] && form.get('reason')?.touched) {
-                            <mat-error>Reason is required</mat-error>
-                        }
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('reason')?.errors?.['required']">
+                            Reason is required
+                        </mat-error>
                     </mat-form-field>
                 </div>
 
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button 
-                        mat-stroked-button 
-                        type="button" 
-                        class="border border-slate-300 dark:border-slate-600 px-4 py-1 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
-                        [mat-dialog-close]="false">
+                <!-- Dialog Actions -->
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                    <button mat-button type="button" [mat-dialog-close]="false"
+                        class="border border-slate-300 dark:border-slate-600 px-4 py-1 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
                         Cancel
                     </button>
-                    <button 
-                        mat-raised-button 
-                        color="primary" 
-                        type="submit"
-                        class="bg-primary-600 text-white px-4 py-1 rounded-md hover:bg-primary-700 transition-colors"
+                    <button mat-raised-button color="primary" type="submit"
+                        class="bg-primary-600 text-white px-4 py-1 rounded-md hover:bg-primary-700 transition-colors flex items-center"
                         [disabled]="form.invalid || form.pristine">
-                        <span class="flex items-center">
-                            Adjust Stock
-                            <mat-icon class="ml-1">save</mat-icon>
-                        </span>
+                        <span>Adjust Stock</span>
+                        <mat-icon class="ml-1">save</mat-icon>
                     </button>
                 </div>
             </form>
@@ -114,10 +103,10 @@ export class StockAdjustmentDialogComponent {
     form: FormGroup;
 
     constructor(
-        private fb: FormBuilder,
-        private dialogRef: MatDialogRef<StockAdjustmentDialogComponent>,
+        private readonly fb: FormBuilder,
+        private readonly dialogRef: MatDialogRef<StockAdjustmentDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: DialogData,
-        private store: Store
+        private readonly store: Store
     ) {
         this.form = this.fb.group({
             adjustment: [0, [Validators.required, Validators.max(10000)]],

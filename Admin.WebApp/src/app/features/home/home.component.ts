@@ -54,7 +54,7 @@ interface DashboardMetric {
         
         <div class="mt-4 md:mt-0 flex items-center space-x-2">
           <button 
-            class="px-3 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md shadow-sm flex items-center hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+            class="px-3 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md shadow-sm flex items-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
@@ -123,7 +123,7 @@ interface DashboardMetric {
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400">{{ action.description }}</p>
           </div>
-          <div class="px-5 py-3 bg-slate-50 dark:bg-slate-750 border-t border-slate-200 dark:border-slate-700">
+          <div class="px-5 py-3 bg-slate-50 dark:bg-slate-700 border-t border-slate-200 dark:border-slate-700">
             <span class="text-sm font-medium text-primary-600 dark:text-primary-400 flex items-center group-hover:translate-x-0.5 transition-transform">
               Get Started
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">

@@ -31,8 +31,8 @@ export const environment = {
     // Azure Storage
     azure: {
         blobStorage: {
-            containerUrl: 'https://yourstorageaccount.blob.core.windows.net',
-            productsContainer: 'products-images'
+            containerUrl: 'http://localhost:10000/devstoreaccount1/alstoreblob',
+            productsContainer: 'Product_Pictures'
         }
     },
 

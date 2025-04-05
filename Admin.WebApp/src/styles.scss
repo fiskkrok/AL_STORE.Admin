@@ -1,52 +1,18 @@
+@use '@angular/material' as mat;
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Material Symbols Configuration */
-.material-symbols-outlined {
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24;
-    font-family: 'Material Symbols Outlined';
-    font-weight: normal;
-    font-style: normal;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-feature-settings: 'liga';
-    -webkit-font-smoothing: antialiased;
+:root {
+    --tooltip-bg-color: theme('colors.slate.50');
+    --tooltip-shape: 5px;
+
+    @include mat.tooltip-overrides((container-color: var(--tooltip-bg-color),
+            container-shape: var(--tooltip-shape)));
 }
 
-/* Material Symbols Variants */
-.material-symbols-filled {
-    font-variation-settings:
-        'FILL' 1,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24;
-}
-
-.material-symbols-bold {
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 700,
-        'GRAD' 0,
-        'opsz' 24;
-}
-
-.material-symbols-rounded {
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24;
-    font-family: 'Material Symbols Rounded';
+.dark {
+    --tooltip-bg-color: theme('colors.slate.700');
 }
 
 /* Base styles */
@@ -72,44 +38,52 @@
     }
 }
 
-/* Custom component styles */
+/* Component styles */
 @layer components {
+
+    /* Button styles - consolidated from multiple definitions */
     .btn-primary {
-        @apply px-4 py-2 font-medium text-white transition-colors bg-primary-600 rounded hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+        @apply px-4 py-2 font-medium text-white transition-colors bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
     }
 
     .btn-secondary {
-        @apply px-4 py-2 font-medium transition-colors bg-white border border-slate-300 rounded text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700;
+        @apply px-4 py-2 font-medium transition-colors bg-white border border-slate-300 rounded-md text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700;
     }
 
-    .card {
-        @apply p-4 bg-white rounded-lg shadow-subtle dark:bg-slate-800;
+    .btn-danger {
+        @apply bg-rose-600 text-white px-4 py-2 rounded-md hover:bg-rose-700 transition-colors;
     }
 
-    .form-input {
-        @apply block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500;
+    .btn-success {
+        @apply bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors;
     }
-}
 
-/* 
- * Tailwind CSS Utility Extensions
- * Add these to your global styles.scss to enhance Tailwind with admin-specific utilities
- */
+    .btn-icon {
+        @apply p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors;
+    }
 
-/* Card Variations */
-@layer components {
-
-    /* Standard card */
+    /* Card styles - consolidated to remove duplication */
     .card {
         @apply bg-white dark:bg-slate-800 rounded-lg shadow-subtle overflow-hidden;
     }
 
-    /* Dashboard stat card */
-    .stat-card {
-        @apply bg-white dark:bg-slate-800 rounded-lg shadow-subtle overflow-hidden p-4 transition-transform hover:translate-y-[-2px];
+    .card-header {
+        @apply px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center;
     }
 
-    /* Status card variations */
+    .card-body {
+        @apply p-6;
+    }
+
+    .card-footer {
+        @apply px-6 py-4 bg-slate-50 dark:bg-slate-700 border-t border-slate-200 dark:border-slate-700;
+    }
+
+    /* Specialized cards */
+    .stat-card {
+        @apply bg-white dark:bg-slate-800 rounded-lg shadow-subtle p-4 transition-transform hover:translate-y-[-2px];
+    }
+
     .status-card {
         @apply p-4 rounded-lg;
 
@@ -130,82 +104,101 @@
         }
     }
 
-    /* Card sections */
-    .card-header {
-        @apply px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center;
+    /* Form styles */
+    .form-input {
+        @apply block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500;
     }
 
-    .card-body {
-        @apply p-6;
+    input,
+    textarea {
+        @apply focus:ring-transparent focus:border-primary-500;
     }
 
-    .card-footer {
-        @apply px-6 py-4 bg-slate-50 dark:bg-slate-750 border-t border-slate-200 dark:border-slate-700;
-    }
-}
-
-/* Form Utilities */
-@layer components {
-
-    /* Form group wrapper */
     .form-group {
         @apply mb-4;
     }
 
-    /* Form label */
     .form-label {
         @apply block mb-1 text-sm font-medium text-slate-700 dark:text-slate-300;
     }
 
-    /* Form hint text */
     .form-hint {
         @apply mt-1 text-xs text-slate-500 dark:text-slate-400;
     }
 
-    /* Form error message */
     .form-error {
         @apply mt-1 text-xs text-rose-600 dark:text-rose-400;
     }
 
-    /* Form actions container */
     .form-actions {
         @apply flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700;
     }
-}
 
-/* Button Variants (in addition to Tailwind defaults) */
-@layer components {
+    /* Icon system - consistent styles for icons */
+    .icon {
+        @apply transition-colors;
 
-    /* Primary button - for main actions */
-    .btn-primary {
-        @apply bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors;
+        /* Colors */
+        &-default {
+            @apply text-slate-600 dark:text-slate-400;
+        }
+
+        &-primary {
+            @apply text-primary-600 dark:text-primary-400;
+        }
+
+        &-secondary {
+            @apply text-slate-500 dark:text-slate-300;
+        }
+
+        &-success {
+            @apply text-emerald-600 dark:text-emerald-400;
+        }
+
+        &-warning {
+            @apply text-amber-600 dark:text-amber-400;
+        }
+
+        &-danger {
+            @apply text-rose-600 dark:text-rose-400;
+        }
+
+        &-info {
+            @apply text-sky-600 dark:text-sky-400;
+        }
+
+        /* Sizes */
+        &-xs {
+            @apply w-3 h-3;
+        }
+
+        &-sm {
+            @apply w-4 h-4;
+        }
+
+        &-md {
+            @apply w-5 h-5;
+        }
+
+        &-lg {
+            @apply w-6 h-6;
+        }
+
+        &-xl {
+            @apply w-8 h-8;
+        }
+
+        /* States */
+        &-interactive {
+            @apply cursor-pointer hover:text-primary-700 dark:hover:text-primary-300;
+        }
+
+        &-disabled {
+            @apply text-slate-300 dark:text-slate-600 cursor-not-allowed;
+        }
     }
 
-    /* Secondary button - for secondary actions */
-    .btn-secondary {
-        @apply border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors;
-    }
-
-    /* Icon button - for compact actions */
-    .btn-icon {
-        @apply p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors;
-    }
-
-    /* Danger button - for destructive actions */
-    .btn-danger {
-        @apply bg-rose-600 text-white px-4 py-2 rounded-md hover:bg-rose-700 transition-colors;
-    }
-
-    /* Success button - for positive actions */
-    .btn-success {
-        @apply bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors;
-    }
-}
-
-/* Data visualization and status indicators */
-@layer components {
-
-    /* Status badge */
+    /* Status indicators */
     .status-badge {
         @apply px-2 py-1 rounded-full text-xs font-medium inline-flex items-center;
 
@@ -226,7 +219,7 @@
         }
     }
 
-    /* Value indicators - for stats, metrics, etc. */
+    /* Value trends */
     .value-indicator {
         @apply flex items-center gap-1 text-sm;
 
@@ -242,78 +235,33 @@
             @apply text-slate-600 dark:text-slate-400;
         }
     }
-}
 
-/* Table Enhancements */
-@layer components {
-
-    /* Data table container */
-    .table-container {
-        @apply w-full overflow-x-auto rounded-lg shadow-subtle;
-    }
-
-    /* Enhanced Material table styles */
-    .mat-mdc-table.data-table {
-        @apply w-full;
-
-        .mat-mdc-header-row {
-            @apply bg-slate-50 dark:bg-slate-700;
-        }
-
-        .mat-mdc-header-cell {
-            @apply py-4 px-4 font-medium text-slate-700 dark:text-slate-300;
-        }
-
-        .mat-mdc-row {
-            @apply hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors cursor-pointer;
-        }
-
-        .mat-mdc-row:not(:last-child) {
-            @apply border-b border-slate-200 dark:border-slate-700;
-        }
-
-        .mat-mdc-cell {
-            @apply py-3 px-4;
-        }
-    }
-}
-
-/* Page Layout Utilities */
-@layer components {
-
-    /* Page container */
+    /* Page layout components */
     .page-container {
         @apply p-6 max-w-screen-2xl mx-auto;
     }
 
-    /* Page header section */
     .page-header {
         @apply flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6;
     }
 
-    /* Page title */
     .page-title {
         @apply text-2xl font-bold text-slate-900 dark:text-white;
     }
 
-    /* Page description */
     .page-description {
         @apply text-sm text-slate-500 dark:text-slate-400;
     }
 
-    /* Page content sections */
     .page-section {
         @apply mb-6;
     }
 
-    /* Section title */
     .section-title {
         @apply text-lg font-medium text-slate-900 dark:text-white mb-4;
     }
-}
 
-/* Empty States and Placeholders */
-@layer components {
+    /* Empty states */
     .empty-state {
         @apply flex flex-col items-center justify-center py-12 text-center;
     }
@@ -329,9 +277,14 @@
     .empty-state-message {
         @apply text-sm text-slate-500 dark:text-slate-400 max-w-md mb-6;
     }
+
+    /* Data table styles */
+    .table-container {
+        @apply w-full overflow-x-auto rounded-lg shadow-subtle;
+    }
 }
 
-/* Animations and Transitions */
+/* Utility classes */
 @layer utilities {
     .animate-spin-slow {
         animation: spin 3s linear infinite;
@@ -358,32 +311,68 @@
     }
 }
 
-/* Material Design Overrides */
-.mat-mdc-form-field {
-    &.mat-form-outline {
-        @apply w-full;
+/* Material Design Component Overrides */
+/* Select dropdown styling */
+.mat-mdc-select-panel {
+    @apply bg-slate-50 dark:bg-slate-700 rounded-lg shadow-lg !important;
+    @apply border border-slate-200 dark:border-slate-600;
+}
 
-        .mat-mdc-text-field-wrapper {
-            @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md;
-        }
+/* Table styling */
+.mat-mdc-table.data-table {
+    @apply w-full;
 
-        .mat-mdc-form-field-flex {
-            @apply p-0;
-        }
+    .mat-mdc-header-row {
+        @apply bg-slate-50 dark:bg-slate-700;
+    }
 
-        .mat-mdc-form-field-infix {
-            @apply p-2;
-        }
+    .mat-mdc-header-cell {
+        @apply py-4 px-4 font-medium text-slate-700 dark:text-slate-300;
+    }
+
+    .mat-mdc-row {
+        @apply hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer;
+    }
+
+    .mat-mdc-row:not(:last-child) {
+        @apply border-b border-slate-200 dark:border-slate-700;
+    }
+
+    .mat-mdc-cell {
+        @apply py-3 px-4;
     }
 }
 
-/* Add responsiveness to Material dialogs */
+/* Dialog styling */
 .mat-mdc-dialog-container {
     .mat-mdc-dialog-surface {
         @apply w-full max-w-full sm:max-w-lg md:max-w-xl;
+        @apply bg-white dark:bg-slate-800 rounded-lg;
 
         @media (max-width: 599px) {
             @apply m-4 !important;
         }
     }
+}
+
+/* Form field styling */
+.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field {
+    &.mat-mdc-form-field-appearance-outline {
+        .mat-mdc-form-field-wrapper {
+            @apply rounded-md;
+        }
+
+        .mat-mdc-form-field-flex {
+            @apply bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600;
+        }
+
+        .mat-mdc-form-field-hint {
+            @apply text-slate-500 dark:text-slate-400;
+        }
+    }
+}
+
+/* Button styling */
+.mat-mdc-raised-button.mat-primary {
+    @apply bg-primary-600 hover:bg-primary-700;
 }

@@ -51,10 +51,10 @@ import { MatIconModule } from '@angular/material/icon';
           <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="showForm">
             <div class="space-y-4">
               <!-- Text Input -->
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field  class="w-full">
                 <mat-label>Example Field</mat-label>
                 <input matInput formControlName="exampleField">
-                <mat-error *ngIf="form.get('exampleField')?.hasError('required')">
+                <mat-error class="text-xs text-red-500"  *ngIf="form.get('exampleField')?.hasError('required')">
                   This field is required
                 </mat-error>
               </mat-form-field>
@@ -140,7 +140,7 @@ import { MatIconModule } from '@angular/material/icon';
         </div>
         
         <!-- Card Footer (if needed) -->
-        <div class="px-6 py-4 bg-slate-50 dark:bg-slate-750 border-t border-slate-200 dark:border-slate-700">
+        <div class="px-6 py-4 bg-slate-50 dark:bg-slate-700 border-t border-slate-200 dark:border-slate-700">
           <div class="flex justify-between items-center">
             <span class="text-sm text-slate-500 dark:text-slate-400">Showing {{ items.length }} items</span>
             <button 

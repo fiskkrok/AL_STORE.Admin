@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
 import { Category } from 'src/app/shared/models/category.model';
 import { selectAllCategories } from 'src/app/store/category/category.selectors';
@@ -27,40 +28,49 @@ interface DialogData {
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatIconModule,
     FileUploadComponent
   ],
   template: `
     <div class="category-form-dialog">
-      <h2 mat-dialog-title>{{ isEditing ? 'Edit' : 'Add' }} Category</h2>
+      <!-- Dialog Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <h2 class="text-xl font-medium text-slate-900 dark:text-white">{{ isEditing ? 'Edit' : 'Add' }} Category</h2>
+        <button mat-icon-button (click)="onCancel()"
+            class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+            <mat-icon>close</mat-icon>
+        </button>
+      </div>
       
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <mat-dialog-content>
-          <div class="form-fields">
-            <mat-form-field appearance="outline">
+        <!-- Dialog Content -->
+        <div class="p-6">
+          <div class="grid grid-cols-1 gap-4">
+            <mat-form-field  class="w-full">
               <mat-label>Category Name</mat-label>
               <input matInput formControlName="name" placeholder="Enter category name">
-              <mat-error *ngIf="form.get('name')?.errors?.['required']">
+              <mat-error class="text-xs text-red-500"  *ngIf="form.get('name')?.errors?.['required']">
                 Name is required
               </mat-error>
-              <mat-error *ngIf="form.get('name')?.errors?.['maxlength']">
+              <mat-error class="text-xs text-red-500"  *ngIf="form.get('name')?.errors?.['maxlength']">
                 Name cannot exceed 200 characters
               </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field  class="w-full">
               <mat-label>Description</mat-label>
               <textarea matInput formControlName="description" 
                         placeholder="Enter category description" rows="3">
               </textarea>
-              <mat-error *ngIf="form.get('description')?.errors?.['required']">
+              <mat-error class="text-xs text-red-500"  *ngIf="form.get('description')?.errors?.['required']">
                 Description is required
               </mat-error>
-              <mat-error *ngIf="form.get('description')?.errors?.['maxlength']">
+              <mat-error class="text-xs text-red-500"  *ngIf="form.get('description')?.errors?.['maxlength']">
                 Description cannot exceed 2000 characters
               </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field  class="w-full">
               <mat-label>Parent Category</mat-label>
               <mat-select formControlName="parentCategoryId">
                 <mat-option [value]="null">None</mat-option>
@@ -74,26 +84,26 @@ interface DialogData {
               </mat-select>
             </mat-form-field>
 
-            <div class="seo-section">
-              <h3>SEO Settings</h3>
+            <div class="mt-4">
+              <h3 class="text-lg font-medium text-slate-800 dark:text-slate-200 mb-3">SEO Settings</h3>
               
-              <mat-form-field appearance="outline">
+              <mat-form-field  class="w-full">
                 <mat-label>Meta Title</mat-label>
                 <input matInput formControlName="metaTitle" 
-                       placeholder="Enter meta title">
-                <mat-hint>{{ form.get('metaTitle')?.value?.length || 0 }}/200</mat-hint>
-                <mat-error *ngIf="form.get('metaTitle')?.errors?.['maxlength']">
+                      placeholder="Enter meta title">
+                <mat-hint class="text-xs text-orange-500">{{ form.get('metaTitle')?.value?.length || 0 }}/200</mat-hint>
+                <mat-error class="text-xs text-red-500" *ngIf="form.get('metaTitle')?.errors?.['maxlength']">
                   Meta title cannot exceed 200 characters
                 </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field  class="w-full">
                 <mat-label>Meta Description</mat-label>
                 <textarea matInput formControlName="metaDescription" 
                           placeholder="Enter meta description" rows="2">
                 </textarea>
-                <mat-hint>{{ form.get('metaDescription')?.value?.length || 0 }}/500</mat-hint>
-                <mat-error *ngIf="form.get('metaDescription')?.errors?.['maxlength']">
+                <mat-hint class="text-xs text-orange-500">{{ form.get('metaDescription')?.value?.length || 0 }}/500</mat-hint>
+                <mat-error class="text-xs text-red-500"  *ngIf="form.get('metaDescription')?.errors?.['maxlength']">
                   Meta description cannot exceed 500 characters
                 </mat-error>
               </mat-form-field>
@@ -104,53 +114,25 @@ interface DialogData {
               (fileSelected)="onImageSelected($event)">
             </app-file-upload>
           </div>
-        </mat-dialog-content>
+        </div>
 
-        <mat-dialog-actions align="end">
-          <button mat-button type="button" (click)="onCancel()">Cancel</button>
+        <!-- Dialog Actions -->
+        <div class="flex justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
+          <button mat-button type="button" (click)="onCancel()"
+              class="border border-slate-300 dark:border-slate-600 px-4 py-1 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+              Cancel
+          </button>
           <button mat-raised-button color="primary" 
                   type="submit"
-                  [disabled]="form.invalid || form.pristine">
-            {{ isEditing ? 'Update' : 'Create' }}
+                  [disabled]="form.invalid || form.pristine"
+                  class="bg-primary-600 text-white px-4 py-1 rounded-md hover:bg-primary-700 transition-colors">
+              {{ isEditing ? 'Update' : 'Create' }}
           </button>
-        </mat-dialog-actions>
+        </div>
       </form>
     </div>
   `,
-  styles: [`
-    .category-form-dialog {
-      min-width: 500px;
-    }
-
-    .form-fields {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .seo-section {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
-
-      h3 {
-        margin: 0 0 1rem;
-        color: var(--text-primary);
-        font-size: 1rem;
-      }
-    }
-
-    mat-form-field {
-      width: 100%;
-    }
-
-    ::ng-deep {
-      .mat-mdc-form-field-subscript-wrapper {
-        display: flex;
-        justify-content: space-between;
-      }
-    }
-  `]
+  styles: []
 })
 export class CategoryFormDialogComponent {
   form: FormGroup;
@@ -172,7 +154,7 @@ export class CategoryFormDialogComponent {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(200)]],
       description: ['', [Validators.required, Validators.maxLength(2000)]],
-      parentCategoryId: [data.parentCategoryId || null],
+      parentCategoryId: [data.parentCategoryId ?? null],
       metaTitle: ['', [Validators.maxLength(200)]],
       metaDescription: ['', [Validators.maxLength(500)]]
     });

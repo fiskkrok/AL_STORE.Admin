@@ -98,7 +98,7 @@ interface ProductFormModel {
                       {{ type.name }}
                     </mat-option>
                   </mat-select>
-                  <mat-hint>Select a product type to load relevant fields</mat-hint>
+                  <mat-hint class="text-xs text-orange-500">Select a product type to load relevant fields</mat-hint>
                 </mat-form-field>
                 
                 <!-- Basic Info Form -->
@@ -248,7 +248,7 @@ interface ProductFormModel {
                 </p>
                 
                 <div class="product-summary">
-                  <div class="summary-section">
+                  <div class="summary-section bg-slate-100 dark:bg-slate-800">
                     <h4>Basic Information</h4>
                     <p><strong>Name:</strong> {{ model.basicInfo.name }}</p>
                     <p><strong>Type:</strong> {{ selectedProductType?.name }}</p>
@@ -256,7 +256,7 @@ interface ProductFormModel {
                     <p *ngIf="model.basicInfo.barcode"><strong>Barcode:</strong> {{ model.basicInfo.barcode }}</p>
                   </div>
                   
-                  <div class="summary-section">
+                  <div class="summary-section bg-slate-100 dark:bg-slate-800">
                     <h4>Pricing & Inventory</h4>
                     <p><strong>Price:</strong> {{ model.pricing.price | currency:model.pricing.currency }}</p>
                     <p *ngIf="model.pricing.compareAtPrice">
@@ -265,7 +265,7 @@ interface ProductFormModel {
                     <p><strong>Stock:</strong> {{ model.pricing.stock }}</p>
                   </div>
                   
-                  <div class="summary-section" *ngIf="attributesFields.length > 0">
+                  <div class="summary-section bg-slate-100 dark:bg-slate-800" *ngIf="attributesFields.length > 0">
                     <h4>Attributes</h4>
                     <p *ngFor="let field of attributesFields">
                       <strong>{{ field.props?.label }}:</strong>
@@ -273,7 +273,7 @@ interface ProductFormModel {
                     </p>
                   </div>
                   
-                  <div class="summary-section">
+                  <div class="summary-section bg-slate-100 dark:bg-slate-800">
                     <h4>Images</h4>
                     <div class="summary-images">
                       <div *ngFor="let image of model.images.slice(0, 3)" class="summary-image">
@@ -285,7 +285,7 @@ interface ProductFormModel {
                     </div>
                   </div>
                   
-                  <div class="summary-section">
+                  <div class="summary-section bg-slate-100 dark:bg-slate-800">
                     <h4>Visibility</h4>
                     <p><strong>Status:</strong> {{ formatEnumValue(model.status) }}</p>
                     <p><strong>Visibility:</strong> {{ formatEnumValue(model.visibility) }}</p>
@@ -352,7 +352,6 @@ interface ProductFormModel {
     }
     
     .summary-section {
-      background-color: #f9f9f9;
       border-radius: 8px;
       padding: 1.5rem;
     }

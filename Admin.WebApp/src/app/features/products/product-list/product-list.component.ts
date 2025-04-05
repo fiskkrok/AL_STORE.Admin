@@ -32,6 +32,7 @@ import { StockActions } from 'src/app/store/stock/stock.actions';
 import { StockManagementComponent } from '../components/stock-management/stock-management.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTooltip } from '@angular/material/tooltip';
+import { ImagePreviewDialogComponent } from './image-preview-dialog.component';
 
 @Component({
     selector: 'app-product-list',
@@ -66,7 +67,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
     loading$: Observable<boolean>;
     error$: Observable<string | null>;
     pagination$: Observable<any>;
-
 
     // Form Controls
     searchControl = new FormControl('');
@@ -121,10 +121,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
             const paginator = this.paginator();
             const sort = this.sort();
             const filters = {
-                search: search || '',
-                categoryId: category || undefined,
-                minPrice: minPrice || undefined,
-                maxPrice: maxPrice || undefined,
+                search: search ?? '',
+                categoryId: category ?? undefined,
+                minPrice: minPrice ?? null,
+                maxPrice: maxPrice ?? null,
                 inStock: inStock || undefined,
                 page: paginator?.pageIndex ? paginator.pageIndex + 1 : 1,
                 pageSize: this.paginator()?.pageSize || 10,
@@ -180,10 +180,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
         const paginator = this.paginator();
         const sort = this.sort();
         return {
-            search: this.searchControl.value || '',
-            categoryId: this.categoryFilter.value || undefined,
-            minPrice: this.minPriceFilter.value || undefined,
-            maxPrice: this.maxPriceFilter.value || undefined,
+            search: this.searchControl.value ?? '',
+            categoryId: this.categoryFilter.value ?? undefined,
+            minPrice: this.minPriceFilter.value ?? null,
+            maxPrice: this.maxPriceFilter.value ?? null,
             inStock: this.inStockFilter.value || undefined,
             page: paginator?.pageIndex ? paginator.pageIndex + 1 : 1,
             pageSize: this.paginator()?.pageSize || 10,
@@ -221,19 +221,62 @@ export class ProductListComponent implements OnInit, OnDestroy {
             pageSize: 10,
             search: '',
             categoryId: undefined,
-            minPrice: undefined,
-            maxPrice: undefined,
+            minPrice: null,
+            maxPrice: null,
             inStock: undefined,
             sortColumn: 'name' as keyof Product,  // Provide valid default
             sortDirection: undefined
         });
     }
 
+    /**
+     * Checks if any filter is currently active
+     */
+    hasActiveFilters(): boolean {
+        return !!(
+            this.searchControl.value ||
+            this.categoryFilter.value ||
+            this.minPriceFilter.value ||
+            this.maxPriceFilter.value ||
+            this.inStockFilter.value
+        );
+    }
+
+    /**
+     * Returns a formatted string representing the current price filter range
+     */
+    getPriceFilterLabel(): string {
+        const min = this.minPriceFilter.value;
+        const max = this.maxPriceFilter.value;
+
+        if (min && max) {
+            return `$${min} - $${max}`;
+        } else if (min) {
+            return `$${min}+`;
+        } else if (max) {
+            return `Up to $${max}`;
+        }
+
+        return '';
+    }
+
+    /**
+     * Clears only the price-related filters
+     */
+    clearPriceFilters(): void {
+        this.minPriceFilter.reset();
+        this.maxPriceFilter.reset();
+        this.loadProducts();
+    }
+
     async openImagePreview(imageUrl: string) {
-        await this.dialogService.show({
-            title: 'Image Preview',
-            message: imageUrl,
-            type: 'preview'
+        this.matDialog.open(ImagePreviewDialogComponent, {
+            width: '800px',
+            data: {
+                url: imageUrl,
+                alt: 'Product Image'
+            },
+            panelClass: 'image-preview-dialog'
         });
     }
 
@@ -248,7 +291,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
         }
     }
 
-    editProduct(product: Product) {
+    editProduct(product: Product, event?: Event) {
+        // Stop event propagation if event is provided
+        if (event) {
+            event.stopPropagation();
+        }
+
         this.store.dispatch(ProductActions.selectProduct({ product }));
 
         const dialogRef = this.matDialog.open(EditProductDialogComponent, {

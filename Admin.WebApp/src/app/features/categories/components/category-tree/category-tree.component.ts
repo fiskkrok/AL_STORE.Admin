@@ -93,7 +93,7 @@ import { CategoryTreeNodeComponent } from "./category-tree-node.component";
         
         <div class="p-6" cdkDropList (cdkDropListDropped)="drop($event)">
           <div *ngFor="let category of categories$ | async; track category?.id" class="mb-4 last:mb-0">
-            <div class="bg-slate-50 dark:bg-slate-750 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div class="bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700">
               <!-- Category Header -->
               <div class="flex items-center justify-between p-4 cursor-move" cdkDrag>
                 <div class="flex items-center">

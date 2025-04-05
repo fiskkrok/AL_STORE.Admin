@@ -1,19 +1,402 @@
-<div class="add-product-container">
-    <div class="header">
-        <h1>Add New Product</h1>
-        <p>Create a new product listing with details and imagery</p>
+<!-- src/app/features/products/add-product/add-product.component.html -->
+<div class="p-6 max-w-screen-xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Add New Product</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Create a new product listing with details and imagery
+            </p>
+        </div>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-        <formly-form [form]="form" [fields]="fields" [model]="model" [options]="options"></formly-form>
-        <div class="form-actions">
-            <button mat-stroked-button type="button" class="btn btn-outline-secondary" (click)="reset()">
-                Clear Form
-            </button>
-            <!-- <button *appHasPermission="'Products.Create'" mat-button type="submit" class="btn btn-primary" -->
-            <button mat-button type="submit" class="btn btn-primary" (click)="submit()">
-                Add Product
-            </button>
-        </div>
-    </form>
+    <!-- Product Form with Step Wizard -->
+    <div
+        class="bg-white dark:bg-slate-800 rounded-lg shadow-subtle border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <mat-stepper linear #stepper class="bg-transparent">
+            <!-- Step 1: Basic Information -->
+            <mat-step [stepControl]="basicInfoForm">
+                <ng-template matStepLabel>Basic Info</ng-template>
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-slate-900 dark:text-white mb-4">Basic Product Information</h2>
+
+                    <!-- Barcode scanner -->
+                    <div
+                        class="mb-6 bg-slate-50 dark:bg-slate-700 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <h3 class="text-md font-medium text-slate-800 dark:text-slate-200 mb-3">Scan Product Barcode
+                        </h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                            Use a barcode scanner or your device's camera to quickly fill product details
+                        </p>
+                        <app-barcode-scanner (codeScanned)="onBarcodeScanned($event)"></app-barcode-scanner>
+                    </div>
+
+                    <form [formGroup]="basicInfoForm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <mat-form-field class="w-full">
+                                <mat-label>Product Name</mat-label>
+                                <input matInput formControlName="name" placeholder="Enter product name">
+                                <mat-error class="text-xs text-red-500"
+                                    *ngIf="basicInfoForm.get('name')?.errors?.['required']">
+                                    Product name is required
+                                </mat-error>
+                                <mat-error class="text-xs text-red-500"
+                                    *ngIf="basicInfoForm.get('name')?.errors?.['minlength']">
+                                    Product name must be at least 3 characters
+                                </mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>SKU</mat-label>
+                                <input matInput formControlName="sku" placeholder="Enter SKU (Stock Keeping Unit)">
+                                <mat-error class="text-xs text-red-500"
+                                    *ngIf="basicInfoForm.get('sku')?.errors?.['required']">
+                                    SKU is required
+                                </mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Barcode</mat-label>
+                                <input matInput formControlName="barcode" placeholder="Enter barcode or UPC (optional)">
+                                <mat-hint class="text-xs text-orange-500">Use the scanner above or enter
+                                    manually</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Category</mat-label>
+                                <mat-select formControlName="categoryId">
+                                    <mat-option [value]="">Select a category</mat-option>
+                                    <mat-option *ngFor="let category of categories" [value]="category.id">
+                                        {{ category.name }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error class="text-xs text-red-500"
+                                    *ngIf="basicInfoForm.get('categoryId')?.errors?.['required']">
+                                    Category is required
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </form>
+
+                    <div class="flex justify-end mt-6">
+                        <button mat-button matStepperNext color="primary" [disabled]="!basicInfoForm.valid"
+                            class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
+                            Continue to Pricing
+                            <mat-icon class="ml-1">arrow_forward</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </mat-step>
+
+            <!-- Step 2: Pricing & Inventory -->
+            <mat-step [stepControl]="pricingForm">
+                <ng-template matStepLabel>Pricing & Inventory</ng-template>
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-slate-900 dark:text-white mb-4">Pricing & Inventory Information
+                    </h2>
+
+                    <form [formGroup]="pricingForm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-2 gap-6">
+                                <mat-form-field class="w-full">
+                                    <mat-label>Price</mat-label>
+                                    <input matInput type="number" formControlName="price" placeholder="0.00">
+                                    <span matPrefix>$&nbsp;</span>
+                                    <mat-error class="text-xs text-red-500"
+                                        *ngIf="pricingForm.get('price')?.errors?.['required']">
+                                        Price is required
+                                    </mat-error>
+                                    <mat-error class="text-xs text-red-500"
+                                        *ngIf="pricingForm.get('price')?.errors?.['min']">
+                                        Price must be positive
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full">
+                                    <mat-label>Currency</mat-label>
+                                    <mat-select formControlName="currency">
+                                        <mat-option value="USD">USD - US Dollar</mat-option>
+                                        <mat-option value="EUR">EUR - Euro</mat-option>
+                                        <mat-option value="GBP">GBP - British Pound</mat-option>
+                                        <mat-option value="CAD">CAD - Canadian Dollar</mat-option>
+                                        <mat-option value="AUD">AUD - Australian Dollar</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Compare-at Price</mat-label>
+                                <input matInput type="number" formControlName="compareAtPrice" placeholder="0.00">
+                                <span matPrefix>$&nbsp;</span>
+                                <mat-hint class="text-xs text-orange-500">Original price (for sale/discount
+                                    display)</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Cost per Item</mat-label>
+                                <input matInput type="number" formControlName="cost" placeholder="0.00">
+                                <span matPrefix>$&nbsp;</span>
+                                <mat-hint class="text-xs text-orange-500">Your cost (for profit calculation)</mat-hint>
+                            </mat-form-field>
+
+                            <div class="grid grid-cols-2 gap-6">
+                                <mat-form-field class="w-full">
+                                    <mat-label>Stock Quantity</mat-label>
+                                    <input matInput type="number" formControlName="stock" placeholder="0">
+                                    <mat-error class="text-xs text-red-500"
+                                        *ngIf="pricingForm.get('stock')?.errors?.['required']">
+                                        Stock quantity is required
+                                    </mat-error>
+                                    <mat-error class="text-xs text-red-500"
+                                        *ngIf="pricingForm.get('stock')?.errors?.['min']">
+                                        Stock must be positive
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full">
+                                    <mat-label>Low Stock Alert</mat-label>
+                                    <input matInput type="number" formControlName="lowStockThreshold" placeholder="5">
+                                    <mat-hint class="text-xs text-orange-500">Get alerts when stock is below this
+                                        number</mat-hint>
+                                </mat-form-field>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="flex justify-between mt-6">
+                        <button mat-button matStepperPrevious
+                            class="border border-slate-300 dark:border-slate-600 px-4 py-2 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+                            <mat-icon class="mr-1">arrow_back</mat-icon>
+                            Back
+                        </button>
+                        <button mat-button matStepperNext color="primary" [disabled]="!pricingForm.valid"
+                            class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
+                            Continue to Details
+                            <mat-icon class="ml-1">arrow_forward</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </mat-step>
+
+            <!-- Step 3: Product Details & Description -->
+            <mat-step [stepControl]="detailsForm">
+                <ng-template matStepLabel>Details</ng-template>
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-slate-900 dark:text-white mb-4">Product Details & Description
+                    </h2>
+
+                    <form [formGroup]="detailsForm">
+                        <div class="grid grid-cols-1 gap-6">
+                            <mat-form-field class="w-full">
+                                <mat-label>Full Description</mat-label>
+                                <textarea matInput formControlName="description" rows="5"
+                                    placeholder="Enter detailed product description">
+                </textarea>
+                                <mat-error class="text-xs text-red-500"
+                                    *ngIf="detailsForm.get('description')?.errors?.['required']">
+                                    Description is required
+                                </mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Short Description</mat-label>
+                                <textarea matInput formControlName="shortDescription" rows="2"
+                                    placeholder="Enter short summary (optional)">
+                </textarea>
+                                <mat-hint class="text-xs text-orange-500">Brief summary shown in product
+                                    listings</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Tags</mat-label>
+                                <input matInput formControlName="tags" placeholder="Enter tags separated by commas">
+                                <mat-hint class="text-xs text-orange-500">Help customers find your product</mat-hint>
+                            </mat-form-field>
+
+                            <div class="flex gap-6">
+                                <mat-checkbox formControlName="isActive" color="primary">
+                                    Active (visible to customers)
+                                </mat-checkbox>
+
+                                <mat-checkbox formControlName="isFeatured" color="primary">
+                                    Featured product
+                                </mat-checkbox>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="flex justify-between mt-6">
+                        <button mat-button matStepperPrevious
+                            class="border border-slate-300 dark:border-slate-600 px-4 py-2 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+                            <mat-icon class="mr-1">arrow_back</mat-icon>
+                            Back
+                        </button>
+                        <button mat-button matStepperNext color="primary" [disabled]="!detailsForm.valid"
+                            class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
+                            Continue to Images
+                            <mat-icon class="ml-1">arrow_forward</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </mat-step>
+
+            <!-- Step 4: Product Images -->
+            <mat-step>
+                <ng-template matStepLabel>Images</ng-template>
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-slate-900 dark:text-white mb-4">Product Images</h2>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                        Add images to showcase your product. The first image will be used as the main product image.
+                    </p>
+
+                    <app-product-image-manager [images]="images" (imagesChange)="onImagesChange($event)">
+                    </app-product-image-manager>
+
+                    <div class="flex justify-between mt-6">
+                        <button mat-button matStepperPrevious
+                            class="border border-slate-300 dark:border-slate-600 px-4 py-2 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">
+                            <mat-icon class="mr-1">arrow_back</mat-icon>
+                            Back
+                        </button>
+                        <button mat-button matStepperNext color="primary"
+                            class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
+                            Review Product
+                            <mat-icon class="ml-1">arrow_forward</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </mat-step>
+
+            <!-- Step 5: Review & Submit -->
+            <mat-step>
+                <ng-template matStepLabel>Review & Submit</ng-template>
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-slate-900 dark:text-white mb-4">Review & Submit</h2>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                        Please review your product information below before submitting.
+                    </p>
+
+                    <!-- Product Summary -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div
+                            class="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <h3 class="font-medium text-slate-800 dark:text-slate-200 mb-2">Basic Information</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Name:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">{{
+                                    basicInfoForm.get('name')?.value }}</p>
+
+                                <p class="text-sm text-slate-500 dark:text-slate-400">SKU:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">{{
+                                    basicInfoForm.get('sku')?.value }}</p>
+
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Barcode:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">{{
+                                    basicInfoForm.get('barcode')?.value || 'Not specified' }}</p>
+
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Category:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                    {{ getCategoryName(basicInfoForm.get('categoryId')?.value) }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <h3 class="font-medium text-slate-800 dark:text-slate-200 mb-2">Pricing & Inventory</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Price:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                    {{ pricingForm.get('price')?.value | currency:pricingForm.get('currency')?.value }}
+                                </p>
+
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Compare-at Price:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                    {{ pricingForm.get('compareAtPrice')?.value ?
+                                    (pricingForm.get('compareAtPrice')?.value |
+                                    currency:pricingForm.get('currency')?.value) :
+                                    'Not specified' }}
+                                </p>
+
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Stock:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">{{
+                                    pricingForm.get('stock')?.value }} units</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Summary -->
+                    <div
+                        class="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg border border-slate-200 dark:border-slate-700 mb-6">
+                        <h3 class="font-medium text-slate-800 dark:text-slate-200 mb-2">Product Details</h3>
+                        <div class="grid gap-2">
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Short Description:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                    {{ detailsForm.get('shortDescription')?.value || 'Not specified' }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Description:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                    {{ detailsForm.get('description')?.value }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Status:</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                    {{ detailsForm.get('isActive')?.value ? 'Active' : 'Inactive' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Images Summary -->
+                    <div
+                        class="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg border border-slate-200 dark:border-slate-700 mb-6">
+                        <h3 class="font-medium text-slate-800 dark:text-slate-200 mb-2">Product Images</h3>
+
+                        <div *ngIf="images.length > 0" class="grid grid-cols-6 gap-4">
+                            <div *ngFor="let image of images" class="aspect-square">
+                                <img [src]="image.url" alt="Product image"
+                                    class="w-full h-full object-cover rounded-md">
+                            </div>
+                        </div>
+                        @if (images.length === 0) {
+                        <div class="text-center py-4">
+                            <p class="text-sm text-slate-500 dark:text-slate-400">No images added</p>
+                        </div>
+                        }
+                    </div>
+
+                    <div class="flex justify-between mt-6">
+                        <div>
+                            <button mat-button matStepperPrevious
+                                class="border border-slate-300 dark:border-slate-600 px-4 py-2 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 mr-3">
+                                <mat-icon class="mr-1">arrow_back</mat-icon>
+                                Back
+                            </button>
+
+                            <button mat-button type="button"
+                                class="border border-slate-300 dark:border-slate-600 px-4 py-2 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                                (click)="reset(); stepper.reset()">
+                                <mat-icon class="mr-1">refresh</mat-icon>
+                                Reset Form
+                            </button>
+                        </div>
+
+                        <button mat-raised-button color="primary" type="button"
+                            [disabled]="isSubmitting || !validateAllForms()" (click)="submitProduct()"
+                            class="bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center">
+                            <mat-icon *ngIf="isSubmitting" class="animate-spin mr-2">autorenew</mat-icon>
+                            <span>{{ isSubmitting ? 'Submitting...' : 'Create Product' }}</span>
+                        </button>
+                    </div>
+                </div>
+            </mat-step>
+        </mat-stepper>
+    </div>
 </div>

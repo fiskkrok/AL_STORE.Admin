@@ -7,6 +7,7 @@ export interface DialogConfig {
     confirmText?: string;
     cancelText?: string;
     type?: 'info' | 'warning' | 'error' | 'confirm' | 'preview';
+    data?: any; // Added for preview type dialogs
 }
 
 @Injectable({
@@ -17,9 +18,17 @@ export class DialogService {
     dialog$ = this.dialogSubject.asObservable();
 
     private resolveRef: ((value: boolean) => void) | null = null;
+    private isDialogActive = false;
 
     show(config: DialogConfig): Promise<boolean> {
+        // If a dialog is already active, close it first
+        if (this.isDialogActive) {
+            this.dialogSubject.next(null);
+        }
+
+        this.isDialogActive = true;
         this.dialogSubject.next(config);
+
         return new Promise((resolve) => {
             this.resolveRef = resolve;
         });
@@ -40,6 +49,7 @@ export class DialogService {
             this.resolveRef(confirmed);
             this.resolveRef = null;
         }
+        this.isDialogActive = false;
         this.dialogSubject.next(null);
     }
 }

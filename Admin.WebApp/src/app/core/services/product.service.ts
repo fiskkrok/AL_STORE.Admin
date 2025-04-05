@@ -90,7 +90,7 @@ export class ProductService {
 
     getProduct(id: string): Observable<Product> {
         return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-            map(this.mapProductFromApi)
+            map(product => this.mapProductFromApi(product))
         );
     }
 
@@ -98,18 +98,39 @@ export class ProductService {
         return this.http.get<any>(this.apiUrl, { params: filters }).pipe(
             map(response => ({
                 ...response,
-                items: response.items.map(this.mapProductFromApi)
+                items: response.items.map((item: any) => this.mapProductFromApi(item))
             }))
         );
     }
+
+    /**
+     * Ensures image URLs are properly formatted with the base URL if needed
+     * @param url The image URL or filename to check and format
+     * @returns The fully qualified image URL
+     */
+    getFullImageUrl(url: string): string {
+        if (!url) return '';
+
+        // Check if the URL already contains http:// or https:// protocol
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+
+        // If it's just a filename, prepend the blob storage URL and container
+        return `${this.blobStorageUrl}/${this.productsContainer}/${url}`;
+    }
+
     private mapProductFromApi(product: any): Product {
         return {
             ...product,
             // Map string values to enum values
             status: product.status as ProductStatus,
             visibility: product.visibility as ProductVisibility,
-            // Ensure collections are never null
-            images: product.images || [],
+            // Ensure collections are never null and properly format image URLs
+            images: (product.images || []).map((img: ProductImage) => ({
+                ...img,
+                url: this.getFullImageUrl(img.url)
+            })),
             attributes: product.attributes || [],
             tags: product.tags || [],
             // Format dates if needed
@@ -120,6 +141,7 @@ export class ProductService {
                 : []
         };
     }
+
     private mapVariantFromApi(variant: any): ProductVariant {
         return {
             id: variant.id,
@@ -137,7 +159,12 @@ export class ProductService {
             isLowStock: variant.isLowStock ?? false,
             isOutOfStock: variant.isOutOfStock ?? false,
             attributes: Array.isArray(variant.attributes) ? variant.attributes : [],
-            images: Array.isArray(variant.images) ? variant.images : [],
+            images: Array.isArray(variant.images)
+                ? variant.images.map((img: ProductImage) => ({
+                    ...img,
+                    url: this.getFullImageUrl(img.url)
+                }))
+                : [],
             productId: variant.productId
         };
     }

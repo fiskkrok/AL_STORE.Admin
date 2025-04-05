@@ -17,50 +17,91 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-subtle p-4 mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-medium text-slate-900 dark:text-white">Filters</h2>
-            <div class="flex items-center gap-4">
-                <button mat-stroked-button
-                    class="border border-slate-300 dark:border-slate-600 px-3 py-1 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
-                    (click)="resetFilters()">
-                    <mat-icon class="text-sm mr-1">refresh</mat-icon>
-                    Clear Filters
-                </button>
-                <mat-checkbox [formControl]="inStockFilter" class="text-slate-700 dark:text-slate-200">
-                    In Stock Only
-                </mat-checkbox>
+    <div class="mb-6">
+        <div class="bg-white dark:bg-slate-800 rounded-md shadow-sm mb-6 border border-slate-200 dark:border-slate-700">
+            <!-- Filter Header -->
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div class="flex items-center">
+                    <mat-icon class="text-primary-500 dark:text-primary-400 mr-2">filter_list</mat-icon>
+                    <h2 class="text-lg font-medium text-slate-900 dark:text-white">Filters</h2>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button mat-stroked-button (click)="resetFilters()"
+                        class="border border-slate-200 dark:border-slate-700 h-9 px-4 py-0 text-sm rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center">
+                        <mat-icon class="text-sm h-5 w-5 mr-1">refresh</mat-icon>
+                        Clear Filters
+                    </button>
+
+                    <button mat-icon-button
+                        class="flex items-center justify-center h-9 w-9 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <mat-icon>bookmark_add</mat-icon>
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Search Products</mat-label>
-                <input matInput [formControl]="searchControl" placeholder="Search by name...">
-                <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
+            <!-- Filter Fields -->
+            <div class="p-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Search Field -->
+                    <div class="relative">
+                        <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</mat-icon>
+                        <input type="text" [formControl]="searchControl" placeholder="Search Products"
+                            class="w-full h-11 pl-10 pr-4 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-all">
+                    </div>
 
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Category</mat-label>
-                <mat-select [formControl]="categoryFilter">
-                    <mat-option [value]="''">All Categories</mat-option>
-                    @for (category of categories(); track category.id) {
-                    <mat-option [value]="category.id">{{ category.name }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
+                    <div class="relative">
+                        <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">category</mat-icon>
+                        <select [formControl]="categoryFilter"
+                            class="w-full h-11 pl-10 pr-9 appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-all">
+                            <option value="">All Categories</option>
+                            <option *ngFor="let category of categories()" [value]="category.id">{{ category.name }}
+                            </option>
+                        </select>
+                        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <mat-icon class="text-slate-400">arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
 
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Min Price</mat-label>
-                <input matInput type="number" [formControl]="minPriceFilter">
-                <span matPrefix class="mr-1 text-slate-500">$</span>
-            </mat-form-field>
+                    <!-- Min Price -->
+                    <div class="relative">
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</div>
+                        <input type="number" [formControl]="minPriceFilter" placeholder="Min Price"
+                            class="w-full h-11 pl-8 pr-4 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-all">
+                    </div>
 
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Max Price</mat-label>
-                <input matInput type="number" [formControl]="maxPriceFilter">
-                <span matPrefix class="mr-1 text-slate-500">$</span>
-            </mat-form-field>
+                    <!-- Max Price -->
+                    <div class="relative">
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</div>
+                        <input type="number" [formControl]="maxPriceFilter" placeholder="Max Price"
+                            class="w-full h-11 pl-8 pr-4 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-all">
+                    </div>
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                    <!-- In Stock Checkbox -->
+                    <label class="inline-flex items-center cursor-pointer text-slate-700 dark:text-slate-300">
+                        <input type="checkbox" [formControl]="inStockFilter"
+                            class="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-400">
+                        <span class="ml-2">In Stock Only</span>
+                    </label>
+
+                    <!-- Additional filter chips could go here -->
+                    <ng-container *ngIf="hasActiveFilters()">
+                        <!-- Price Filter Chip Example -->
+                        <div *ngIf="minPriceFilter.value || maxPriceFilter.value"
+                            class="inline-flex items-center px-3 py-1.5 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 text-sm border border-primary-100 dark:border-primary-800/30">
+                            <span>Price: {{ getPriceFilterLabel() }}</span>
+                            <button (click)="clearPriceFilters()"
+                                class="ml-1.5 flex items-center justify-center h-4 w-4 rounded-full hover:bg-primary-200 dark:hover:bg-primary-700/30">
+                                <mat-icon class="text-xs h-3 w-3">close</mat-icon>
+                            </button>
+                        </div>
+
+                        <!-- Other filter chips would go here -->
+                    </ng-container>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -184,15 +225,16 @@
                     <td mat-cell *matCellDef="let product"
                         class="py-3 px-4 border-b border-slate-200 dark:border-slate-700">
                         <div class="flex space-x-2">
-                            <button mat-icon-button
+                            <button mat-icon-button class="btn-icon"
                                 class="text-primary-600 hover:bg-primary-50 dark:hover:bg-slate-700 rounded-full transition-colors"
-                                [matTooltip]="'Edit ' + product.name" (click)="editProduct(product)">
-                                <mat-icon>edit</mat-icon>
+                                [matTooltip]="'Edit ' + product.name" (click)="editProduct(product, $event)">
+                                <mat-icon class="icon-success">edit</mat-icon>
                             </button>
                             <button mat-icon-button
                                 class="text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-700 rounded-full transition-colors"
-                                [matTooltip]="'Delete ' + product.name" (click)="deleteProduct(product)">
-                                <mat-icon>delete</mat-icon>
+                                [matTooltip]="'Delete ' + product.name" [matTooltipClass]="'tooltip-danger'"
+                                (click)="deleteProduct(product); $event.stopPropagation()">
+                                <mat-icon class="icon-danger">delete</mat-icon>
                             </button>
                         </div>
                     </td>
@@ -200,7 +242,7 @@
 
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                    class="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors cursor-pointer"
+                    class="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     (click)="editProduct(row)">
                 </tr>
             </table>

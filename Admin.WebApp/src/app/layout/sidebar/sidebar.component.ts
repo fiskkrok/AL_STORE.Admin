@@ -228,7 +228,7 @@ interface NavItem {
         </div>
         
         <!-- User Menu Dropdown -->
-        <div *ngIf="isUserMenuOpen && !collapsed" class="mt-2 mb-4 py-1 bg-white dark:bg-slate-750 rounded-md shadow-lg border border-slate-200 dark:border-slate-700">
+        <div *ngIf="isUserMenuOpen && !collapsed" class="mt-2 mb-4 py-1 bg-white dark:bg-slate-700 rounded-md shadow-lg border border-slate-200 dark:border-slate-700">
           <a 
             routerLink="/profile" 
             class="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">

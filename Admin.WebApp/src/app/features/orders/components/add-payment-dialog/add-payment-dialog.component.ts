@@ -32,42 +32,42 @@ interface DialogData {
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <mat-dialog-content>
                 <div class="form-fields">
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Transaction ID</mat-label>
                         <input matInput formControlName="transactionId" placeholder="Enter transaction ID">
-                        <mat-error *ngIf="form.get('transactionId')?.errors?.['required']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('transactionId')?.errors?.['required']">
                             Transaction ID is required
                         </mat-error>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Payment Method</mat-label>
                         <mat-select formControlName="method">
                             <mat-option value="credit_card">Credit Card</mat-option>
                             <mat-option value="bank_transfer">Bank Transfer</mat-option>
                             <mat-option value="paypal">PayPal</mat-option>
                         </mat-select>
-                        <mat-error *ngIf="form.get('method')?.errors?.['required']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('method')?.errors?.['required']">
                             Payment method is required
                         </mat-error>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Amount</mat-label>
                         <input matInput type="number" formControlName="amount" 
                                [placeholder]="'Amount in ' + data.currency">
-                        <mat-error *ngIf="form.get('amount')?.errors?.['required']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('amount')?.errors?.['required']">
                             Amount is required
                         </mat-error>
-                        <mat-error *ngIf="form.get('amount')?.errors?.['min']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('amount')?.errors?.['min']">
                             Amount must be greater than 0
                         </mat-error>
-                        <mat-error *ngIf="form.get('amount')?.errors?.['max']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('amount')?.errors?.['max']">
                             Amount cannot exceed order total
                         </mat-error>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Reference</mat-label>
                         <input matInput formControlName="reference" placeholder="Enter payment reference">
                     </mat-form-field>

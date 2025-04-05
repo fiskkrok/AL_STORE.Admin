@@ -45,7 +45,7 @@ interface CarrierOption {
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <mat-dialog-content>
                 <div class="form-fields">
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Shipping Carrier</mat-label>
                         <mat-select formControlName="carrier">
                             @for (carrier of carriers; track carrier.value) {
@@ -54,20 +54,20 @@ interface CarrierOption {
                                 </mat-option>
                             }
                         </mat-select>
-                        <mat-error *ngIf="form.get('carrier')?.errors?.['required']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('carrier')?.errors?.['required']">
                             Carrier is required
                         </mat-error>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Tracking Number</mat-label>
                         <input matInput formControlName="trackingNumber" 
                                placeholder="Enter tracking number">
-                        <mat-error *ngIf="form.get('trackingNumber')?.errors?.['required']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('trackingNumber')?.errors?.['required']">
                             Tracking number is required
                         </mat-error>
                         @if (trackingUrl) {
-                            <mat-hint>
+                            <mat-hint class="text-xs text-orange-500">
                                 <a [href]="trackingUrl" target="_blank" rel="noopener noreferrer">
                                     Track Package
                                 </a>
@@ -75,22 +75,22 @@ interface CarrierOption {
                         }
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Estimated Delivery Date</mat-label>
                         <input matInput [matDatepicker]="picker" 
                                formControlName="estimatedDeliveryDate">
                         <mat-datepicker-toggle matIconSuffix [for]="picker">
                         </mat-datepicker-toggle>
                         <mat-datepicker #picker></mat-datepicker>
-                        <mat-error *ngIf="form.get('estimatedDeliveryDate')?.errors?.['required']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('estimatedDeliveryDate')?.errors?.['required']">
                             Estimated delivery date is required
                         </mat-error>
-                        <mat-error *ngIf="form.get('estimatedDeliveryDate')?.errors?.['min']">
+                        <mat-error class="text-xs text-red-500"  *ngIf="form.get('estimatedDeliveryDate')?.errors?.['min']">
                             Date cannot be in the past
                         </mat-error>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field >
                         <mat-label>Notes</mat-label>
                         <textarea matInput formControlName="notes" 
                                   placeholder="Enter shipping notes"

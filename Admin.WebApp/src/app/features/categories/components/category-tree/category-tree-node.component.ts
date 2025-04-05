@@ -26,10 +26,10 @@ import { Category } from 'src/app/shared/models/category.model';
             </div>
             <div class="category-actions">
               <button mat-icon-button (click)="onEdit(category)">
-                <mat-icon>edit</mat-icon>
+                <mat-icon class="icon-success">edit</mat-icon>
               </button>
               <button mat-icon-button color="warn" (click)="onDelete(category)">
-                <mat-icon>delete</mat-icon>
+                <mat-icon class="icon-danger">delete</mat-icon>
               </button>
             </div>
           </div>

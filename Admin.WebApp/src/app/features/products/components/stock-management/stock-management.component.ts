@@ -54,7 +54,7 @@ import { StockAdjustmentDialogComponent } from './stock-adjustment-dialog.compon
                         class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full p-1 transition-colors"
                         matTooltip="Adjust Stock"
                         (click)="openStockAdjustment($event)">
-                        <mat-icon class="text-sm h-5 w-5">edit</mat-icon>
+                        <mat-icon class="text-sm h-5 w-5 icon-success">edit</mat-icon>
                     </button>
                 </div>
             } @else {
