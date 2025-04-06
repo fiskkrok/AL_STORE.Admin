@@ -36,7 +36,7 @@ public class OrderMappingProfile : Profile
                 CreatedBy = src.CreatedBy,
                 LastModifiedAt = src.LastModifiedAt,
                 LastModifiedBy = src.LastModifiedBy,
-                Items = new List<OrderItemDto>(),
+                Items = [],
                 // ShippingAddress and BillingAddress will be mapped separately
                 // Payment and ShippingInfo will be mapped separately
             });

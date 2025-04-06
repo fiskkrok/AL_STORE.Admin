@@ -16,12 +16,13 @@ import { Subject, combineLatest, of } from 'rxjs';
 import { finalize, takeUntil, startWith } from 'rxjs/operators';
 
 import { ProductTypeService } from '../../../../core/services/product-type.service';
-import { ProductService, ProductCreateCommand } from '../../../../core/services/product.service';
+import { ProductService } from '../../../../core/services/product.service';
 import { ErrorService } from '../../../../core/services/error.service';
-import { ProductImage, ProductStatus, ProductVisibility } from '../../../../shared/models/product.model';
+import { ProductCreateCommand, ProductImage, ProductStatus, ProductVisibility } from '../../../../shared/models/product.model';
 import { ProductType } from '../../../../shared/models/product-type.model';
 import { CategoryService } from '../../../../core/services/category.service';
 import { ProductImageManagerComponent } from '../../product-image-manager/product-image-manager.component';
+import { Currency } from '../../../../shared/models/currency.enum';
 
 interface ProductFormModel {
   basicInfo: {
@@ -640,6 +641,8 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
   }
 
   private initPricingFields(): void {
+    // First import the Currency enum
+
     this.pricingFields = [
       {
         fieldGroupClassName: 'row',
@@ -674,13 +677,10 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
               label: 'Currency',
               placeholder: 'Select currency',
               required: true,
-              options: [
-                { label: 'USD - US Dollar', value: 'USD' },
-                { label: 'EUR - Euro', value: 'EUR' },
-                { label: 'GBP - British Pound', value: 'GBP' },
-                { label: 'CAD - Canadian Dollar', value: 'CAD' },
-                { label: 'AUD - Australian Dollar', value: 'AUD' }
-              ]
+              options: Object.entries(Currency).map(([code, name]) => ({
+                label: `${code} - ${name}`,
+                value: code
+              }))
             }
           }
         ]

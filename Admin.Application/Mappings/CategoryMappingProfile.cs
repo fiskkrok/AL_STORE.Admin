@@ -37,7 +37,7 @@ public class CategoryMappingProfile : Profile
                     LastModifiedAt = src.LastModifiedAt,
                     LastModifiedBy = src.LastModifiedBy,
                     // Initialize collections to empty
-                    SubCategories = new List<CategoryDto>(),
+                    SubCategories = [],
                     // ParentCategory will be mapped separately
                     ParentCategory = null
                 };
@@ -55,7 +55,7 @@ public class CategoryMappingProfile : Profile
                         Name = dest.ParentCategory.Name,
                         Description = dest.ParentCategory.Description,
                         // Include necessary fields but don't continue the chain
-                        SubCategories = new List<CategoryDto>(),
+                        SubCategories = [],
                         ParentCategory = null
                     };
 

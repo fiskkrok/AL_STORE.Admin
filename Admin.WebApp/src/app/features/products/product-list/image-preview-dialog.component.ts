@@ -15,8 +15,10 @@ import { MatIconModule } from '@angular/material/icon';
     MatIconModule
   ],
   template: `
-    <div class="relative">
-      <!-- Close button -->
+  <div class="image-preview-dialog bg-transparent">
+    <img [src]="data.url" alt="Image Preview" />
+</div>
+    <!-- <div class="relative">
       <button 
         mat-icon-button 
         class="absolute top-2 right-2 text-white bg-slate-800 bg-opacity-50 hover:bg-opacity-70 z-10 transition-colors"
@@ -24,7 +26,6 @@ import { MatIconModule } from '@angular/material/icon';
         <mat-icon>close</mat-icon>
       </button>
       
-      <!-- Image preview -->
       <div class="image-preview-container">
         <img 
           [src]="data.url" 
@@ -33,7 +34,6 @@ import { MatIconModule } from '@angular/material/icon';
           loading="lazy">
       </div>
       
-      <!-- Image metadata if available -->
       <div *ngIf="data.fileName || data.size" class="p-4 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
         <div *ngIf="data.fileName" class="text-sm text-slate-500 dark:text-slate-400">
           <span class="font-medium text-slate-700 dark:text-slate-300">Filename:</span> {{ data.fileName }}
@@ -42,24 +42,8 @@ import { MatIconModule } from '@angular/material/icon';
           <span class="font-medium text-slate-700 dark:text-slate-300">Size:</span> {{ formatFileSize(data.size) }}
         </div>
       </div>
-    </div>
+    </div> -->
   `,
-  styles: [`
-    .image-preview-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-      background-color: rgba(0, 0, 0, 0.025);
-      min-height: 300px;
-    }
-    
-    :host ::ng-deep .mat-mdc-dialog-container {
-      padding: 0 !important;
-      overflow: hidden;
-      border-radius: 0.5rem;
-    }
-  `]
 })
 export class ImagePreviewDialogComponent {
   constructor(

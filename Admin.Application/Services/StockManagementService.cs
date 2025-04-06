@@ -35,11 +35,17 @@ public class StockManagementService
         // Otherwise, create a default stock item with conservative defaults
         _logger.LogInformation("Creating default stock item for product {ProductId}", productId);
 
+        var product = await _productRepo.GetByIdAsync(productId, cancellationToken);
+        if (product == null)
+        {
+            throw new Exception($"Product with ID {productId} not found");
+        }
+
         var defaultStockItem = new StockItem(
             productId: productId,
-            initialStock: 0,           // Start with 0 stock by default
-            lowStockThreshold: 5,      // Default low stock threshold
-            trackInventory: true);     // Enable inventory tracking by default
+            initialStock: product.Stock, // Use existing value
+            lowStockThreshold: 5,        // Default low stock threshold
+            trackInventory: true);       // Enable inventory tracking by default
 
         try
         {
@@ -55,6 +61,7 @@ public class StockManagementService
             throw;
         }
     }
+
     public async Task SyncProductWithStockItem(Guid productId, CancellationToken cancellationToken = default)
     {
         var product = await _productRepo.GetByIdAsync(productId, cancellationToken);

@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-
+using Admin.Application.Services;
 using Admin.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -12,17 +12,20 @@ public class ProductDbSeeder : IProductSeeder
     private readonly AdminDbContext _context;
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<ProductDbSeeder> _logger;
+    private readonly StockManagementService _stockManagementService;
     private const int TOTAL_IMAGES = 29;
     private int _currentImageIndex = 1;
 
     public ProductDbSeeder(
         AdminDbContext context,
         IWebHostEnvironment env,
-        ILogger<ProductDbSeeder> logger)
+        ILogger<ProductDbSeeder> logger,
+        StockManagementService stockManagementService)
     {
         _context = context;
         _env = env;
         _logger = logger;
+        _stockManagementService = stockManagementService;
     }
 
     private static string GetFullPath(string contentRootPath, string pictureFileName) =>
@@ -97,6 +100,9 @@ public class ProductDbSeeder : IProductSeeder
                                 );
 
                                 _context.Products.Add(product);
+
+                                // Create stock item for the product
+                                await _stockManagementService.GetOrCreateStockItemAsync(product.Id);
 
                                 // Rotate image index
                                 _currentImageIndex = (_currentImageIndex % TOTAL_IMAGES) + 1;

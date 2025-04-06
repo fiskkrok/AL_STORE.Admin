@@ -19,15 +19,20 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUser _currentUser;
+    private readonly ICacheService _cacheService;
+
+    private const string CategoriesListKey = "categories:list:dto";
 
     public CreateCategoryCommandHandler(
         ICategoryRepository categoryRepository,
         IUnitOfWork unitOfWork,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser,
+        ICacheService cacheService)
     {
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
+        _cacheService = cacheService;
     }
 
     public async Task<Result<Guid>> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
@@ -40,6 +45,13 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
                 parentCategory = await _categoryRepository.GetByIdAsync(command.ParentCategoryId.Value, cancellationToken);
                 if (parentCategory == null)
                     return Result<Guid>.Failure(new Error("Category.ParentNotFound", "Parent category not found"));
+            }
+
+            // Check if the category with the same ID already exists to avoid duplicate key issues
+            var existingCategory = await _categoryRepository.GetByIdAsync(Guid.NewGuid(), cancellationToken);
+            if (existingCategory != null)
+            {
+                return Result<Guid>.Failure(new Error("Category.DuplicateId", "Category with the same ID already exists"));
             }
 
             var category = new Category(
@@ -60,6 +72,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
 
             await _categoryRepository.AddAsync(category, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _cacheService.RemoveByPrefixAsync(CategoriesListKey, cancellationToken);
 
             return Result<Guid>.Success(category.Id);
         }

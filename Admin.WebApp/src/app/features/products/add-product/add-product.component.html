@@ -114,11 +114,9 @@
                                 <mat-form-field class="w-full">
                                     <mat-label>Currency</mat-label>
                                     <mat-select formControlName="currency">
-                                        <mat-option value="USD">USD - US Dollar</mat-option>
-                                        <mat-option value="EUR">EUR - Euro</mat-option>
-                                        <mat-option value="GBP">GBP - British Pound</mat-option>
-                                        <mat-option value="CAD">CAD - Canadian Dollar</mat-option>
-                                        <mat-option value="AUD">AUD - Australian Dollar</mat-option>
+                                        <mat-option *ngFor="let currency of currencies" [value]="currency.code">
+                                            {{ currency.label }}
+                                        </mat-option>
                                     </mat-select>
                                 </mat-form-field>
                             </div>

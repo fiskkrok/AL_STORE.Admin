@@ -14,7 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-
+import { Currency } from 'src/app/shared/models/currency.enum';
 // Custom Components
 import { BarcodeScannerComponent } from '../components/barcode-scanner';
 import { ProductImageManagerComponent } from '../product-image-manager/product-image-manager.component';
@@ -55,6 +55,8 @@ export class AddProductComponent implements OnInit, OnDestroy {
   images: any[] = [];
 
   private destroy$ = new Subject<void>();
+  Currency = Currency; // Enum for currency options
+  currencies = Object.entries(Currency).map(([code, label]) => ({ code, label }));
 
   constructor(
     private fb: FormBuilder,
@@ -173,7 +175,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
     const category = this.categories.find(cat => cat.id === categoryId);
     return category ? category.name : 'Not specified';
   }
-  
+
   validateAllForms(): boolean {
     return (
       this.basicInfoForm.valid &&

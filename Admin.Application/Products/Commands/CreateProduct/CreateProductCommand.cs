@@ -4,9 +4,12 @@ using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
 using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
+using Admin.Domain.Enums;
+using Admin.Domain.ValueObjects;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using AutoMapper;
 
 namespace Admin.Application.Products.Commands.CreateProduct;
 
@@ -40,14 +43,17 @@ public class CreateProductCommandHandler : CommandHandler<CreateProductCommand, 
 {
     private readonly ICurrentUser _currentUser;
     private readonly IApplicationDbContext _dbContext;
+    private readonly IMapper _mapper;
 
     public CreateProductCommandHandler(
         IApplicationDbContext dbContext,
         ILogger<CreateProductCommandHandler> logger,
-        ICurrentUser currentUser) : base(dbContext, logger)
+        ICurrentUser currentUser,
+        IMapper mapper) : base(dbContext, logger)
     {
         _currentUser = currentUser;
         _dbContext = dbContext;
+        _mapper = mapper;
     }
 
     public override async Task<Result<Guid>> Handle(
@@ -75,24 +81,8 @@ public class CreateProductCommandHandler : CommandHandler<CreateProductCommand, 
                         new Error("SubCategory.NotFound", $"SubCategory with ID {command.SubCategoryId} was not found"));
             }
 
-            // Create product
-            var product = new Product(
-                command.Name,
-                command.Description,
-                command.Price,
-                command.Currency,
-                command.Sku,
-                command.Stock,
-                command.CategoryId,
-                null,
-                command.SubCategoryId,
-                _currentUser.Id);
-
-            // Handle images
-            foreach (var image in command.Images)
-            {
-                product.AddImage(image.Url, image.FileName, image.Size, _currentUser.Id);
-            }
+            // Create product using mapper
+            var product = _mapper.Map<Product>(command);
 
             // Add product to DbContext
             _dbContext.Products.Add(product);
