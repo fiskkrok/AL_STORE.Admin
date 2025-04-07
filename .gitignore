@@ -396,3 +396,6 @@ FodyWeavers.xsd
 /Admin.WebAPI/Pics/7.webp
 /Admin.WebAPI/Pics/8.webp
 /Admin.WebAPI/Pics/9.webp
+Admin.WebApp/src/app/Mock-data/categories-mock-data.md
+Admin.WebApp/src/app/Mock-data/high-level-categories.md
+Admin.WebApp/src/app/Mock-data/product-mock-data.md

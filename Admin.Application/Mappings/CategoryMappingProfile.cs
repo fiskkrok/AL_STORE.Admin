@@ -18,29 +18,26 @@ public class CategoryMappingProfile : Profile
                 opt => opt.MapFrom(src => src.ParentCategory))
             .ForMember(dest => dest.SubCategories,
                 opt => opt.MapFrom(src => src.SubCategories))
-            .ConstructUsing((src, context) => {
-                // Create with initial values
-                return new CategoryDto
-                {
-                    Id = src.Id,
-                    Name = src.Name,
-                    Description = src.Description,
-                    Slug = src.Slug,
-                    SortOrder = src.SortOrder,
-                    MetaTitle = src.MetaTitle,
-                    MetaDescription = src.MetaDescription,
-                    ImageUrl = src.ImageUrl,
-                    ParentCategoryId = src.ParentCategoryId,
-                    ProductCount = src.Products.Count,
-                    CreatedAt = src.CreatedAt,
-                    CreatedBy = src.CreatedBy,
-                    LastModifiedAt = src.LastModifiedAt,
-                    LastModifiedBy = src.LastModifiedBy,
-                    // Initialize collections to empty
-                    SubCategories = [],
-                    // ParentCategory will be mapped separately
-                    ParentCategory = null
-                };
+            .ConstructUsing((src, context) => new CategoryDto
+            {
+                Id = src.Id,
+                Name = src.Name,
+                Description = src.Description,
+                Slug = src.Slug,
+                SortOrder = src.SortOrder,
+                MetaTitle = src.MetaTitle,
+                MetaDescription = src.MetaDescription,
+                ImageUrl = src.ImageUrl,
+                ParentCategoryId = src.ParentCategoryId,
+                ProductCount = src.Products.Count,
+                CreatedAt = src.CreatedAt,
+                CreatedBy = src.CreatedBy,
+                LastModifiedAt = src.LastModifiedAt,
+                LastModifiedBy = src.LastModifiedBy,
+                // Initialize collections to empty
+                SubCategories = [],
+                // ParentCategory will be mapped separately
+                ParentCategory = null
             });
 
         // Handle circular references in a post-processing step

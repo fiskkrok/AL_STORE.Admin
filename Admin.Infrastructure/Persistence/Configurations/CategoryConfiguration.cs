@@ -65,6 +65,9 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(x => x.LastModifiedBy)
             .HasMaxLength(450);
 
+        builder.Property(x => x.IsActive)
+            .IsRequired()
+            .HasDefaultValue(true);
         // Indexing
         builder.HasIndex(x => x.Slug)
             .IsUnique()

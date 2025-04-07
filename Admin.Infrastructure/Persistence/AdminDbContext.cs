@@ -69,7 +69,25 @@ public class AdminDbContext : DbContext, IApplicationDbContext, IUnitOfWork
         var domainEvents = ChangeTracker.Entries<AuditableEntity>()
             .SelectMany(x => x.Entity.DomainEvents)
             .ToList();
+        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                // New entities
+                entry.Property("CreatedAt").CurrentValue = DateTime.UtcNow;
+                if (entry.Entity is Category category && category.ParentCategoryId.HasValue)
+                {
+                    // Ensure the parent is correctly tracked
+                    var parentEntry = ChangeTracker.Entries<Category>()
+                        .FirstOrDefault(e => e.Entity.Id == category.ParentCategoryId);
 
+                    if (parentEntry != null)
+                    {
+                        parentEntry.State = EntityState.Unchanged;
+                    }
+                }
+            }
+        }
         var result = await base.SaveChangesAsync(cancellationToken);
 
         // Dispatch events after successful save

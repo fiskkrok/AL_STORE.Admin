@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 
 using Admin.Domain.Common;
+using Admin.Domain.Common.Exceptions;
 using Admin.Domain.Enums;
 using Admin.Domain.Events.Product;
 using Admin.Domain.ValueObjects;
@@ -298,7 +299,20 @@ public class Product : AuditableEntity
 
     public void AddVariant(ProductVariant variant)
     {
-        throw new NotImplementedException();
+        Guard.Against.Null(variant, nameof(variant));
+
+        if (_variants.Any(v => v.Sku == variant.Sku))
+            throw new DomainException($"Variant with SKU '{variant.Sku}' already exists");
+
+        _variants.Add(variant);
+        AddDomainEvent(new ProductVariantAddedDomainEvent(this, variant));
+    }
+}
+
+public record ProductVariantAddedDomainEvent : DomainEvent
+{
+    public ProductVariantAddedDomainEvent(Product product, ProductVariant variant)
+    {
     }
 }
 

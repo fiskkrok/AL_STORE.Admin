@@ -39,4 +39,18 @@ public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
         return await DbContext.Categories
             .AnyAsync(c => c.Id == id && c.IsActive, cancellationToken);
     }
+    public override async Task AddAsync(Category entity, CancellationToken cancellationToken = default)
+    {
+        // Ensure parent category is properly tracked if it exists
+        if (entity.ParentCategoryId.HasValue)
+        {
+            var parent = await DbContext.Categories.FindAsync(entity.ParentCategoryId.Value);
+            if (parent != null)
+            {
+                DbContext.Entry(parent).State = EntityState.Unchanged;
+            }
+        }
+
+        await DbContext.Categories.AddAsync(entity, cancellationToken);
+    }
 }

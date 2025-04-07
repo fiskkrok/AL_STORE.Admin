@@ -39,27 +39,23 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
     {
         try
         {
-            Category? parentCategory = null;
+            // First, just check if the parent exists (without loading the actual entity)
             if (command.ParentCategoryId.HasValue)
             {
-                parentCategory = await _categoryRepository.GetByIdAsync(command.ParentCategoryId.Value, cancellationToken);
-                if (parentCategory == null)
+                bool parentExists = await _categoryRepository.ExistsAsync(
+                    command.ParentCategoryId.Value, cancellationToken);
+
+                if (!parentExists)
                     return Result<Guid>.Failure(new Error("Category.ParentNotFound", "Parent category not found"));
             }
 
-            // Check if the category with the same ID already exists to avoid duplicate key issues
-            var existingCategory = await _categoryRepository.GetByIdAsync(Guid.NewGuid(), cancellationToken);
-            if (existingCategory != null)
-            {
-                return Result<Guid>.Failure(new Error("Category.DuplicateId", "Category with the same ID already exists"));
-            }
-
+            // Create the category with just the name, description, and imageUrl
             var category = new Category(
                 command.Name,
                 command.Description,
-                command.ImageUrl,
-                parentCategory);
+                command.ImageUrl);
 
+            // Set metadata if provided
             if (!string.IsNullOrWhiteSpace(command.MetaTitle) || !string.IsNullOrWhiteSpace(command.MetaDescription))
             {
                 category.Update(
@@ -70,7 +66,23 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
                     _currentUser.Id);
             }
 
+            // Add the category to the repository first
             await _categoryRepository.AddAsync(category, cancellationToken);
+
+            // Then establish the parent relationship AFTER the entity is added and tracked
+            if (command.ParentCategoryId.HasValue)
+            {
+                // After the entity is tracked, load the parent and set it
+                var parentCategory = await _categoryRepository.GetByIdAsync(
+                    command.ParentCategoryId.Value, cancellationToken);
+
+                if (parentCategory != null)
+                {
+                    category.UpdateParent(parentCategory, _currentUser.Id);
+                }
+            }
+
+            // Now save everything
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _cacheService.RemoveByPrefixAsync(CategoriesListKey, cancellationToken);
 
