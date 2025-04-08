@@ -80,7 +80,11 @@ public class Product : AuditableEntity
         private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(Description));
     }
 
-    public string? ShortDescription { get; private set; }
+    public string? ShortDescription
+    {
+        get => field;
+        private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(ShortDescription));
+    }
 
     public string Sku
     {
@@ -88,8 +92,16 @@ public class Product : AuditableEntity
         private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(Sku));
     }
 
-    public string? Barcode { get; private set; }
-
+    public string? Barcode
+    {
+        get => field;
+        private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(Barcode));
+    }
+    public string? LowStockThreshold
+    {
+        get => field;
+        private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(LowStockThreshold));
+    }
     // Complex properties still using explicit backing fields
     public Money Price => Money.From(_price, _currency);
     public Money? CompareAtPrice => _compareAtPrice.HasValue ? Money.From(_compareAtPrice.Value, _currency) : null;
@@ -109,7 +121,6 @@ public class Product : AuditableEntity
         // Keep the legacy Stock property synchronized
         Stock = stockItem.CurrentStock;
     }
-    public int? LowStockThreshold { get; private set; }
     public ProductStatus Status { get; private set; } = ProductStatus.Draft;
     public ProductVisibility Visibility { get; private set; } = ProductVisibility.Hidden;
     public Guid CategoryId { get; private set; }
@@ -257,6 +268,15 @@ public class Product : AuditableEntity
             AddDomainEvent(new ProductTagRemovedDomainEvent(this, tag));
         }
     }
+    public void AddAttribute(ProductAttribute attribute, string? modifiedBy = null)
+    {
+        Guard.Against.Null(attribute, nameof(attribute));
+        if (_attributes.Contains(attribute)) return;
+        _attributes.Add(attribute);
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductAttributeAddedDomainEvent(this, attribute));
+    }
+
 
     public void UpdateSeo(ProductSeo seo, string? modifiedBy = null)
     {
@@ -308,6 +328,8 @@ public class Product : AuditableEntity
         AddDomainEvent(new ProductVariantAddedDomainEvent(this, variant));
     }
 }
+
+public record ProductAttributeAddedDomainEvent(Product Product, ProductAttribute Attribute) : DomainEvent;
 
 public record ProductVariantAddedDomainEvent : DomainEvent
 {

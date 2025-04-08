@@ -333,7 +333,6 @@ interface ImportRow {
       padding: 2rem;
       text-align: center;
       transition: all 0.2s ease;
-      background-color: #fafafa;
       cursor: pointer;
       margin-bottom: 1.5rem;
     }
@@ -368,7 +367,6 @@ interface ImportRow {
     .template-section {
       margin-top: 2rem;
       padding: 1rem;
-      background-color: #f5f5f5;
       border-radius: 8px;
     }
     

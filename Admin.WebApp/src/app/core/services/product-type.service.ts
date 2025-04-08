@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, shareReplay, catchError } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { ProductType, ProductTypeAttribute } from '../../shared/models/product-type.model';
 import { environment } from '../../../environments/environment';
@@ -17,13 +17,20 @@ export class ProductTypeService {
     constructor(private http: HttpClient) { }
 
     getProductTypes(): Observable<ProductType[]> {
+        // if (!this.cachedProductTypes) {
+        //     this.cachedProductTypes = this.http.get<ProductType[]>(this.apiUrl).pipe(
+        //         catchError(error => {
+        //             console.error('Error fetching product types:', error);
+        //             // Fallback to local static types if API fails
+        //             return of(this.getStaticProductTypes());
+        //         }),
+        //         shareReplay(1)
+        //     );
+        // }
+        // return this.cachedProductTypes;
         if (!this.cachedProductTypes) {
-            this.cachedProductTypes = this.http.get<ProductType[]>(this.apiUrl).pipe(
-                catchError(error => {
-                    console.error('Error fetching product types:', error);
-                    // Fallback to local static types if API fails
-                    return of(this.getStaticProductTypes());
-                }),
+            // Always use static product types instead of API call
+            this.cachedProductTypes = of(this.getStaticProductTypes()).pipe(
                 shareReplay(1)
             );
         }
@@ -59,6 +66,7 @@ export class ProductTypeService {
                         type: 'multiselect' as AttributeType,
                         isRequired: true,
                         options: [
+                            { label: 'One size', value: 'one_size' },
                             { label: 'XS', value: 'XS' },
                             { label: 'S', value: 'S' },
                             { label: 'M', value: 'M' },

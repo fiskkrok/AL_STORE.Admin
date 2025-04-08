@@ -12,17 +12,17 @@ import { ErrorService } from 'src/app/core/services/error.service';
 import { ProductService } from 'src/app/core/services/product.service';
 import { ProductImage } from 'src/app/shared/models/product.model';
 @Component({
-    selector: 'app-product-image-manager',
-    standalone: true,
-    imports: [
-        CommonModule,
-        MatButtonModule,
-        MatIconModule,
-        MatMenuModule,
-        MatTooltipModule,
-        DragDropModule
-    ],
-    template: `
+  selector: 'app-product-image-manager',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatTooltipModule,
+    DragDropModule
+  ],
+  template: `
     <div class="image-manager-container">
       <h3>Product Images</h3>
       
@@ -131,7 +131,7 @@ import { ProductImage } from 'src/app/shared/models/product.model';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .image-manager-container {
       display: flex;
       flex-direction: column;
@@ -145,7 +145,6 @@ import { ProductImage } from 'src/app/shared/models/product.model';
       padding: 2rem;
       text-align: center;
       transition: all 0.2s ease;
-      background-color: #fafafa;
       cursor: pointer;
     }
     
@@ -293,176 +292,176 @@ import { ProductImage } from 'src/app/shared/models/product.model';
   `]
 })
 export class ProductImageManagerComponent implements OnInit, OnDestroy {
-    @Input() images: ProductImage[] = [];
-    @Output() imagesChange = new EventEmitter<ProductImage[]>();
+  @Input() images: ProductImage[] = [];
+  @Output() imagesChange = new EventEmitter<ProductImage[]>();
 
-    isDragging = false;
-    isUploading = false;
-    uploadProgress = 0;
+  isDragging = false;
+  isUploading = false;
+  uploadProgress = 0;
 
-    private destroy$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
 
-    constructor(
-        private productService: ProductService,
-        private errorService: ErrorService
-    ) { }
+  constructor(
+    private productService: ProductService,
+    private errorService: ErrorService
+  ) { }
 
-    ngOnInit(): void { }
+  ngOnInit(): void { }
 
-    ngOnDestroy(): void {
-        this.destroy$.next();
-        this.destroy$.complete();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+
+    if (event.dataTransfer?.files) {
+      this.handleFiles(event.dataTransfer.files);
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.handleFiles(input.files);
+    }
+  }
+
+  handleFiles(files: FileList): void {
+    // Filter for images and check size limits
+    const validFiles: File[] = [];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxImages = 10;
+    const availableSlots = maxImages - this.images.length;
+
+    if (availableSlots <= 0) {
+      this.errorService.addError({
+        code: 'IMAGES_LIMIT_EXCEEDED',
+        message: 'Maximum of 10 images allowed per product',
+        severity: 'warning'
+      });
+      return;
     }
 
-    onDragOver(event: DragEvent): void {
-        event.preventDefault();
-        event.stopPropagation();
-        this.isDragging = true;
+    // Validate files
+    for (let i = 0; i < Math.min(files.length, availableSlots); i++) {
+      const file = files[i];
+
+      // Check mime type
+      if (!file.type.startsWith('image/')) {
+        this.errorService.addError({
+          code: 'INVALID_FILE_TYPE',
+          message: `${file.name} is not a valid image file`,
+          severity: 'warning'
+        });
+        continue;
+      }
+
+      // Check file size
+      if (file.size > maxSize) {
+        this.errorService.addError({
+          code: 'FILE_TOO_LARGE',
+          message: `${file.name} exceeds the 5MB size limit`,
+          severity: 'warning'
+        });
+        continue;
+      }
+
+      validFiles.push(file);
     }
 
-    onDragLeave(event: DragEvent): void {
-        event.preventDefault();
-        event.stopPropagation();
-        this.isDragging = false;
-    }
+    if (validFiles.length === 0) return;
 
-    onDrop(event: DragEvent): void {
-        event.preventDefault();
-        event.stopPropagation();
-        this.isDragging = false;
+    // Upload valid files
+    this.isUploading = true;
+    this.uploadProgress = 0;
 
-        if (event.dataTransfer?.files) {
-            this.handleFiles(event.dataTransfer.files);
+    // Simulate progress updates
+    const progressInterval = setInterval(() => {
+      if (this.uploadProgress < 90) {
+        this.uploadProgress += 10;
+      }
+    }, 300);
+
+    this.productService.uploadImages(validFiles)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          clearInterval(progressInterval);
+          this.isUploading = false;
+          this.uploadProgress = 0;
+        }),
+        catchError(error => {
+          this.errorService.addError({
+            code: 'UPLOAD_FAILED',
+            message: 'Failed to upload images. Please try again.',
+            severity: 'error'
+          });
+          return of([]);
+        })
+      )
+      .subscribe(uploadedImages => {
+        if (uploadedImages.length > 0) {
+          const updatedImages = [...this.images, ...uploadedImages];
+          this.images = updatedImages;
+          this.imagesChange.emit(updatedImages);
         }
-    }
+      });
+  }
 
-    onFileSelected(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        if (input.files?.length) {
-            this.handleFiles(input.files);
-        }
-    }
+  drop(event: CdkDragDrop<ProductImage[]>): void {
+    moveItemInArray(this.images, event.previousIndex, event.currentIndex);
+    this.imagesChange.emit([...this.images]);
+  }
 
-    handleFiles(files: FileList): void {
-        // Filter for images and check size limits
-        const validFiles: File[] = [];
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        const maxImages = 10;
-        const availableSlots = maxImages - this.images.length;
+  setAsPrimary(index: number): void {
+    if (index === 0 || index >= this.images.length) return;
 
-        if (availableSlots <= 0) {
-            this.errorService.addError({
-                code: 'IMAGES_LIMIT_EXCEEDED',
-                message: 'Maximum of 10 images allowed per product',
-                severity: 'warning'
-            });
-            return;
-        }
+    // Move the selected image to the front
+    const image = this.images[index];
+    this.images.splice(index, 1);
+    this.images.unshift(image);
 
-        // Validate files
-        for (let i = 0; i < Math.min(files.length, availableSlots); i++) {
-            const file = files[i];
+    this.imagesChange.emit([...this.images]);
+  }
 
-            // Check mime type
-            if (!file.type.startsWith('image/')) {
-                this.errorService.addError({
-                    code: 'INVALID_FILE_TYPE',
-                    message: `${file.name} is not a valid image file`,
-                    severity: 'warning'
-                });
-                continue;
-            }
+  editImageDetails(image: ProductImage, index: number): void {
+    // This would typically open a dialog to edit alt text and other metadata
+    // For now, we'll just update a placeholder value
+    const updatedImage = {
+      ...image,
+      alt: prompt('Enter alt text for this image:', image.alt) || image.alt
+    };
 
-            // Check file size
-            if (file.size > maxSize) {
-                this.errorService.addError({
-                    code: 'FILE_TOO_LARGE',
-                    message: `${file.name} exceeds the 5MB size limit`,
-                    severity: 'warning'
-                });
-                continue;
-            }
+    this.images[index] = updatedImage;
+    this.imagesChange.emit([...this.images]);
+  }
 
-            validFiles.push(file);
-        }
+  removeImage(index: number): void {
+    if (index < 0 || index >= this.images.length) return;
 
-        if (validFiles.length === 0) return;
+    this.images.splice(index, 1);
+    this.imagesChange.emit([...this.images]);
+  }
 
-        // Upload valid files
-        this.isUploading = true;
-        this.uploadProgress = 0;
-
-        // Simulate progress updates
-        const progressInterval = setInterval(() => {
-            if (this.uploadProgress < 90) {
-                this.uploadProgress += 10;
-            }
-        }, 300);
-
-        this.productService.uploadImages(validFiles)
-            .pipe(
-                takeUntil(this.destroy$),
-                finalize(() => {
-                    clearInterval(progressInterval);
-                    this.isUploading = false;
-                    this.uploadProgress = 0;
-                }),
-                catchError(error => {
-                    this.errorService.addError({
-                        code: 'UPLOAD_FAILED',
-                        message: 'Failed to upload images. Please try again.',
-                        severity: 'error'
-                    });
-                    return of([]);
-                })
-            )
-            .subscribe(uploadedImages => {
-                if (uploadedImages.length > 0) {
-                    const updatedImages = [...this.images, ...uploadedImages];
-                    this.images = updatedImages;
-                    this.imagesChange.emit(updatedImages);
-                }
-            });
-    }
-
-    drop(event: CdkDragDrop<ProductImage[]>): void {
-        moveItemInArray(this.images, event.previousIndex, event.currentIndex);
-        this.imagesChange.emit([...this.images]);
-    }
-
-    setAsPrimary(index: number): void {
-        if (index === 0 || index >= this.images.length) return;
-
-        // Move the selected image to the front
-        const image = this.images[index];
-        this.images.splice(index, 1);
-        this.images.unshift(image);
-
-        this.imagesChange.emit([...this.images]);
-    }
-
-    editImageDetails(image: ProductImage, index: number): void {
-        // This would typically open a dialog to edit alt text and other metadata
-        // For now, we'll just update a placeholder value
-        const updatedImage = {
-            ...image,
-            alt: prompt('Enter alt text for this image:', image.alt) || image.alt
-        };
-
-        this.images[index] = updatedImage;
-        this.imagesChange.emit([...this.images]);
-    }
-
-    removeImage(index: number): void {
-        if (index < 0 || index >= this.images.length) return;
-
-        this.images.splice(index, 1);
-        this.imagesChange.emit([...this.images]);
-    }
-
-    formatFileSize(bytes: number): string {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    }
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
 }

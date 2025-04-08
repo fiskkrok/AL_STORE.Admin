@@ -8,6 +8,7 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { FormlyImageUploadTypeComponent } from './shared/formly/image-upload.type';
+import { FormlyColorPickerTypeComponent } from './shared/formly/color-picker.type';
 import { FileValueAccessor } from './shared/formly/file-value-accessor';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
@@ -64,6 +65,19 @@ export const appConfig: ApplicationConfig = {
                 multiple: false,
                 maxSize: 5000000,
                 accept: 'image/*'
+              }
+            }
+          },
+          {
+            name: 'color-picker',
+            component: FormlyColorPickerTypeComponent,
+            // wrappers: ['form-field'],
+            defaultOptions: {
+              validators: {
+                pattern: {
+                  expression: (c: any) => !c.value || /^#[0-9A-Fa-f]{6}$/.test(c.value),
+                  message: 'Color must be a valid hex color (e.g. #FF0000)'
+                }
               }
             }
           },

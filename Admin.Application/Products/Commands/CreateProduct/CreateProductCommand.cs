@@ -1,11 +1,8 @@
-﻿using System.Security.Cryptography;
-using Admin.Application.Common.CQRS;
+﻿using Admin.Application.Common.CQRS;
 using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
 using Admin.Application.Products.DTOs;
 using Admin.Domain.Entities;
-using Admin.Domain.Enums;
-using Admin.Domain.ValueObjects;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -30,12 +27,12 @@ public record CreateProductCommand : ICommand<Guid>
     public string Visibility { get; init; } = "Hidden";
     public Guid CategoryId { get; init; }
     public Guid? SubCategoryId { get; init; }
-    public List<ProductImageDto> Images { get; init; } = new();
-    public List<ProductVariantDto> Variants { get; init; } = new();
-    public List<ProductAttributeDto> Attributes { get; init; } = new();
+    public List<ProductImageDto> Images { get; init; } = [];
+    public List<ProductVariantDto> Variants { get; init; } = [];
+    public List<ProductAttributeDto> Attributes { get; init; } = [];
     public ProductSeoDto? Seo { get; init; }
     public ProductDimensionsDto? Dimensions { get; init; }
-    public List<string> Tags { get; init; } = new();
+    public List<string> Tags { get; init; } = [];
 }
 
 // Command handler

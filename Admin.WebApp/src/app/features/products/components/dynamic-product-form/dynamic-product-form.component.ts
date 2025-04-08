@@ -90,7 +90,7 @@ interface ProductFormModel {
                 <h3>Basic Product Details</h3>
                 
                 <!-- Product Type Selection -->
-                <mat-form-field appearance="fill" class="full-width">
+                <mat-form-field  appearance="fill" class="full-width">
                   <mat-label>Product Type</mat-label>
                   <mat-select 
                     [value]="selectedProductType?.id" 

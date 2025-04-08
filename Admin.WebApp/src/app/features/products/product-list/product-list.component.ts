@@ -2,7 +2,7 @@
 import { Component, OnInit, OnDestroy, signal, viewChild } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil, startWith } from 'rxjs/operators';
@@ -53,7 +53,8 @@ import { ImagePreviewDialogComponent } from './image-preview-dialog.component';
         MatSelectModule,
         MatProgressSpinner,
         MatIconModule,
-        StockManagementComponent
+        StockManagementComponent,
+        RouterModule
     ]
 })
 export class ProductListComponent implements OnInit, OnDestroy {

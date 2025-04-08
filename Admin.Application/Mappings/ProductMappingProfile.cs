@@ -60,101 +60,40 @@ public class ProductMappingProfile : Profile
                     src.Dimensions != null
                         ? ProductDimensions.Create(src.Dimensions.Weight, src.Dimensions.Width, src.Dimensions.Height,
                             src.Dimensions.Length, src.Dimensions.Unit)
-                        : null)) // Use ProductDimensions.Create method
-            .ForMember(dest => dest.Variants, opt =>
-                opt.MapFrom(src => src.Variants.Select(variantDto => new ProductVariant(
-                    variantDto.Sku,
-                    variantDto.Price,
-                    variantDto.Currency,
-                    variantDto.Stock,
-                    Guid.NewGuid(),
-                    variantDto.LowStockThreshold,
-                    variantDto.CompareAtPrice,
-                    variantDto.CostPrice,
-                    variantDto.Barcode)
-                {
-                })))
-            .ForMember(dest => dest.Attributes, opt =>
-                opt.MapFrom(src => src.Attributes.Select(attributeDto =>
-                    ProductAttribute.Create(attributeDto.Name, attributeDto.Value,
-                        attributeDto.Type)))) // Use ProductAttribute.Create method
-            .ForMember(dest => dest.Tags, opt =>
-                opt.MapFrom(src => src.Tags))
-            .ForMember(dest => dest.Images, opt => opt.Ignore()) // Ignore direct mapping
+                        : null))
+            .ForMember(dest => dest.LowStockThreshold, opt => opt.MapFrom(src => src.LowStockThreshold))
+            .ForMember(dest => dest.Barcode, opt => opt.MapFrom(src => src.Barcode))
+            .ForMember(dest => dest.ShortDescription, opt => opt.MapFrom(src => src.ShortDescription))
+            .IgnoreAllPropertiesWithAnInaccessibleSetter()
+            .ForMember(dest => dest.Images, opt => opt.Ignore())
+            .ForMember(dest => dest.Variants, opt => opt.Ignore())
+            .ForMember(dest => dest.Attributes, opt => opt.Ignore())
+            .ForMember(dest => dest.Tags, opt => opt.Ignore()) // Ignore direct mapping
             .AfterMap((src, dest) =>
             {
                 // Add images through the proper domain method
-                foreach (var image in src.Images)
+                foreach (var image in src.Images ?? Enumerable.Empty<ProductImageDto>())
                 {
-                    dest.AddImage(image.Url, image.FileName, image.Size, null);
-                }
-                if (src.Variants != null)
-                {
-                    // If you have a proper AddVariant method:
-                    foreach (var variantDto in src.Variants)
-                    {
-                        // Create a variant and then add it
-                        var variant = new ProductVariant(
-                            variantDto.Sku,
-                            variantDto.Price,
-                            variantDto.Currency,
-                            variantDto.Stock,
-                            dest.Id,
-                            variantDto.LowStockThreshold,
-                            variantDto.CompareAtPrice,
-                            variantDto.CostPrice,
-                            variantDto.Barcode
-                        );
-
-                        // If AddVariant exists, use it
-                        if (typeof(Product).GetMethod("AddVariant") != null)
-                        {
-                            dest.AddVariant(variant);
-                        }
-                        else
-                        {
-                            // Otherwise access private field directly (not ideal but works as a workaround)
-                            var variantsField = typeof(Product).GetField("_variants",
-                                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                            if (variantsField != null && variantsField.GetValue(dest) is List<ProductVariant> variants)
-                            {
-                                variants.Add(variant);
-                            }
-                        }
-                    }
+                    dest.AddImage(image.Url, image.FileName, image.Size);
                 }
 
+                foreach (var var in src.Variants ?? Enumerable.Empty<ProductVariantDto>())
+                {
+                    dest.AddVariant(new ProductVariant(var.Sku, var.Price, var.Currency, var.Stock, var.ProductId, var.LowStockThreshold, var.CompareAtPrice, var.CostPrice, var.Barcode));
+                }
                 // Add attributes
-                if (src.Attributes != null)
+                foreach (var Attributes in src.Attributes ?? Enumerable.Empty<ProductAttributeDto>())
                 {
-                    // Similar approach - either use AddAttribute method or access _attributes field directly
-                    var attributesField = typeof(Product).GetField("_attributes",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                    if (attributesField != null && attributesField.GetValue(dest) is List<ProductAttribute> attributes)
-                    {
-                        foreach (var attributeDto in src.Attributes)
-                        {
-                            attributes.Add(ProductAttribute.Create(
-                                attributeDto.Name,
-                                attributeDto.Value,
-                                attributeDto.Type
-                            ));
-                        }
-                    }
+                    dest.AddAttribute(ProductAttribute.Create(Attributes.Name, Attributes.Value, Attributes.Type));
                 }
 
                 // Add tags
-                if (src.Tags != null)
+                foreach (var tag in src.Tags ?? Enumerable.Empty<string>())
                 {
-                    foreach (var tag in src.Tags)
-                    {
-                        dest.AddTag(tag);
-                    }
+                    dest.AddTag(tag );
                 }
 
-            }); // Remove ProductTag mapping as it does not exist
+            }); 
 
         // Rest of the mappings remain the same
         CreateMap<Category, CategoryDto>();
