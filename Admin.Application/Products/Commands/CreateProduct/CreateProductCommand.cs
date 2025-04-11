@@ -1,4 +1,5 @@
-﻿using Admin.Application.Common.CQRS;
+﻿using System.Text.Json;
+using Admin.Application.Common.CQRS;
 using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
 using Admin.Application.Products.DTOs;
@@ -32,6 +33,7 @@ public record CreateProductCommand : ICommand<Guid>
     public List<ProductAttributeDto> Attributes { get; init; } = [];
     public ProductSeoDto? Seo { get; init; }
     public ProductDimensionsDto? Dimensions { get; init; }
+    public string ProductTypeId { get; init; } = string.Empty;
     public List<string> Tags { get; init; } = [];
 }
 
@@ -59,6 +61,32 @@ public class CreateProductCommandHandler : CommandHandler<CreateProductCommand, 
     {
         try
         {
+            // Get the product type to validate against
+            var productType = await _dbContext.ProductTypes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(pt => pt.Id == new Guid(command.ProductTypeId), cancellationToken);
+
+            if (productType == null)
+            {
+                return Result<Guid>.Failure(
+                    new Error("ProductType.NotFound", $"Product type {command.ProductTypeId} not found"));
+            }
+
+            var typeAttributes = JsonSerializer.Deserialize<List<ProductTypeAttributeDto>>(productType.AttributesJson);
+
+            // Validate required attributes
+            if (typeAttributes != null)
+            {
+                foreach (var requiredAttr in typeAttributes.Where(a => a.IsRequired))
+                {
+                    if (!command.Attributes.Any(a => a.Name == requiredAttr.Id))
+                    {
+                        return Result<Guid>.Failure(
+                            new Error("Product.MissingRequiredAttribute",
+                                $"Required attribute {requiredAttr.Name} is missing"));
+                    }
+                }
+            }
             // Validate category exists
             var category = await _dbContext.Categories
                 .FirstOrDefaultAsync(c => c.Id == command.CategoryId, cancellationToken);

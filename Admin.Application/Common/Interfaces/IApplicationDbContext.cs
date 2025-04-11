@@ -11,7 +11,7 @@ public interface IApplicationDbContext
     DbSet<Category> Categories { get; }
     DbSet<ProductImage> ProductImages { get; }
     DbSet<ProductVariant> ProductVariants { get; }
-    DbSet<ProductTypeEntity> ProductTypes { get; }
+    DbSet<ProductType> ProductTypes { get; }
     // Add other required DbSets
 
     // Generic entity methods
