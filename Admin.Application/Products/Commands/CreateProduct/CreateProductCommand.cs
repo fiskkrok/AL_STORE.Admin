@@ -78,9 +78,25 @@ public class CreateProductCommandHandler : CommandHandler<CreateProductCommand, 
                         new Error("SubCategory.NotFound", $"SubCategory with ID {command.SubCategoryId} was not found"));
             }
 
-            // Create product using mapper
-            var product = _mapper.Map<Product>(command);
+            // Set up mapping context with current user
+            var mappingContext = new Dictionary<string, object>
+            {
+                { "CurrentUser", _currentUser.Id ?? "system" }
+            };
 
+            // Create product using mapper with context
+            var product = _mapper.Map<Product>(command, opts =>
+                opts.Items["CurrentUser"] = _currentUser.Id ?? "system");
+            // Manually handle Seo if it exists in the command
+            if (command.Seo != null)
+            {
+                var productSeo = ProductSeo.Create(
+                    command.Seo.Title,
+                    command.Seo.Description,
+                    command.Seo.Keywords ?? new List<string>()
+                );
+                product.UpdateSeo(productSeo, _currentUser.Id);
+            }
             // Add product to DbContext
             _dbContext.Products.Add(product);
 
@@ -93,7 +109,7 @@ public class CreateProductCommandHandler : CommandHandler<CreateProductCommand, 
         }
         catch (Exception ex) when (ex is not ValidationException)
         {
-            Logger.LogError(ex, "Error creating product");
+            Logger.LogError(ex, "Error creating product: {ErrorMessage}", ex.Message);
             return Result<Guid>.Failure(
                 new Error("Product.CreateFailed", "Failed to create product due to an unexpected error"));
         }

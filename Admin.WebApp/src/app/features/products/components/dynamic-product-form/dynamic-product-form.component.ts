@@ -23,6 +23,7 @@ import { ProductType } from '../../../../shared/models/product-type.model';
 import { CategoryService } from '../../../../core/services/category.service';
 import { ProductImageManagerComponent } from '../../product-image-manager/product-image-manager.component';
 import { Currency } from '../../../../shared/models/currency.enum';
+import { environment } from 'src/environments/environment';
 
 interface ProductFormModel {
   basicInfo: {
@@ -464,6 +465,11 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
     this.initPricingFields();
     this.initSeoFields();
 
+    // Try to load saved form data if it exists
+    if (!environment.production) {
+      this.loadSavedFormData();
+    }
+
     // If we're in edit mode (check for route param)
     // this.route.paramMap.pipe(
     //   takeUntil(this.destroy$),
@@ -855,29 +861,40 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
     // Create or update product
     const request$ = this.isEditMode && this.productId
       ? this.productService.updateProduct({ id: this.productId(), ...productData })
-      : this.productService.createProduct(productData);
+      : this.productService.createProduct(productData); request$.pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isSubmitting = false;
+        })
+      ).subscribe({
+        next: () => {
+          const action = this.isEditMode ? 'updated' : 'created';
+          this.snackBar.open(`Product ${action} successfully`, 'Close', {
+            duration: 3000
+          });
 
-    request$.pipe(
-      takeUntil(this.destroy$),
-      finalize(() => {
-        this.isSubmitting = false;
-      })
-    ).subscribe({
-      next: () => {
-        const action = this.isEditMode ? 'updated' : 'created';
-        this.snackBar.open(`Product ${action} successfully`, 'Close', {
-          duration: 3000
-        });
-        this.router.navigate(['/products/list']);
-      },
-      error: (error) => {
-        this.errorService.addError({
-          code: 'PRODUCT_SUBMISSION_ERROR',
-          message: `Failed to ${this.isEditMode ? 'update' : 'create'} product: ${error.message}`,
-          severity: 'error'
-        });
-      }
-    });
+          // Clear any saved form data on successful submission
+          this.clearSavedFormData();
+
+          this.router.navigate(['/products/list']);
+        },
+        error: (error) => {
+          // On error, keep the form data and don't navigate away
+          this.errorService.addError({
+            code: 'PRODUCT_SUBMISSION_ERROR',
+            message: `Failed to ${this.isEditMode ? 'update' : 'create'} product: ${error.message}`,
+            severity: 'error'
+          });
+
+          // Save form data to session storage as a backup
+          if (!environment.production) {
+            this.saveFormData();
+            this.snackBar.open('Your data has been preserved. You can continue editing.', 'OK', {
+              duration: 5000
+            });
+          }
+        }
+      });
   }
 
   private validateAllForms(): boolean {
@@ -1029,6 +1046,106 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
         isbn: this.model.attributes['isbn'],
         pages: this.model.attributes['pages']
       };
+    }
+  }
+
+  /**
+   * Save the current form data to session storage
+   * This is used to preserve data during development when backend errors occur
+   */
+  private saveFormData(): void {
+    try {
+      const formData = {
+        basicInfo: this.basicInfoForm.value,
+        pricing: this.pricingForm.value,
+        attributes: this.attributesForm.value,
+        seo: this.seoForm.value,
+        images: this.model.images,
+        status: this.model.status,
+        visibility: this.model.visibility,
+        timestamp: new Date().toISOString(),
+      };
+      sessionStorage.setItem('product_form_backup', JSON.stringify(formData));
+      console.log('Product form data saved to session storage');
+    } catch (error) {
+      console.error('Failed to save form data to session storage', error);
+    }
+  }
+
+  /**
+   * Load saved form data from session storage
+   * Returns true if data was loaded successfully
+   */
+  private loadSavedFormData(): boolean {
+    try {
+      const savedData = sessionStorage.getItem('product_form_backup');
+      if (!savedData) return false;
+
+      const formData = JSON.parse(savedData);
+
+      // Check if the saved data is still relevant (e.g., not too old)
+      const savedTime = new Date(formData.timestamp);
+      const currentTime = new Date();
+      const hoursSinceLastSave = (currentTime.getTime() - savedTime.getTime()) / (1000 * 60 * 60);
+
+      // Only load data if it's less than 12 hours old
+      if (hoursSinceLastSave > 12) {
+        this.clearSavedFormData();
+        return false;
+      }
+
+      // Update the model with saved data
+      if (formData.basicInfo) {
+        this.model.basicInfo = { ...this.model.basicInfo, ...formData.basicInfo };
+        this.basicInfoForm.patchValue(formData.basicInfo);
+      }
+
+      if (formData.pricing) {
+        this.model.pricing = { ...this.model.pricing, ...formData.pricing };
+        this.pricingForm.patchValue(formData.pricing);
+      }
+
+      if (formData.attributes) {
+        this.model.attributes = { ...formData.attributes };
+        this.attributesForm.patchValue(formData.attributes);
+      }
+
+      if (formData.seo) {
+        this.model.seo = formData.seo;
+        this.seoForm.patchValue(formData.seo);
+      }
+
+      if (formData.images && Array.isArray(formData.images)) {
+        this.model.images = formData.images;
+      }
+
+      if (formData.status) {
+        this.model.status = formData.status;
+      }
+
+      if (formData.visibility) {
+        this.model.visibility = formData.visibility;
+      }
+
+      this.snackBar.open('Form data has been restored from a previous session', 'Dismiss', {
+        duration: 5000
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to load form data from session storage', error);
+      return false;
+    }
+  }
+
+  /**
+   * Clear any saved form data from session storage
+   */
+  private clearSavedFormData(): void {
+    try {
+      sessionStorage.removeItem('product_form_backup');
+    } catch (error) {
+      console.error('Failed to clear form data from session storage', error);
     }
   }
 

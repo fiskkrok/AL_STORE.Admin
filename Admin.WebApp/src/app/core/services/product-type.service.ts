@@ -16,25 +16,34 @@ export class ProductTypeService {
 
     constructor(private http: HttpClient) { }
 
-    getProductTypes(): Observable<ProductType[]> {
-        // if (!this.cachedProductTypes) {
-        //     this.cachedProductTypes = this.http.get<ProductType[]>(this.apiUrl).pipe(
-        //         catchError(error => {
-        //             console.error('Error fetching product types:', error);
-        //             // Fallback to local static types if API fails
-        //             return of(this.getStaticProductTypes());
-        //         }),
-        //         shareReplay(1)
-        //     );
-        // }
-        // return this.cachedProductTypes;
-        if (!this.cachedProductTypes) {
-            // Always use static product types instead of API call
-            this.cachedProductTypes = of(this.getStaticProductTypes()).pipe(
+    getProductTypes(forceRefresh: boolean = false): Observable<ProductType[]> {
+        if (!this.cachedProductTypes || forceRefresh || this.cacheExpired()) {
+            this.cachedProductTypes = this.http.get<ProductType[]>(this.apiUrl, {
+                headers: {
+                    'api-version': '1.0'
+                }
+            }).pipe(
+                map(types => types.map(type => ({
+                    ...type,
+                    formConfig: this.generateFormConfigFromAttributes(type.attributes)
+                }))),
+                tap(() => {
+                    this.lastCacheUpdate = Date.now();
+                }),
+                catchError(error => {
+                    console.error('Error fetching product types:', error);
+                    return of(this.getStaticProductTypes());
+                }),
                 shareReplay(1)
             );
         }
         return this.cachedProductTypes;
+    }
+
+    private cacheExpired(): boolean {
+        const now = Date.now();
+        const cacheLifetime = environment.cache.productTypesTTL || 3600000; // 1 hour default
+        return this.lastCacheUpdate + cacheLifetime < now;
     }
 
     getProductTypeById(id: string): Observable<ProductType | undefined> {

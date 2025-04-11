@@ -97,10 +97,37 @@ public class Product : AuditableEntity
         get => field;
         private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(Barcode));
     }
-    public string? LowStockThreshold
+    public int? LowStockThreshold
     {
         get => field;
-        private set => field = Guard.Against.NullOrWhiteSpace(value, nameof(LowStockThreshold));
+        private set => field = Guard.Against.Null(value, nameof(LowStockThreshold));
+    }
+    public void UpdateShortDescription(string? shortDescription, string? modifiedBy = null)
+    {
+        if (ShortDescription == shortDescription) return;
+        ShortDescription = shortDescription;
+        SetModified(modifiedBy);
+    }
+
+    public void UpdateBarcode(string? barcode, string? modifiedBy = null)
+    {
+        if (Barcode == barcode) return;
+        Barcode = barcode;
+        SetModified(modifiedBy);
+    }
+
+    public void UpdateLowStockThreshold(int? threshold, string? modifiedBy = null)
+    {
+        if (LowStockThreshold == threshold) return;
+        LowStockThreshold = threshold;
+        SetModified(modifiedBy);
+    }
+
+    public void UpdateCompareAtPrice(Money? compareAtPrice, string? modifiedBy = null)
+    {
+        if (CompareAtPrice == compareAtPrice) return;
+        _compareAtPrice = compareAtPrice?.Amount;
+        SetModified(modifiedBy);
     }
     // Complex properties still using explicit backing fields
     public Money Price => Money.From(_price, _currency);

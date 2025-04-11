@@ -1,4 +1,5 @@
 ﻿// Admin.Application/Products/Queries/GetProductTypesQuery.cs
+using Admin.Application.Common.Interfaces;
 using Admin.Application.Common.Models;
 using Admin.Application.Products.DTOs;
 
@@ -13,26 +14,32 @@ public record GetProductTypesQuery : IRequest<Result<List<ProductTypeDto>>>;
 public class GetProductTypesQueryHandler : IRequestHandler<GetProductTypesQuery, Result<List<ProductTypeDto>>>
 {
     private readonly ILogger<GetProductTypesQueryHandler> _logger;
-
-    public GetProductTypesQueryHandler(ILogger<GetProductTypesQueryHandler> logger)
+    private readonly ICacheService _cacheService;
+    public GetProductTypesQueryHandler(ILogger<GetProductTypesQueryHandler> logger, ICacheService cacheService)
     {
         _logger = logger;
+        _cacheService = cacheService;
     }
-
-    public Task<Result<List<ProductTypeDto>>> Handle(GetProductTypesQuery request, CancellationToken cancellationToken)
+    private const string CacheKey = "product:types:all";
+    public async Task<Result<List<ProductTypeDto>>> Handle(GetProductTypesQuery request, CancellationToken cancellationToken)
     {
         try
         {
+            var cached = await _cacheService.GetAsync<List<ProductTypeDto>>(CacheKey, cancellationToken);
+            if (cached != null)
+            {
+                return Result<List<ProductTypeDto>>.Success(cached);
+            }
             // For now, we'll return a static list of product types
             // In a real application, you would fetch this from a database or configuration
             var productTypes = GetPredefinedProductTypes();
-
-            return Task.FromResult(Result<List<ProductTypeDto>>.Success(productTypes));
+            await _cacheService.SetAsync(CacheKey, productTypes, TimeSpan.FromHours(1), cancellationToken);
+            return await Task.FromResult(Result<List<ProductTypeDto>>.Success(productTypes));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving product types");
-            return Task.FromResult(Result<List<ProductTypeDto>>.Failure(
+            return await Task.FromResult(Result<List<ProductTypeDto>>.Failure(
                 new Error("ProductTypes.GetFailed", "Failed to retrieve product types")));
         }
     }

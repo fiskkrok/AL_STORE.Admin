@@ -38,62 +38,106 @@ public class ProductMappingProfile : Profile
                 Attributes = [],
                 Tags = []
             });
-
-        // Add mapping for CreateProductCommand to Product
+        CreateMap<ProductSeoDto, ProductSeo>()
+            .ConstructUsing(src => ProductSeo.Create(
+                src.Title,
+                src.Description,
+                src.Keywords ?? new List<string>()
+            ));
         CreateMap<CreateProductCommand, Product>()
-            .ForMember(dest => dest.CompareAtPrice, opt =>
-                opt.MapFrom(src =>
-                    src.CompareAtPrice.HasValue
-                        ? Money.From(src.CompareAtPrice.Value, src.Currency)
-                        : null)) // Use Money.From method
-            .ForMember(dest => dest.Status, opt =>
-                opt.MapFrom(src => Enum.Parse<ProductStatus>(src.Status, true)))
-            .ForMember(dest => dest.Visibility, opt =>
-                opt.MapFrom(src => Enum.Parse<ProductVisibility>(src.Visibility, true)))
-            .ForMember(dest => dest.Seo, opt =>
-                opt.MapFrom(src =>
-                    src.Seo != null
-                        ? ProductSeo.Create(src.Seo.Title, src.Seo.Description, src.Seo.Keywords)
-                        : null)) // Use ProductSeo.Create method
-            .ForMember(dest => dest.Dimensions, opt =>
-                opt.MapFrom(src =>
-                    src.Dimensions != null
-                        ? ProductDimensions.Create(src.Dimensions.Weight, src.Dimensions.Width, src.Dimensions.Height,
-                            src.Dimensions.Length, src.Dimensions.Unit)
-                        : null))
-            .ForMember(dest => dest.LowStockThreshold, opt => opt.MapFrom(src => src.LowStockThreshold))
-            .ForMember(dest => dest.Barcode, opt => opt.MapFrom(src => src.Barcode))
-            .ForMember(dest => dest.ShortDescription, opt => opt.MapFrom(src => src.ShortDescription))
-            .IgnoreAllPropertiesWithAnInaccessibleSetter()
+            .ConstructUsing((src, ctx) => new Product(
+                name: src.Name,
+                description: src.Description,
+                price: src.Price,
+                currency: src.Currency,
+                sku: src.Sku,
+                stock: src.Stock,
+                categoryId: src.CategoryId,
+                subCategoryId: src.SubCategoryId,
+                createdBy: ctx.Items.ContainsKey("CurrentUser") ? ctx.Items["CurrentUser"] as string : null
+            ))
+            .ForMember(dest => dest.Seo, opt => opt.Ignore())
+            .ForMember(dest => dest.Dimensions, opt => opt.Ignore())
+            .ForMember(dest => dest.ShortDescription, opt => opt.Ignore())
+            .ForMember(dest => dest.Barcode, opt => opt.Ignore())
+            .ForMember(dest => dest.LowStockThreshold, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.Visibility, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore())
             .ForMember(dest => dest.Variants, opt => opt.Ignore())
             .ForMember(dest => dest.Attributes, opt => opt.Ignore())
-            .ForMember(dest => dest.Tags, opt => opt.Ignore()) // Ignore direct mapping
-            .AfterMap((src, dest) =>
+            .ForMember(dest => dest.Tags, opt => opt.Ignore())
+            // Use AfterMap to properly set all the properties with private setters
+            .AfterMap((src, dest, ctx) =>
             {
-                // Add images through the proper domain method
-                foreach (var image in src.Images ?? Enumerable.Empty<ProductImageDto>())
-                {
-                    dest.AddImage(image.Url, image.FileName, image.Size);
-                }
+                string? currentUserId = ctx.Items.ContainsKey("CurrentUser")
+                    ? ctx.Items["CurrentUser"] as string
+                    : null;
 
-                foreach (var var in src.Variants ?? Enumerable.Empty<ProductVariantDto>())
-                {
-                    dest.AddVariant(new ProductVariant(var.Sku, var.Price, var.Currency, var.Stock, var.ProductId, var.LowStockThreshold, var.CompareAtPrice, var.CostPrice, var.Barcode));
-                }
-                // Add attributes
-                foreach (var Attributes in src.Attributes ?? Enumerable.Empty<ProductAttributeDto>())
-                {
-                    dest.AddAttribute(ProductAttribute.Create(Attributes.Name, Attributes.Value, Attributes.Type));
-                }
+                // Handle ShortDescription, Barcode, LowStockThreshold
+                if (src.ShortDescription != null)
+                    dest.UpdateShortDescription(src.ShortDescription, currentUserId);
 
-                // Add tags
-                foreach (var tag in src.Tags ?? Enumerable.Empty<string>())
-                {
-                    dest.AddTag(tag );
-                }
+                if (src.Barcode != null)
+                    dest.UpdateBarcode(src.Barcode, currentUserId);
 
-            }); 
+                if (src.LowStockThreshold.HasValue)
+                    dest.UpdateLowStockThreshold(src.LowStockThreshold, currentUserId);
+
+                // Status and Visibility
+                dest.UpdateStatus(Enum.Parse<ProductStatus>(src.Status, true), currentUserId);
+                dest.UpdateVisibility(Enum.Parse<ProductVisibility>(src.Visibility, true), currentUserId);
+
+                // Handle CompareAtPrice
+                if (src.CompareAtPrice.HasValue)
+                    dest.UpdateCompareAtPrice(Money.From(src.CompareAtPrice.Value, src.Currency), currentUserId);
+
+                // Handle Seo fields
+                if (src.Seo != null)
+                    dest.UpdateSeo(ProductSeo.Create(src.Seo.Title, src.Seo.Description, src.Seo.Keywords),
+                        currentUserId);
+
+                // Handle Dimensions
+                if (src.Dimensions != null)
+                    dest.UpdateDimensions(
+                        ProductDimensions.Create(
+                            src.Dimensions.Weight,
+                            src.Dimensions.Width,
+                            src.Dimensions.Height,
+                            src.Dimensions.Length,
+                            src.Dimensions.Unit
+                        ),
+                        currentUserId
+                    );
+
+                // Add images, variants, attributes, and tags
+                foreach (var image in src.Images)
+                    dest.AddImage(image.Url, image.FileName, image.Size, currentUserId);
+
+                foreach (var variant in src.Variants)
+                    dest.AddVariant(new ProductVariant(
+                        variant.Sku,
+                        variant.Price,
+                        variant.Currency,
+                        variant.Stock,
+                        dest.Id, // Use the Product's ID
+                        variant.LowStockThreshold,
+                        variant.CompareAtPrice,
+                        variant.CostPrice,
+                        variant.Barcode
+                    ));
+
+                foreach (var attr in src.Attributes)
+                    dest.AddAttribute(ProductAttribute.Create(attr.Name, attr.Value, attr.Type), currentUserId);
+
+                foreach (var tag in src.Tags)
+                    dest.AddTag(tag, currentUserId);
+            });
+    //.IgnoreMember(dest => dest.Images)
+    //.IgnoreMember(dest => dest.Variants)
+    //.IgnoreMember(dest => dest.Attributes)
+    //.IgnoreMember(dest => dest.Tags);
+
 
         // Rest of the mappings remain the same
         CreateMap<Category, CategoryDto>();

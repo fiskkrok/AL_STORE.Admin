@@ -68,6 +68,14 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasForeignKey(p => p.SubCategoryId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(x => x.ShortDescription)
+            .HasMaxLength(500);
+
+        builder.Property(x => x.Barcode)
+            .HasMaxLength(100);
+
+        builder.Property(x => x.LowStockThreshold)
+            .HasColumnName("LowStockThreshold"); 
 
         // Collections
         builder.HasMany(x => x.Images)
