@@ -1,5 +1,5 @@
 // src/app/features/products/components/stock-management/stock-management.component.ts
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
@@ -66,7 +66,7 @@ import { StockAdjustmentDialogComponent } from './stock-adjustment-dialog.compon
     `,
     styles: []
 })
-export class StockManagementComponent {
+export class StockManagementComponent implements OnInit {
     @Input() product!: Product;
     stock$: Observable<StockItem | undefined> | undefined;
 

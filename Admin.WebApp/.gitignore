@@ -47,3 +47,5 @@ angular.json
 angular.json
 package-lock.json
 package-lock.json
+
+*storybook.log

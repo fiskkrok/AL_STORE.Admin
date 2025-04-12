@@ -25,7 +25,7 @@ public class AdminDbContext : DbContext, IApplicationDbContext, IUnitOfWork
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
-    public DbSet<ProductType> ProductTypes { get; }
+    public DbSet<ProductType> ProductTypes => Set<ProductType>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<User> Users => Set<User>();

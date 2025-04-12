@@ -60,6 +60,7 @@ public static class DatabaseServicesConfiguration
     {
         services.AddScoped<ICategorySeeder, CategoryDbSeeder>();
         services.AddScoped<IProductSeeder, ProductDbSeeder>();
+        services.AddScoped<IProductTypeSeeder, ProductTypeDbSeeder>();
         services.AddScoped<IDbSeeder, MainDbSeeder>();
     }
 }

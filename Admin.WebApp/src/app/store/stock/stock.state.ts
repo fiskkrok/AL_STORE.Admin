@@ -1,5 +1,5 @@
 // src/app/store/stock/stock.state.ts
-import { StockItem, StockReservation } from '../../shared/models/stock.model';
+import { StockItem } from '../../shared/models/stock.model';
 
 export interface StockState {
     items: Record<string, StockItem>;

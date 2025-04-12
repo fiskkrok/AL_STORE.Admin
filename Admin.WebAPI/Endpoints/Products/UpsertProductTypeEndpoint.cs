@@ -41,17 +41,18 @@ public class UpsertProductTypeEndpoint : Endpoint<UpsertProductTypeCommand, IRes
 
             if (result.IsSuccess)
             {
-                await SendOkAsync(new { id = result.Value }, ct);
+                await SendAsync(Results.Ok(new { id = result.Value }), cancellation: ct);
             }
             else
             {
-                await SendErrorsAsync(400, new[] { result.Error?.Message ?? "Failed to save product type" }, ct);
+                // Adjusted to use the correct overload of SendErrorsAsync
+                await SendErrorsAsync( statusCode: 400, ct);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in upsert product type endpoint");
-            await SendErrorsAsync(500, new[] { "An unexpected error occurred" }, ct);
+            await SendErrorsAsync( statusCode: 500, ct);
         }
     }
 }

@@ -33,13 +33,13 @@ public class GetProductTypeByIdEndpoint : Endpoint<GetProductTypeByIdRequest, IR
         var query = new GetProductTypeByIdQuery(req.Id);
         var result = await _mediator.Send(query, ct);
 
-        if (result.IsSuccess)
+        if (result.IsSuccess && result.Value is not null)
         {
-            await SendOkAsync(result.Value, ct);
+            await SendAsync(Results.Ok(result.Value), cancellation: ct); // Use Results.Ok to create an IResult
         }
         else
         {
-            await SendNotFoundAsync(ct);
+            await SendAsync(Results.NotFound(), cancellation: ct); // Use Results.NotFound to create an IResult
         }
     }
 }

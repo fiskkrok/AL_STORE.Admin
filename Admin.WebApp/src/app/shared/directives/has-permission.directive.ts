@@ -1,5 +1,5 @@
 // has-permission.directive.ts
-import { Directive, Input, OnInit, TemplateRef, ViewContainerRef } from '@angular/core';
+import { Directive, Input, OnInit, TemplateRef, ViewContainerRef, OnDestroy } from '@angular/core';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -7,7 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
     selector: '[appHasPermission]',
     standalone: true
 })
-export class HasPermissionDirective implements OnInit {
+export class HasPermissionDirective implements OnInit, OnDestroy {
     @Input('appHasPermission') permission!: string;
 
     private destroy$ = new Subject<void>();

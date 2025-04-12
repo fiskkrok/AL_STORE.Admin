@@ -71,6 +71,8 @@ export const environment = {
     // Cache Configuration
     cache: {
         defaultTTL: 300, // 5 minutes
-        productsTTL: 600 // 10 minutes
+        productsTTL: 600, // 10 minutes
+        productTypesTTL: 600, // 10 minutes
+        categoriesTTL: 600, // 10 minutes
     }
 };

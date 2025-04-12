@@ -8,10 +8,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { Store } from '@ngrx/store';
-import { Order } from 'src/app/shared/models/orders/order.model';
 import { OrderActions } from 'src/app/store/order/order.actions';
 import { StatusBadgeComponent } from 'src/app/shared/components/badges/status-badge.component';
 import { AddPaymentDialogComponent } from '../add-payment-dialog/add-payment-dialog.component';
+import { Order } from 'src/app/shared/models/order.model';
 
 @Component({
     selector: 'app-order-details-dialog',

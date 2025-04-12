@@ -14,3 +14,8 @@ public interface IProductSeeder
 {
     Task SeedAsync();
 }
+public interface IProductTypeSeeder
+{
+    Task SeedAsync();
+}
+

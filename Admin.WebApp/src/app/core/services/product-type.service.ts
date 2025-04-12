@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { catchError, map, shareReplay, tap } from 'rxjs/operators';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { ProductType, ProductTypeAttribute } from '../../shared/models/product-type.model';
 import { environment } from '../../../environments/environment';
@@ -13,8 +13,9 @@ import { environment } from '../../../environments/environment';
 export class ProductTypeService {
     private readonly apiUrl = `${environment.apiUrls.admin.products}/types`;
     private cachedProductTypes: Observable<ProductType[]> | null = null;
+    private lastCacheUpdate: number = 0; // Add this line
 
-    constructor(private http: HttpClient) { }
+    constructor(private readonly http: HttpClient) { } // Add readonly here
 
     getProductTypes(forceRefresh: boolean = false): Observable<ProductType[]> {
         if (!this.cachedProductTypes || forceRefresh || this.cacheExpired()) {
@@ -28,7 +29,7 @@ export class ProductTypeService {
                     formConfig: this.generateFormConfigFromAttributes(type.attributes)
                 }))),
                 tap(() => {
-                    this.lastCacheUpdate = Date.now();
+                    this.lastCacheUpdate = Date.now(); // This line will now work
                 }),
                 catchError(error => {
                     console.error('Error fetching product types:', error);
@@ -43,7 +44,8 @@ export class ProductTypeService {
     private cacheExpired(): boolean {
         const now = Date.now();
         const cacheLifetime = environment.cache.productTypesTTL || 3600000; // 1 hour default
-        return this.lastCacheUpdate + cacheLifetime < now;
+        // Check if lastCacheUpdate is 0 (never updated) or if the cache lifetime has passed
+        return this.lastCacheUpdate === 0 || (this.lastCacheUpdate + cacheLifetime < now); // This line will now work
     }
 
     getProductTypeById(id: string): Observable<ProductType | undefined> {

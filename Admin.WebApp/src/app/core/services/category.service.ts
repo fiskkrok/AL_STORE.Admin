@@ -1,5 +1,5 @@
 // src/app/core/services/category.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, shareReplay } from 'rxjs/operators';
@@ -18,7 +18,7 @@ import { AuthService } from './auth.service';
 @Injectable({
     providedIn: 'root'
 })
-export class CategoryService {
+export class CategoryService implements OnDestroy {
     private readonly apiUrl = environment.apiUrls.admin.categories;
     private hubConnection: signalR.HubConnection | undefined;
     private readonly authService = inject(AuthService);
