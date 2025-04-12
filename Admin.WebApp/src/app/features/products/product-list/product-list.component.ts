@@ -1,8 +1,8 @@
 // src/app/features/products/product-list/product-list.component.ts
-import { Component, OnInit, OnDestroy, signal, viewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, viewChild, inject } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil, startWith } from 'rxjs/operators';
@@ -16,7 +16,6 @@ import {
 } from '../../../store/product/product.selectors';
 import { DialogService } from '../../../core/services/dialog.service';
 import { MatDialog } from '@angular/material/dialog';
-import { EditProductDialogComponent } from '../../../shared/components/dialog/edit-product-dialog/edit-product-dialog.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -78,19 +77,18 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
     categories = signal<{ id: string, name: string }[]>([]);
 
-    constructor(
-        private readonly store: Store,
-        private readonly dialogService: DialogService,
-        private readonly matDialog: MatDialog,
-        private readonly productService: ProductService,
-        private readonly errorService: ErrorService
-    ) {
+    private readonly store = inject(Store);
+    private readonly router = inject(Router);
+    private readonly dialogService = inject(DialogService);
+    private readonly matDialog = inject(MatDialog);
+    private readonly productService = inject(ProductService);
+    private readonly errorService = inject(ErrorService);
+    constructor() {
         this.products$ = this.store.select(selectAllProducts);
         this.loading$ = this.store.select(selectProductsLoading);
         this.error$ = this.store.select(selectProductsError);
         this.pagination$ = this.store.select(selectProductPagination);
     }
-
     ngOnInit() {
         this.initializeFilters();
         this.loadCategories();
@@ -290,29 +288,16 @@ export class ProductListComponent implements OnInit, OnDestroy {
         if (confirmed) {
             this.store.dispatch(ProductActions.deleteProduct({ id: product.id }));
         }
-    }
-
-    editProduct(product: Product, event?: Event) {
+    } editProduct(product: Product, event?: Event) {
         // Stop event propagation if event is provided
         if (event) {
             event.stopPropagation();
         }
 
+        // Instead of opening a dialog, navigate to the dynamic product form in edit mode
+        this.router.navigate(['/products/edit', product.id]);
+
+        // Store the selected product in the state for potential use
         this.store.dispatch(ProductActions.selectProduct({ product }));
-
-        const dialogRef = this.matDialog.open(EditProductDialogComponent, {
-            width: '600px',
-            data: product
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                this.store.dispatch(ProductActions.updateProduct({
-                    id: product.id,
-                    product: result
-                }));
-            }
-            this.store.dispatch(ProductActions.clearSelectedProduct());
-        });
     }
 }

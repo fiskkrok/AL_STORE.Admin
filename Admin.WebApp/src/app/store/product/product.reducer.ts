@@ -1,6 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
 import { ProductActions } from './product.actions';
-import { ProductState, initialProductState } from './product.state';
+import { initialProductState } from './product.state';
+
+
 
 export const productReducer = createReducer(
     initialProductState,
@@ -128,12 +130,12 @@ export const productReducer = createReducer(
     // Selection
     on(ProductActions.selectProduct, (state, { product }) => ({
         ...state,
-        selectedProduct: product
+        selectedProductId: product.id
     })),
 
     on(ProductActions.clearSelectedProduct, (state) => ({
         ...state,
-        selectedProduct: null
+        selectedProductId: null
     })),
 
     // Filters

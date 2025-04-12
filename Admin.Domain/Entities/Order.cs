@@ -203,4 +203,9 @@ public class Order : AuditableEntity
         }
         AddDomainEvent(new OrderItemAddedDomainEvent(this, product.Id, quantity));
     }
+
+    public void AddExternalReference(object source, object externalId, object externalOrderNumber)
+    {
+        throw new NotImplementedException();
+    }
 }

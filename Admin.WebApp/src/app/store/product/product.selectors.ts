@@ -13,6 +13,11 @@ export const selectSelectedProduct = createSelector(
     state => state.selectedProduct
 );
 
+export const selectSelectedProductId = createSelector(
+    selectProductState,
+    (state) => state.selectedProduct?.id
+);
+
 export const selectProductsLoading = createSelector(
     selectProductState,
     state => state.loading

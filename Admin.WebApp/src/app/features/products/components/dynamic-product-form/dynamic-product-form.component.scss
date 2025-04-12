@@ -1,0 +1,93 @@
+.product-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.step-content {
+    margin: 1.5rem 0;
+    max-width: 800px;
+}
+
+.step-description {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.full-width {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.step-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.product-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.summary-section {
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.summary-section h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.summary-images {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.summary-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.summary-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.more-images {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: #eee;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.final-actions {
+    justify-content: space-between;
+}
+
+.spin {
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

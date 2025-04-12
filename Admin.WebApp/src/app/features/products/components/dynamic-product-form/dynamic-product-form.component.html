@@ -1,0 +1,210 @@
+<div class="product-form-container">
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>{{ isEditMode() ? 'Edit Product' : 'Add New Product' }}</mat-card-title>
+            <mat-card-subtitle>
+                Fill in the details to {{ isEditMode() ? 'update' : 'create' }} your product
+            </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+            <mat-stepper linear #stepper>
+                <!-- Step 1: Basic Product Information -->
+                <mat-step [stepControl]="basicInfoForm">
+                    <ng-template matStepLabel>Basic Information</ng-template>
+
+                    <div class="step-content">
+                        <h3>Basic Product Details</h3>
+
+                        <!-- Product Type Selection -->
+                        <mat-form-field appearance="fill" class="full-width">
+                            <mat-label>Product Type</mat-label>
+                            <mat-select [value]="selectedProductType()?.id"
+                                (selectionChange)="onProductTypeChange($event.value)">
+                                <mat-option *ngFor="let type of productTypes()" [value]="type.id">
+                                    {{ type.name }}
+                                </mat-option>
+                            </mat-select>
+                            <mat-hint class="text-xs text-orange-500">Select a product type to load relevant
+                                fields</mat-hint>
+                        </mat-form-field>
+
+                        <!-- Basic Info Form -->
+                        <form [formGroup]="basicInfoForm">
+                            <formly-form [form]="basicInfoForm" [fields]="basicInfoFields()" [model]="model.basicInfo">
+                            </formly-form>
+                        </form>
+
+                        <div class="step-actions">
+                            <button mat-button matStepperNext color="primary" [disabled]="!basicInfoForm.valid">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </mat-step>
+
+                <!-- Step 2: Pricing & Inventory -->
+                <mat-step [stepControl]="pricingForm">
+                    <ng-template matStepLabel>Pricing & Inventory</ng-template>
+
+                    <div class="step-content">
+                        <h3>Pricing & Stock Information</h3>
+
+                        <form [formGroup]="pricingForm">
+                            <formly-form [form]="pricingForm" [fields]="pricingFields()" [model]="model.pricing">
+                            </formly-form>
+                        </form>
+
+                        <div class="step-actions">
+                            <button mat-button matStepperPrevious>Back</button>
+                            <button mat-button matStepperNext color="primary" [disabled]="!pricingForm.valid">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </mat-step>
+
+                <!-- Step 3: Product Attributes (Dynamic based on product type) -->
+                <mat-step [stepControl]="attributesForm" *ngIf="hasAttributes()">
+                    <ng-template matStepLabel>Attributes</ng-template>
+
+                    <div class="step-content">
+                        <h3>Product Attributes</h3>
+                        <p class="step-description">
+                            Configure specific attributes for {{ selectedProductType()?.name }}
+                        </p>
+
+                        <form [formGroup]="attributesForm">
+                            <formly-form [form]="attributesForm" [fields]="attributesFields()"
+                                [model]="model.attributes">
+                            </formly-form>
+                        </form>
+
+                        <div class="step-actions">
+                            <button mat-button matStepperPrevious>Back</button>
+                            <button mat-button matStepperNext color="primary" [disabled]="!attributesForm.valid">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </mat-step>
+
+                <!-- Step 4: Images -->
+                <mat-step>
+                    <ng-template matStepLabel>Images</ng-template>
+
+                    <div class="step-content">
+                        <h3>Product Images</h3>
+                        <p class="step-description">
+                            Upload and manage product images. The first image will be used as the primary display image.
+                        </p>
+
+                        <app-product-image-manager [images]="model.images" (imagesChange)="onImagesChange($event)">
+                        </app-product-image-manager>
+
+                        <div class="step-actions">
+                            <button mat-button matStepperPrevious>Back</button>
+                            <button mat-button matStepperNext color="primary" [disabled]="model.images.length === 0">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </mat-step>
+
+                <!-- Step 5: SEO & Visibility -->
+                <mat-step [stepControl]="seoForm">
+                    <ng-template matStepLabel>SEO & Visibility</ng-template>
+
+                    <div class="step-content">
+                        <h3>SEO Settings & Visibility</h3>
+
+                        <form [formGroup]="seoForm">
+                            <formly-form [form]="seoForm" [fields]="seoFields()" [model]="model">
+                            </formly-form>
+                        </form>
+
+                        <div class="step-actions">
+                            <button mat-button matStepperPrevious>Back</button>
+                            <button mat-button matStepperNext color="primary" [disabled]="!seoForm.valid">
+                                Review
+                            </button>
+                        </div>
+                    </div>
+                </mat-step>
+
+                <!-- Step 6: Review & Submit -->
+                <mat-step>
+                    <ng-template matStepLabel>Review & Submit</ng-template>
+
+                    <div class="step-content">
+                        <h3>Review Product Information</h3>
+                        <p class="step-description">
+                            Please review all information before submitting.
+                        </p>
+
+                        <div class="product-summary">
+                            <div class="summary-section bg-slate-100 dark:bg-slate-800">
+                                <h4>Basic Information</h4>
+                                <p><strong>Name:</strong> {{ model.basicInfo.name }}</p>
+                                <p><strong>Type:</strong> {{ selectedProductType()?.name }}</p>
+                                <p><strong>SKU:</strong> {{ model.basicInfo.sku }}</p>
+                                <p *ngIf="model.basicInfo.barcode"><strong>Barcode:</strong> {{ model.basicInfo.barcode
+                                    }}</p>
+                            </div>
+
+                            <div class="summary-section bg-slate-100 dark:bg-slate-800">
+                                <h4>Pricing & Inventory</h4>
+                                <p><strong>Price:</strong> {{ model.pricing.price | currency:model.pricing.currency }}
+                                </p>
+                                <p *ngIf="model.pricing.compareAtPrice">
+                                    <strong>Compare At:</strong> {{ model.pricing.compareAtPrice |
+                                    currency:model.pricing.currency }}
+                                </p>
+                                <p><strong>Stock:</strong> {{ model.pricing.stock }}</p>
+                            </div>
+
+                            <div class="summary-section bg-slate-100 dark:bg-slate-800" *ngIf="hasAttributes()">
+                                <h4>Attributes</h4>
+                                <p *ngFor="let field of attributesFields()">
+                                    <strong>{{ field.props?.label }}:</strong>
+                                    {{ formatAttributeValue(field.key ?? "", model.attributes[getKeyAsString(field.key
+                                    ?? "")]) }}
+                                </p>
+                            </div>
+
+                            <div class="summary-section bg-slate-100 dark:bg-slate-800">
+                                <h4>Images</h4>
+                                <div class="summary-images">
+                                    <div *ngFor="let image of model.images.slice(0, 3)" class="summary-image">
+                                        <img [src]="image.url" [alt]="image.fileName">
+                                    </div>
+                                    <div *ngIf="model.images.length > 3" class="more-images">
+                                        +{{ model.images.length - 3 }} more
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="summary-section bg-slate-100 dark:bg-slate-800">
+                                <h4>Visibility</h4>
+                                <p><strong>Status:</strong> {{ formatEnumValue(model.status) }}</p>
+                                <p><strong>Visibility:</strong> {{ formatEnumValue(model.visibility) }}</p>
+                            </div>
+                        </div>
+
+                        <div class="step-actions final-actions">
+                            <button mat-button matStepperPrevious>Back</button>
+                            <button mat-button (click)="stepper.reset()">
+                                Reset
+                            </button>
+                            <button mat-raised-button color="primary" [disabled]="!canSubmit()"
+                                (click)="submitProduct()">
+                                <mat-icon *ngIf="isSubmitting()" class="spin">sync</mat-icon>
+                                {{ isEditMode() ? 'Update' : 'Create' }} Product
+                            </button>
+                        </div>
+                    </div>
+                </mat-step>
+            </mat-stepper>
+        </mat-card-content>
+    </mat-card>
+</div>

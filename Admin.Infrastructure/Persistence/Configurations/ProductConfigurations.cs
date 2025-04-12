@@ -20,7 +20,11 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(x => x.Name)
             .HasMaxLength(200)
             .IsRequired();
-
+        builder.HasOne(p => p.ProductType)
+            .WithMany()
+            .HasForeignKey(p => p.ProductTypeId)
+            .IsRequired(false) 
+            .OnDelete(DeleteBehavior.SetNull);
         builder.Property(x => x.Description)
             .HasMaxLength(2000)
             .IsRequired();

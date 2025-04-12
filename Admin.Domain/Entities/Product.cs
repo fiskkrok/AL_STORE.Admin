@@ -35,6 +35,7 @@ public class Product : AuditableEntity
         int stock,
         Guid categoryId,
         Guid? id = null,
+        Guid? productTypeId = null,
         Guid? subCategoryId = null,
         string? createdBy = null) : base(id)
 
@@ -56,7 +57,8 @@ public class Product : AuditableEntity
         Sku = sku;
         Stock = stock;
         CategoryId = categoryId;
-
+        ProductTypeId = productTypeId;
+        SubCategoryId = subCategoryId;
         SetCreated(createdBy);
         AddDomainEvent(new ProductCreatedDomainEvent(this));
     }
@@ -102,33 +104,18 @@ public class Product : AuditableEntity
         get => field;
         private set => field = Guard.Against.Null(value, nameof(LowStockThreshold));
     }
-    public void UpdateShortDescription(string? shortDescription, string? modifiedBy = null)
-    {
-        if (ShortDescription == shortDescription) return;
-        ShortDescription = shortDescription;
-        SetModified(modifiedBy);
-    }
 
-    public void UpdateBarcode(string? barcode, string? modifiedBy = null)
+    public ProductType? ProductType
     {
-        if (Barcode == barcode) return;
-        Barcode = barcode;
-        SetModified(modifiedBy);
+        get => field;
+        private set => field = Guard.Against.Null(value, nameof(ProductType));
     }
-
-    public void UpdateLowStockThreshold(int? threshold, string? modifiedBy = null)
+    public Guid? ProductTypeId
     {
-        if (LowStockThreshold == threshold) return;
-        LowStockThreshold = threshold;
-        SetModified(modifiedBy);
+        get => field;
+        private set => field = Guard.Against.Null(value, nameof(ProductTypeId));
     }
-
-    public void UpdateCompareAtPrice(Money? compareAtPrice, string? modifiedBy = null)
-    {
-        if (CompareAtPrice == compareAtPrice) return;
-        _compareAtPrice = compareAtPrice?.Amount;
-        SetModified(modifiedBy);
-    }
+    
     // Complex properties still using explicit backing fields
     public Money Price => Money.From(_price, _currency);
     public Money? CompareAtPrice => _compareAtPrice.HasValue ? Money.From(_compareAtPrice.Value, _currency) : null;
@@ -140,14 +127,7 @@ public class Product : AuditableEntity
         get => field;
         private set => field = Guard.Against.Negative(value, nameof(Stock));
     }
-    public void SyncStockFromStockItem(StockItem stockItem)
-    {
-        if (stockItem == null || stockItem.ProductId != Id)
-            return;
-
-        // Keep the legacy Stock property synchronized
-        Stock = stockItem.CurrentStock;
-    }
+  
     public ProductStatus Status { get; private set; } = ProductStatus.Draft;
     public ProductVisibility Visibility { get; private set; } = ProductVisibility.Hidden;
     public Guid CategoryId { get; private set; }
@@ -163,17 +143,6 @@ public class Product : AuditableEntity
     public IReadOnlyCollection<ProductAttribute> Attributes => _attributes.AsReadOnly();
     public IReadOnlyCollection<string> Tags => _tags.AsReadOnly();
     public bool IsArchived { get; private set; }
-
-    public void UpdatePrice(Money newPrice, string? modifiedBy = null)
-    {
-        if (_price == newPrice.Amount && _currency == newPrice.Currency)
-            return;
-
-        _price = newPrice.Amount;
-        _currency = newPrice.Currency;
-        SetModified(modifiedBy);
-        AddDomainEvent(new ProductUpdatedDomainEvent(this));
-    }
 
     public void Update(
         string name,
@@ -216,6 +185,17 @@ public class Product : AuditableEntity
         AddDomainEvent(new ProductUpdatedDomainEvent(this));
     }
 
+
+    public void UpdatePrice(Money newPrice, string? modifiedBy = null)
+    {
+        if (_price == newPrice.Amount && _currency == newPrice.Currency)
+            return;
+
+        _price = newPrice.Amount;
+        _currency = newPrice.Currency;
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductUpdatedDomainEvent(this));
+    }
     public void UpdateStock(int newStock, string? modifiedBy = null)
     {
         Guard.Against.Negative(newStock, nameof(newStock));
@@ -228,7 +208,14 @@ public class Product : AuditableEntity
 
         AddDomainEvent(new ProductStockUpdatedDomainEvent(this, oldStock, newStock));
     }
+    public void SyncStockFromStockItem(StockItem stockItem)
+    {
+        if (stockItem == null || stockItem.ProductId != Id)
+            return;
 
+        // Keep the legacy Stock property synchronized
+        Stock = stockItem.CurrentStock;
+    }
     public void AddImage(string url, string fileName, long size, string? modifiedBy = null)
     {
         Guard.Against.NullOrWhiteSpace(url, nameof(url));
@@ -241,7 +228,44 @@ public class Product : AuditableEntity
         SetModified(modifiedBy);
         AddDomainEvent(new ProductImageAddedDomainEvent(this, image));
     }
+    public void SetProductType(ProductType? productType, string? modifiedBy = null)
+    {
+        ProductType = productType;
+        ProductTypeId = productType?.Id;
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductTypeUpdatedDomainEvent(this, productType));
+    }
+    public void UpdateShortDescription(string? shortDescription, string? modifiedBy = null)
+    {
+        if (ShortDescription == shortDescription) return;
+        ShortDescription = shortDescription;
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductShortDescriptionUpdatedDomainEvent(this, shortDescription));
+    }
 
+    public void UpdateBarcode(string? barcode, string? modifiedBy = null)
+    {
+        if (Barcode == barcode) return;
+        Barcode = barcode;
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductBarcodeUpdatedDomainEvent(this, barcode));
+    }
+
+    public void UpdateLowStockThreshold(int? threshold, string? modifiedBy = null)
+    {
+        if (LowStockThreshold == threshold) return;
+        LowStockThreshold = threshold;
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductLowStockThresholdUpdatedDomainEvent(this, threshold));
+    }
+
+    public void UpdateCompareAtPrice(Money? compareAtPrice, string? modifiedBy = null)
+    {
+        if (CompareAtPrice == compareAtPrice) return;
+        _compareAtPrice = compareAtPrice?.Amount;
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductCompareAtPriceUpdatedDomainEvent(this, compareAtPrice));
+    }
     public void RemoveImage(ProductImage image, string? modifiedBy = null)
     {
         Guard.Against.Null(image, nameof(image));
@@ -356,14 +380,19 @@ public class Product : AuditableEntity
     }
 }
 
+public record ProductBarcodeUpdatedDomainEvent(Product Product, string? Barcode) : DomainEvent;
+
+public record ProductLowStockThresholdUpdatedDomainEvent(Product Product, int? Threshold) : DomainEvent;
+
+public record ProductCompareAtPriceUpdatedDomainEvent(Product Product, Money? CompareAtPrice) : DomainEvent;
+
+public record ProductTypeUpdatedDomainEvent(Product Product, ProductType? ProductType) : DomainEvent;
+
+public record ProductShortDescriptionUpdatedDomainEvent(Product Product, string? ShortDescription) : DomainEvent;
+
 public record ProductAttributeAddedDomainEvent(Product Product, ProductAttribute Attribute) : DomainEvent;
 
-public record ProductVariantAddedDomainEvent : DomainEvent
-{
-    public ProductVariantAddedDomainEvent(Product product, ProductVariant variant)
-    {
-    }
-}
+public record ProductVariantAddedDomainEvent(Product Product, ProductVariant variant) : DomainEvent;
 
 public record ProductArchivedDomainEvent(Product Product) : DomainEvent;
 
@@ -381,237 +410,3 @@ public record ProductVisibilityUpdatedDomainEvent(Product Product, ProductVisibi
 
 public record ProductRestoredDomainEvent(Product Product) : DomainEvent;
 
-public class ProductJsonConverter : JsonConverter<Product>
-{
-    public override Product? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        if (reader.TokenType != JsonTokenType.StartObject)
-        {
-            throw new JsonException();
-        }
-
-        using (JsonDocument document = JsonDocument.ParseValue(ref reader))
-        {
-
-
-            var root = document.RootElement;
-
-            // DEBUG: Log the entire JSON to understand its structure
-            string jsonString = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
-            System.Diagnostics.Debug.WriteLine("===== INCOMING JSON DATA =====");
-            System.Diagnostics.Debug.WriteLine(jsonString);
-            System.Diagnostics.Debug.WriteLine("==============================");
-
-            try
-            {
-                // Get the ID first with fallback
-                Guid id;
-                if (!root.TryGetProperty("id", out var idProperty) || !idProperty.TryGetGuid(out id))
-                {
-                    id = Guid.NewGuid();
-                }
-
-                // Get other properties with fallbacks
-                string name = "";
-                if (root.TryGetProperty("name", out var nameProperty))
-                {
-                    name = nameProperty.GetString() ?? "";
-                }
-
-                string description = "";
-                if (root.TryGetProperty("description", out var descProperty))
-                {
-                    description = descProperty.GetString() ?? "";
-                }
-
-                decimal price = 0;
-                if (root.TryGetProperty("price", out var priceProperty))
-                {
-                    if (priceProperty.ValueKind == JsonValueKind.Object && priceProperty.TryGetProperty("amount", out var amountProperty))
-                    {
-                        price = amountProperty.GetDecimal();
-                    }
-                    else
-                    {
-                        price = priceProperty.GetDecimal();
-                    }
-                }
-
-                string currency = "USD";
-                if (root.TryGetProperty("currency", out var currencyProperty))
-                {
-                    currency = currencyProperty.GetString() ?? "USD";
-                }
-
-                string sku = "";
-                if (root.TryGetProperty("sku", out var skuProperty))
-                {
-                    sku = skuProperty.GetString() ?? "";
-                }
-
-                int stock = 0;
-                if (root.TryGetProperty("stock", out var stockProperty))
-                {
-                    stock = stockProperty.GetInt32();
-                }
-
-                Guid categoryId;
-                if (!root.TryGetProperty("categoryId", out var categoryIdProperty) || !categoryIdProperty.TryGetGuid(out categoryId))
-                {
-                    categoryId = Guid.Parse("FAB8190A-7BF6-4277-99B4-3BD000EDD45B"); // Default category
-                }
-
-                var product = new Product(
-                    name: name,
-                    description: description,
-                    price: price,
-                    currency: currency,
-                    sku: sku,
-                    stock: stock,
-                    categoryId: categoryId,
-                    id: id,
-                    createdBy: null
-                );
-
-                // Handle optional properties
-                if (root.TryGetProperty("shortDescription", out var shortDesc))
-                {
-                    typeof(Product).GetProperty("ShortDescription")?.SetValue(product, shortDesc.GetString());
-                }
-
-                if (root.TryGetProperty("status", out var status) && Enum.TryParse<ProductStatus>(status.GetString(), out var statusEnum))
-                {
-                    typeof(Product).GetProperty("Status")?.SetValue(product, statusEnum);
-                }
-
-                if (root.TryGetProperty("visibility", out var visibility) && Enum.TryParse<ProductVisibility>(visibility.GetString(), out var visibilityEnum))
-                {
-                    typeof(Product).GetProperty("Visibility")?.SetValue(product, visibilityEnum);
-                }
-
-                if (root.TryGetProperty("subCategoryId", out var subCategoryId))
-                {
-                    typeof(Product).GetProperty("SubCategoryId")?.SetValue(product, subCategoryId.GetGuid());
-                }
-
-
-                // Handle collections if present
-                if (root.TryGetProperty("images", out var images))
-                {
-                    // Check if images is an array or a single object
-                    if (images.ValueKind == JsonValueKind.Array)
-                    {
-                        // Process array of images
-                        foreach (var image in images.EnumerateArray())
-                        {
-                            string? url = null;
-                            string? fileName = null;
-                            long size = 0;
-
-                            if (image.TryGetProperty("url", out var urlProperty))
-                            {
-                                url = urlProperty.GetString();
-                            }
-
-                            if (image.TryGetProperty("fileName", out var fileNameProperty))
-                            {
-                                fileName = fileNameProperty.GetString();
-                            }
-
-                            if (image.TryGetProperty("size", out var sizeProperty))
-                            {
-                                size = sizeProperty.GetInt64();
-                            }
-
-                            if (url != null && fileName != null)
-                            {
-                                product.AddImage(url, fileName, size);
-                            }
-                        }
-                    }
-                    else if (images.ValueKind == JsonValueKind.Object)
-                    {
-                        // Process single image object
-                        string? url = null;
-                        string? fileName = null;
-                        long size = 0;
-
-                        if (images.TryGetProperty("url", out var urlProperty))
-                        {
-                            url = urlProperty.GetString();
-                        }
-
-                        if (images.TryGetProperty("fileName", out var fileNameProperty))
-                        {
-                            fileName = fileNameProperty.GetString();
-                        }
-
-                        if (images.TryGetProperty("size", out var sizeProperty))
-                        {
-                            size = sizeProperty.GetInt64();
-                        }
-
-                        if (url != null && fileName != null)
-                        {
-                            product.AddImage(url, fileName, size);
-                        }
-                    }
-                }
-
-                return product;
-            }
-            catch (Exception ex)
-            {
-                // Log the exception with context
-                System.Diagnostics.Debug.WriteLine($"Error while deserializing JSON: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"JSON data causing the error: {jsonString}");
-
-                throw new JsonException($"Error deserializing Product: {ex.Message}", ex);
-            }
-        }
-    }
-
-    public override void Write(Utf8JsonWriter writer, Product value, JsonSerializerOptions options)
-    {
-        writer.WriteStartObject();
-
-        // Write basic properties
-        writer.WriteString("id", value.Id);
-        writer.WriteString("name", value.Name);
-        writer.WriteString("description", value.Description);
-
-        // Write price as an object
-        writer.WriteStartObject("price");
-        writer.WriteNumber("amount", value.Price.Amount);
-        writer.WriteString("currency", value.Price.Currency);
-        writer.WriteEndObject();
-
-        writer.WriteString("currency", value.Price.Currency);
-        writer.WriteString("sku", value.Sku);
-        writer.WriteNumber("stock", value.Stock);
-        writer.WriteString("categoryId", value.CategoryId);
-        writer.WriteString("status", value.Status.ToString());
-        writer.WriteString("visibility", value.Visibility.ToString());
-
-        // Write optional properties
-        if (value.ShortDescription != null)
-            writer.WriteString("shortDescription", value.ShortDescription);
-
-        if (value.SubCategoryId.HasValue)
-            writer.WriteString("subCategoryId", value.SubCategoryId.Value);
-
-        // Write collections
-        writer.WriteStartArray("images");
-        foreach (var image in value.Images)
-        {
-            writer.WriteStartObject();
-            writer.WriteString("url", image.Url);
-            writer.WriteString("fileName", image.FileName);
-            writer.WriteNumber("size", image.Size);
-            writer.WriteEndObject();
-        }
-        writer.WriteEndArray();
-
-        writer.WriteEndObject();
-    }
-}

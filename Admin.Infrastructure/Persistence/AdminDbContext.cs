@@ -104,4 +104,9 @@ public class AdminDbContext : DbContext, IApplicationDbContext, IUnitOfWork
 
         return result;
     }
+
+    public async Task<IDisposable> BeginTransactionAsync(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }

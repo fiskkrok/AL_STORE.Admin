@@ -184,7 +184,7 @@ import { BulkProductImportComponent } from '../components/bulk-product-import/bu
     }
   `]
 })
-export class EnhancedProductFormComponent implements OnInit, OnDestroy {
+export class ProductFormComponent implements OnInit, OnDestroy {
   isEditMode = false;
   productId: string = '';
   selectedTab = 0;

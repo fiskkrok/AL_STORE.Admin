@@ -2,7 +2,7 @@
 import { Routes } from '@angular/router';
 import { ProductsComponent } from './products.component';
 import { ProductListComponent } from './product-list/product-list.component';
-import { EnhancedProductFormComponent } from './pages/product-form.component';
+import { ProductFormComponent } from './pages/product-form.component';
 
 export const PRODUCT_ROUTES: Routes = [
     {
@@ -16,23 +16,23 @@ export const PRODUCT_ROUTES: Routes = [
             },
             {
                 path: 'add',
-                component: EnhancedProductFormComponent,
+                component: ProductFormComponent,
                 title: 'Add Product'
             },
             {
                 path: 'edit/:id',
-                component: EnhancedProductFormComponent,
+                component: ProductFormComponent,
                 title: 'Edit Product'
             },
             {
                 path: 'import',
-                component: EnhancedProductFormComponent,
+                component: ProductFormComponent,
                 title: 'Import Products',
                 data: { tab: 'bulk' }
             },
             {
                 path: 'scan',
-                component: EnhancedProductFormComponent,
+                component: ProductFormComponent,
                 title: 'Scan Products',
                 data: { tab: 'scanner' }
             },

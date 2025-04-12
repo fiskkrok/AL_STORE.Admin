@@ -16,6 +16,7 @@ public class OrderEventHandler :
 {
     private readonly IMessageBusService _messageBus;
     private readonly ILogger<OrderEventHandler> _logger;
+    private readonly IWebhookSubscriptionService _webhookService;
 
     public OrderEventHandler(
         IMessageBusService messageBus,
@@ -90,6 +91,13 @@ public class OrderEventHandler :
                 domainEvent.Order.OrderNumber);
             throw;
         }
+        await _webhookService.TriggerWebhooksAsync("OrderStatus", new
+        {
+            OrderId = domainEvent.Order.Id,
+            OrderNumber = domainEvent.Order.OrderNumber,
+            Status = domainEvent.NewStatus.ToString(),
+            StatusChangedAt = DateTime.UtcNow
+        });
     }
 
     public async Task Handle(
