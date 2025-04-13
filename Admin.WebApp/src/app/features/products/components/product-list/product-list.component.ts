@@ -6,15 +6,15 @@ import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil, startWith } from 'rxjs/operators';
-import { Product } from '../../../shared/models/product.model';
-import { ProductActions } from '../../../store/product/product.actions';
+import { Product } from '../../../../shared/models/product.model';
+import { ProductActions } from '../../../../store/product/product.actions';
 import {
     selectAllProducts,
     selectProductsLoading,
     selectProductsError,
     selectProductPagination
-} from '../../../store/product/product.selectors';
-import { DialogService } from '../../../core/services/dialog.service';
+} from '../../../../store/product/product.selectors';
+import { DialogService } from '../../../../core/services/dialog.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
@@ -28,10 +28,11 @@ import { ProductService } from 'src/app/core/services/product.service';
 import { ErrorService } from 'src/app/core/services/error.service';
 import { MatIconModule } from '@angular/material/icon';
 import { StockActions } from 'src/app/store/stock/stock.actions';
-import { StockManagementComponent } from '../components/stock-management/stock-management.component';
+import { StockManagementComponent } from '../stock-management/stock-management.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTooltip } from '@angular/material/tooltip';
-import { ImagePreviewDialogComponent } from './image-preview-dialog.component';
+import { ImagePreviewDialogComponent } from '../image-preview/image-preview-dialog.component';
+import { CategoryService } from 'src/app/core/services/category.service';
 
 @Component({
     selector: 'app-product-list',
@@ -57,6 +58,13 @@ import { ImagePreviewDialogComponent } from './image-preview-dialog.component';
     ]
 })
 export class ProductListComponent implements OnInit, OnDestroy {
+    private readonly store = inject(Store);
+    private readonly router = inject(Router);
+    private readonly dialogService = inject(DialogService);
+    private readonly matDialog = inject(MatDialog);
+    private readonly productService = inject(ProductService);
+    private readonly errorService = inject(ErrorService);
+    private readonly categoryService = inject(CategoryService);
     readonly sort = viewChild.required(MatSort);
     readonly paginator = viewChild.required(MatPaginator);
 
@@ -77,12 +85,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
     categories = signal<{ id: string, name: string }[]>([]);
 
-    private readonly store = inject(Store);
-    private readonly router = inject(Router);
-    private readonly dialogService = inject(DialogService);
-    private readonly matDialog = inject(MatDialog);
-    private readonly productService = inject(ProductService);
-    private readonly errorService = inject(ErrorService);
+
     constructor() {
         this.products$ = this.store.select(selectAllProducts);
         this.loading$ = this.store.select(selectProductsLoading);
@@ -137,7 +140,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
     }
 
     private loadCategories() {
-        this.productService.getCategories().subscribe({
+        this.categoryService.getCategories().subscribe({
             next: (categories) => this.categories.set(categories),
             error: (error) => {
                 this.errorService.addError({

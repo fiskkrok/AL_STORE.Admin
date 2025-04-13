@@ -1,5 +1,5 @@
 // src/app/shared/components/global-loading/global-loading.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoadingService } from '../../../core/services/loading.service';
 import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.component';
@@ -22,8 +22,9 @@ import { LoadingSpinnerComponent } from '../loading-spinner/loading-spinner.comp
 })
 export class GlobalLoadingComponent {
     loading$;
+    private readonly loadingService = inject(LoadingService)
 
-    constructor(private readonly loadingService: LoadingService) {
+    constructor() {
         this.loading$ = this.loadingService.loading$;
     }
 }

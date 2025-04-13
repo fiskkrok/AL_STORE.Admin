@@ -41,10 +41,12 @@
         "plugin:@angular-eslint/template/recommended",
         "plugin:@angular-eslint/template/accessibility"
       ],
-      "rules": {}
+      "rules": {
+        "@angular-eslint/template/eqeqeq": "error",
+        "@angular-eslint/template/no-negated-async": "error",
+        "@angular-eslint/template/use-track-by-function": "warn"
+      },
+      "parser": "@angular-eslint/template-parser"
     }
-  ],
-  "extends": [
-    "plugin:storybook/recommended"
   ]
 }

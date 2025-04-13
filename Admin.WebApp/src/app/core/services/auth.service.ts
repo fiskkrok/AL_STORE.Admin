@@ -1,8 +1,7 @@
 // src/app/core/services/auth.service.ts
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, from, of, throwError } from 'rxjs';
-import { catchError, map, tap, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, from, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User, AuthState, AuthError, AUTH_ERROR_MESSAGES } from '../../shared/models/auth.models';
 import { UserManager, User as OidcUser, UserManagerSettings } from 'oidc-client-ts';
@@ -12,7 +11,6 @@ import { LoadingService } from './loading.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly errorService = inject(ErrorService);
   private readonly loadingService = inject(LoadingService);

@@ -1,5 +1,5 @@
 // src/app/features/products/components/bulk-product-import/bulk-product-import.component.ts
-import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -520,7 +520,12 @@ interface ImportRow {
   `]
 })
 export class BulkProductImportComponent implements OnInit {
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
+  private readonly productTypeService = inject(ProductTypeService);
+  private readonly errorService = inject(ErrorService);
+  private readonly snackBar = inject(MatSnackBar);
+  readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
 
   // File upload
   isDragging = false;
@@ -552,14 +557,6 @@ export class BulkProductImportComponent implements OnInit {
   // Cached data
   categories: Category[] = [];
   productTypes: ProductType[] = [];
-
-  constructor(
-    private productService: ProductService,
-    private categoryService: CategoryService,
-    private productTypeService: ProductTypeService,
-    private errorService: ErrorService,
-    private snackBar: MatSnackBar
-  ) { }
 
   ngOnInit(): void {
     // Load reference data
@@ -996,8 +993,9 @@ export class BulkProductImportComponent implements OnInit {
     this.isImportComplete = false;
 
     // Reset file input
-    if (this.fileInput?.nativeElement) {
-      this.fileInput.nativeElement.value = '';
+    const fileInput = this.fileInput();
+    if (fileInput?.nativeElement) {
+      fileInput.nativeElement.value = '';
     }
   }
 

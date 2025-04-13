@@ -1,5 +1,5 @@
 // src/app/features/products/components/product-image-manager/product-image-manager.component.ts
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, OnDestroy, inject, input, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -291,7 +291,9 @@ import { ProductImage } from 'src/app/shared/models/product.model';
     }
   `]
 })
-export class ProductImageManagerComponent implements OnInit, OnDestroy {
+export class ProductImageManagerComponent implements OnDestroy {
+  private readonly productService = inject(ProductService)
+  private readonly errorService = inject(ErrorService)
   @Input() images: ProductImage[] = [];
   @Output() imagesChange = new EventEmitter<ProductImage[]>();
 
@@ -299,14 +301,7 @@ export class ProductImageManagerComponent implements OnInit, OnDestroy {
   isUploading = false;
   uploadProgress = 0;
 
-  private destroy$ = new Subject<void>();
-
-  constructor(
-    private productService: ProductService,
-    private errorService: ErrorService
-  ) { }
-
-  ngOnInit(): void { }
+  private readonly destroy$ = new Subject<void>();
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -406,7 +401,7 @@ export class ProductImageManagerComponent implements OnInit, OnDestroy {
           this.isUploading = false;
           this.uploadProgress = 0;
         }),
-        catchError(error => {
+        catchError(() => {
           this.errorService.addError({
             code: 'UPLOAD_FAILED',
             message: 'Failed to upload images. Please try again.',
@@ -425,8 +420,9 @@ export class ProductImageManagerComponent implements OnInit, OnDestroy {
   }
 
   drop(event: CdkDragDrop<ProductImage[]>): void {
-    moveItemInArray(this.images, event.previousIndex, event.currentIndex);
-    this.imagesChange.emit([...this.images]);
+    const images = this.images;
+    moveItemInArray(images, event.previousIndex, event.currentIndex);
+    this.imagesChange.emit([...images]);
   }
 
   setAsPrimary(index: number): void {
@@ -448,8 +444,9 @@ export class ProductImageManagerComponent implements OnInit, OnDestroy {
       alt: prompt('Enter alt text for this image:', image.alt) || image.alt
     };
 
-    this.images[index] = updatedImage;
-    this.imagesChange.emit([...this.images]);
+    const images = this.images;
+    images[index] = updatedImage;
+    this.imagesChange.emit([...images]);
   }
 
   removeImage(index: number): void {

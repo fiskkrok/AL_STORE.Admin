@@ -17,14 +17,28 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 switch (error.status) {
                     case 0:
                         // Network error or CORS
+                        errorService.addError({
+                            code: 'NETWORK_ERROR',
+                            message: 'Unable to connect to the server. Please check your connection.',
+                            severity: 'error'
+                        });
                         router.navigate(['/error/network']);
                         break;
 
                     case HttpStatusCode.NotFound:
-                        router.navigate(['/error/404']);
+                        errorService.addError({
+                            code: 'NOT_FOUND',
+                            message: `The requested resource at ${req.url} was not found.`,
+                            severity: 'warning'
+                        });
                         break;
 
                     case HttpStatusCode.InternalServerError:
+                        errorService.addError({
+                            code: 'SERVER_ERROR',
+                            message: 'An unexpected server error occurred. Please try again later.',
+                            severity: 'error'
+                        });
                         router.navigate(['/error/500']);
                         break;
 
@@ -33,29 +47,39 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                         break;
 
                     case HttpStatusCode.Forbidden:
+                        errorService.addError({
+                            code: 'FORBIDDEN',
+                            message: 'You do not have permission to access this resource.',
+                            severity: 'warning'
+                        });
                         router.navigate(['/unauthorized']);
                         break;
 
+                    case HttpStatusCode.BadRequest:
+                        // Handle validation errors specially
+                        if (error.error?.validation) {
+                            errorService.handleValidationError(error.error);
+                        } else {
+                            errorService.addError({
+                                code: error.error?.code || 'BAD_REQUEST',
+                                message: error.error?.message || 'The request was invalid.',
+                                severity: 'warning'
+                            });
+                        }
+                        break;
+
                     default:
-                        // For other errors, show the error message
-                        router.navigate(['/error/generic'], {
-                            queryParams: {
-                                message: error.error?.message || 'An unexpected error occurred'
-                            }
+                        // For other errors, add a generic error
+                        errorService.addError({
+                            code: error.error?.code || `HTTP_${error.status}`,
+                            message: error.error?.message || 'An unexpected error occurred',
+                            severity: error.status >= 500 ? 'error' : 'warning',
+                            details: error.error?.details
                         });
                 }
-
-                // Add error to error service
-                errorService.addError({
-                    code: error.error?.code || `HTTP_${error.status}`,
-                    message: error.error?.message || error.message,
-                    severity: error.status >= 500 ? 'error' : 'warning'
-                });
             } else {
                 // Handle non-HTTP errors
                 console.error('Non-HTTP Error:', error);
-                router.navigate(['/error/generic']);
-
                 errorService.addError({
                     code: 'UNKNOWN_ERROR',
                     message: 'An unexpected error occurred',

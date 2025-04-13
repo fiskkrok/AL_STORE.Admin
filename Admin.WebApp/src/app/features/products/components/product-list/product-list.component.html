@@ -235,9 +235,9 @@
 
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                    class="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                    (click)="editProduct(row)">
+                    class="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                 </tr>
+                <!-- (click)="editProduct(row)" -->
             </table>
         </div>
 

@@ -1,7 +1,7 @@
 // src/app/features/products/products.routes.ts
 import { Routes } from '@angular/router';
-import { ProductsComponent } from './products.component';
-import { ProductListComponent } from './product-list/product-list.component';
+import { ProductsComponent } from './components/products.component';
+import { ProductListComponent } from './components/product-list/product-list.component';
 import { ProductFormComponent } from './pages/product-form.component';
 
 export const PRODUCT_ROUTES: Routes = [

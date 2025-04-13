@@ -2,7 +2,7 @@
 import { Injectable, inject, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map, shareReplay } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Category } from 'src/app/shared/models/category.model';
 import {
@@ -22,14 +22,14 @@ export class CategoryService implements OnDestroy {
     private readonly apiUrl = environment.apiUrls.admin.categories;
     private hubConnection: signalR.HubConnection | undefined;
     private readonly authService = inject(AuthService);
+    private readonly http = inject(HttpClient)
+    private readonly store = inject(Store)
 
     constructor(
-        private readonly http: HttpClient,
-        private readonly store: Store
     ) {
         this.initializeSignalR();
     }
-    private mapCategoryFromApi(category: any): Category {
+    private mapCategoryFromApi(category: Category): Category {
         return {
             ...category,
             // Ensure collections are never null
@@ -112,13 +112,13 @@ export class CategoryService implements OnDestroy {
     }
 
     getCategories(): Observable<Category[]> {
-        return this.http.get<any[]>(this.apiUrl).pipe(
+        return this.http.get<Category[]>(this.apiUrl).pipe(
             map(categories => categories.map(this.mapCategoryFromApi))
         );
     }
 
     getCategory(id: string): Observable<Category> {
-        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+        return this.http.get<Category>(`${this.apiUrl}/${id}`).pipe(
             map(this.mapCategoryFromApi)
         );
     }

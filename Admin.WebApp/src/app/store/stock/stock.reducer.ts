@@ -1,7 +1,7 @@
 // src/app/store/stock/stock.reducer.ts
 import { createReducer, on } from '@ngrx/store';
 import { StockActions } from './stock.actions';
-import { StockState, initialStockState } from './stock.state';
+import { initialStockState } from './stock.state';
 
 export const stockReducer = createReducer(
     initialStockState,

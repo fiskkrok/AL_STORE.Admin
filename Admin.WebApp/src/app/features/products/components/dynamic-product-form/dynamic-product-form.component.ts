@@ -18,10 +18,10 @@ import { finalize, takeUntil, startWith } from 'rxjs/operators';
 import { ProductTypeService } from '../../../../core/services/product-type.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { ErrorService } from '../../../../core/services/error.service';
-import { Product, ProductCreateCommand, ProductImage, ProductStatus, ProductVisibility } from '../../../../shared/models/product.model';
+import { Product, ProductCreateCommand, ProductImage, ProductSeo, ProductStatus, ProductVisibility } from '../../../../shared/models/product.model';
 import { ProductType } from '../../../../shared/models/product-type.model';
 import { CategoryService } from '../../../../core/services/category.service';
-import { ProductImageManagerComponent } from '../../product-image-manager/product-image-manager.component';
+import { ProductImageManagerComponent } from '../product-image-manager/product-image-manager.component';
 import { Currency } from '../../../../shared/models/currency.enum';
 import { environment } from 'src/environments/environment';
 
@@ -47,11 +47,7 @@ interface ProductFormModel {
   status: ProductStatus;
   visibility: ProductVisibility;
   images: ProductImage[];
-  seo?: {
-    title?: string;
-    description?: string;
-    keywords?: string[];
-  };
+  seo?: ProductSeo;
 }
 
 @Component({
@@ -145,7 +141,7 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
 
     if (effectiveProductId) {
       this.isEditMode.set(true);
-      this.productService.getProduct(effectiveProductId)
+      this.productService.getById(effectiveProductId)
         .pipe(takeUntil(this.destroy$))
         .subscribe(product => {
           if (product) {
@@ -851,7 +847,8 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
       images: product.images || [],
       seo: product.seo || {
         title: product.name,
-        description: product.shortDescription || ''
+        description: product.shortDescription || '',
+        keywords: []
       }
     };
 

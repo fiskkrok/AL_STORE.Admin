@@ -9,7 +9,7 @@ import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { FormlyImageUploadTypeComponent } from './shared/formly/image-upload.type';
 import { FormlyColorPickerTypeComponent } from './shared/formly/color-picker.type';
-import { FileValueAccessor } from './shared/formly/file-value-accessor';
+import { FileValueAccessorDirective } from './shared/formly/file-value-accessor';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
@@ -53,7 +53,7 @@ export const appConfig: ApplicationConfig = {
     provideNativeDateAdapter(), // Add date adapter provider
     importProvidersFrom(
       ReactiveFormsModule,
-      FileValueAccessor,
+      FileValueAccessorDirective,
       FormlyModule.forRoot({
         types: [
           {

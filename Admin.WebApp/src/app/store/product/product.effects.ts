@@ -24,7 +24,7 @@ export class ProductEffects {
             tap(() => this.loadingService.show()),
             withLatestFrom(this.store.select(selectProductFilters)),
             mergeMap(([action, stateFilters]) =>
-                this.productService.getProducts({ ...stateFilters, ...action.filters }).pipe(
+                this.productService.getPaged({ ...stateFilters, ...action.filters }).pipe(
                     map(response => {
                         this.loadingService.hide();
                         return ProductActions.loadProductsSuccess({

@@ -38,11 +38,7 @@ export interface ProductCreateCommand {
     visibility: ProductVisibility;
     attributes?: Array<{ name: string; value: string; type: string }>;
     tags?: string[];
-    seo?: {
-        title?: string;
-        description?: string;
-        keywords?: string[];
-    };
+    seo?: ProductSeo;
     dimensions?: {
         weight: number;
         width: number;

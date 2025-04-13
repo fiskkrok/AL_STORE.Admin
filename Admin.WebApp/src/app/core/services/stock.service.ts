@@ -8,7 +8,6 @@ import * as signalR from '@microsoft/signalr';
 import { Store } from '@ngrx/store';
 import { StockActions } from '../../store/stock/stock.actions';
 import { BatchStockAdjustment, StockAdjustment, StockItem } from 'src/app/shared/models/stock.model';
-import { SignalRFactoryService } from './signalr-factory.service';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from './auth.service';
 
@@ -30,7 +29,6 @@ export class StockService implements OnDestroy {
     constructor(
         private http: HttpClient,
         private store: Store,
-        private signalRFactory: SignalRFactoryService
     ) {
         this.initializeSignalR();
     }
@@ -82,36 +80,7 @@ export class StockService implements OnDestroy {
         this.setupHubListeners();
         this.hubConnection.start().catch(err => console.error('Error starting SignalR:', err));
     }
-    // private initializeSignalR(): void {
-    //     // Get connection from factory
-    //     this.connectionSubscription = this.signalRFactory.getHubConnection(this.stockHubUrl)
-    //         .pipe(
-    //             tap(connection => {
-    //                 this.hubConnection = connection;
-    //                 this.setupHubListeners();
-    //                 this.connectionStatusSubject.next('connected');
-    //                 this.stopPolling(); // Stop polling when connected
-    //             }),
-    //             catchError(error => {
-    //                 console.error('Error getting stock hub connection:', error);
-    //                 this.connectionStatusSubject.next('error');
-    //                 this.startPolling(); // Start polling when connection fails
-    //                 return of(null);
-    //             })
-    //         )
-    //         .subscribe();
 
-    //     // Also monitor connection status
-    //     this.signalRFactory.getConnectionStatus(this.stockHubUrl)
-    //         .subscribe(status => {
-    //             this.connectionStatusSubject.next(status);
-    //             if (status === 'disconnected' || status === 'error') {
-    //                 this.startPolling();
-    //             } else if (status === 'connected') {
-    //                 this.stopPolling();
-    //             }
-    //         });
-    // }
 
     // Subscribe to stock updates for a specific product
     subscribeToProductStock(productId: string): void {

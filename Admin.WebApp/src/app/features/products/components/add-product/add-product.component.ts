@@ -1,5 +1,5 @@
 // src/app/features/products/add-product/add-product.component.ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,13 +16,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Currency } from 'src/app/shared/models/currency.enum';
 // Custom Components
-import { BarcodeScannerComponent } from '../components/barcode-scanner';
+import { BarcodeScannerComponent } from '../barcode-scanner';
 import { ProductImageManagerComponent } from '../product-image-manager/product-image-manager.component';
 
 // Services
-import { CategoryService } from '../../../core/services/category.service';
-import { ProductService } from '../../../core/services/product.service';
-import { ErrorService } from '../../../core/services/error.service';
+import { CategoryService } from '../../../../core/services/category.service';
+import { ProductService } from '../../../../core/services/product.service';
+import { ErrorService } from '../../../../core/services/error.service';
 
 @Component({
   selector: 'app-add-product',
@@ -45,7 +45,11 @@ import { ErrorService } from '../../../core/services/error.service';
   styleUrls: ['./add-product.component.scss']
 })
 export class AddProductComponent implements OnInit, OnDestroy {
-
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly categoryService = inject(CategoryService);
+  private readonly productService = inject(ProductService);
+  private readonly errorService = inject(ErrorService);
   basicInfoForm!: FormGroup;
   pricingForm!: FormGroup;
   detailsForm!: FormGroup;
@@ -59,11 +63,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
   currencies = Object.entries(Currency).map(([code, label]) => ({ code, label }));
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private categoryService: CategoryService,
-    private productService: ProductService,
-    private errorService: ErrorService
+
   ) {
     this.createForms();
   }
@@ -110,7 +110,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
         next: (categories) => {
           this.categories = categories;
         },
-        error: (error) => {
+        error: () => {
           this.errorService.addError({
             code: 'CATEGORIES_LOAD_ERROR',
             message: 'Failed to load categories',

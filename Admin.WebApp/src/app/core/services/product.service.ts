@@ -1,68 +1,54 @@
+// src/app/core/services/product.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, tap, catchError, switchMap, shareReplay } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { BaseCrudService } from './base-crud.service';
 import {
     Product,
     ProductFilters,
     ProductCreateCommand,
-    ProductUpdateCommand,
-    ProductImage,
-    ProductVariant,
-    mapProductFromApi,
-    mapVariantFromApi
+    ProductUpdateCommand
 } from '../../shared/models/product.model';
-import { Category } from 'src/app/shared/models/category.model';
-import { DashboardStats } from './statistics.service';
+import { PagedResponse } from '../../shared/models/paged-response.model';
+import { environment } from '../../../environments/environment';
+import { HttpParams } from '@angular/common/http';
 
 @Injectable({
     providedIn: 'root'
 })
-export class ProductService {
-    private readonly productsSubject = new BehaviorSubject<Product[]>([]);
-    private readonly apiUrl = environment.apiUrls.admin.products;
-    private readonly categoriesUrl = environment.apiUrls.admin.categories;
+export class ProductService extends BaseCrudService<Product, string, ProductFilters> {
+    protected override endpoint = 'products';
     private readonly blobStorageUrl = environment.azure.blobStorage.containerUrl;
     private readonly productsContainer = environment.azure.blobStorage.productsContainer;
 
-    constructor(
-        private readonly http: HttpClient,
-        private readonly authService: AuthService
-    ) { }
-
-    // Core CRUD Operations
-    /**
-     * Gets a product by its ID
-     */
-    getProduct(id: string): Observable<Product> {
-        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-            map(product => mapProductFromApi(product, this.getFullImageUrl.bind(this)))
+    // Override the base getAll to add product-specific mapping
+    override getAll(filters?: ProductFilters): Observable<Product[]> {
+        return super.getAll(filters).pipe(
+            map(products => products.map(product => this.mapProductFromApi(product)))
         );
     }
 
-    /**
-     * Gets a list of products based on filter criteria
-     */
-    getProducts(filters?: ProductFilters): Observable<{
-        items: Product[];
-        totalCount: number;
-        page: number;
-        pageSize: number;
-        totalPages: number;
-    }> {
-        return this.http.get<any>(this.apiUrl, { params: filters as any }).pipe(
+    // Override getPaged to add product-specific mapping
+    override getPaged(filters?: ProductFilters): Observable<PagedResponse<Product>> {
+        return super.getPaged(filters).pipe(
             map(response => ({
                 ...response,
-                items: response.items.map((item: any) =>
-                    mapProductFromApi(item, this.getFullImageUrl.bind(this)))
+                items: response.items.map(item => this.mapProductFromApi(item))
             }))
+        );
+    }
+
+    // Override getById to add product-specific mapping
+    override getById(id: string): Observable<Product> {
+        return super.getById(id).pipe(
+            map(product => this.mapProductFromApi(product))
         );
     }
 
     /**
      * Creates a new product
+     * @param command Product creation data
+     * @returns Observable of created product
      */
     createProduct(command: ProductCreateCommand): Observable<Product> {
         // Generate slug if not provided
@@ -70,112 +56,65 @@ export class ProductService {
             command.slug = this.generateSlug(command.name);
         }
 
-        return this.http.post<Product>(this.apiUrl, command).pipe(
-            map(product => mapProductFromApi(product, this.getFullImageUrl.bind(this))),
-            tap(product => {
-                const currentProducts = this.productsSubject.value;
-                this.productsSubject.next([...currentProducts, product]);
-            }),
-            catchError(error => {
-                console.error('Error creating product:', error);
-                return throwError(() => new Error('Failed to create product: ' + error.message));
-            })
+        return this.create(command).pipe(
+            map(product => this.mapProductFromApi(product))
         );
     }
+    /**
+    * Deletes a product
+    */
+    deleteProduct(id: string): Observable<void> {
+        return this.http.delete<void>(id).pipe(
 
+            map(() => { }),
+            catchError(error => this.handleError(error, 'Failed to delete product'))
+        );
+    }
     /**
      * Updates an existing product
+     * @param command Product update data
+     * @returns Observable of updated product
      */
     updateProduct(command: ProductUpdateCommand): Observable<Product> {
-        return this.http.put<Product>(`${this.apiUrl}/${command.id}`, command).pipe(
-            map(product => mapProductFromApi(product, this.getFullImageUrl.bind(this))),
-            tap(updatedProduct => {
-                const currentProducts = this.productsSubject.value;
-                const index = currentProducts.findIndex(p => p.id === updatedProduct.id);
-                if (index !== -1) {
-                    currentProducts[index] = updatedProduct;
-                    this.productsSubject.next([...currentProducts]);
-                }
-            }),
-            catchError(this.handleError)
+        const { id, ...updateData } = command;
+        return this.update(id, updateData).pipe(
+            map(product => this.mapProductFromApi(product))
         );
     }
 
     /**
-     * Deletes a product
+     * Maps a product from API format to client model
+     * @param product Raw product data from API
+     * @returns Mapped Product object
      */
-    deleteProduct(id: string): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-            tap(() => {
-                const currentProducts = this.productsSubject.value;
-                this.productsSubject.next(currentProducts.filter(p => p.id !== id));
-            }),
-            catchError(this.handleError)
-        );
+    private mapProductFromApi(product: any): Product {
+        return {
+            ...product,
+            // Ensure collections are never null and properly format image URLs
+            images: (product.images || []).map((img: any) => ({
+                ...img,
+                url: this.getFullImageUrl(img.url)
+            })),
+            attributes: product.attributes || [],
+            tags: product.tags || [],
+            variants: Array.isArray(product.variants)
+                ? product.variants.map((v: any) => ({
+                    ...v,
+                    images: (v.images || []).map((img: any) => ({
+                        ...img,
+                        url: this.getFullImageUrl(img.url)
+                    }))
+                }))
+                : []
+        };
     }
 
-    // Image Operations
-    /**
-     * Uploads product images
-     */
-    uploadImages(files: File[]): Observable<ProductImage[]> {
-        const formData = new FormData();
-        files.forEach(file => formData.append('files', file));
-
-        return this.authService.getAccessToken().pipe(
-            switchMap(token => {
-                if (!token) throw new Error('No authentication token available');
-
-                const headers = new HttpHeaders()
-                    .set('Authorization', `Bearer ${token}`);
-
-                return this.http.post<ProductImage[]>(
-                    `${this.apiUrl}/upload-images`,
-                    formData,
-                    { headers }
-                ).pipe(shareReplay(1));
-            }),
-            catchError(this.handleError)
-        );
-    }
-
-    /**
-     * Deletes product images
-     */
-    deleteImages(imageIds: string[]): Observable<void> {
-        return this.http.post<void>(
-            `${this.apiUrl}/delete-images`,
-            { imageIds }
-        ).pipe(
-            catchError(this.handleError)
-        );
-    }
-
-    // Category Operations
-    /**
-     * Gets all product categories
-     */
-    getCategories(): Observable<Category[]> {
-        return this.http.get<Category[]>(this.categoriesUrl).pipe(
-            catchError(this.handleError)
-        );
-    }
-
-    // Stats Operations
-    /**
-     * Gets product statistics for dashboard
-     */
-    getStats(): Observable<DashboardStats> {
-        return this.http.get<DashboardStats>(`${this.apiUrl}/stats`).pipe(
-            catchError(this.handleError)
-        );
-    }
-
-    // Helper methods
     /**
      * Ensures image URLs are properly formatted with the base URL if needed
+     * @param url Raw image URL
+     * @returns Full image URL
      */
-    getFullImageUrl(url: string): string {
+    private getFullImageUrl(url: string): string {
         if (!url) return '';
 
         // Check if the URL already contains http:// or https:// protocol
@@ -189,6 +128,8 @@ export class ProductService {
 
     /**
      * Generates a URL-friendly slug from a string
+     * @param name Product name
+     * @returns URL-friendly slug
      */
     private generateSlug(name: string): string {
         return name
@@ -198,15 +139,54 @@ export class ProductService {
     }
 
     /**
-     * Standard error handler for HTTP requests
+     * Gets product statistics
+     * @returns Observable of product stats
      */
-    private handleError(error: any): Observable<never> {
-        console.error('An error occurred:', error);
-        return throwError(() => error);
+    getStats(): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/stats`).pipe(
+            catchError(error => this.handleError(error, 'Failed to fetch product statistics'))
+        );
     }
 
-    // Observable for components to subscribe to
-    get products$(): Observable<Product[]> {
-        return this.productsSubject.asObservable();
+    /**
+     * Uploads product images
+     * @param files Image files to upload
+     * @returns Observable of uploaded images data
+     */
+    uploadImages(files: File[]): Observable<any[]> {
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        return this.http.post<any[]>(`${this.apiUrl}/upload-images`, formData).pipe(
+            catchError(error => this.handleError(error, 'Failed to upload images'))
+        );
+    }
+
+    protected override buildParams(params?: ProductFilters): HttpParams {
+        // Custom implementation for ProductFilters
+        let httpParams = new HttpParams();
+
+        if (params) {
+            // Handle primitive properties
+            if (params.search) httpParams = httpParams.set('search', params.search);
+            if (params.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
+            if (params.subCategoryId) httpParams = httpParams.set('subCategoryId', params.subCategoryId);
+            if (params.minPrice !== null && params.minPrice !== undefined) httpParams = httpParams.set('minPrice', params.minPrice.toString());
+            if (params.maxPrice !== null && params.maxPrice !== undefined) httpParams = httpParams.set('maxPrice', params.maxPrice.toString());
+            if (params.status) httpParams = httpParams.set('status', params.status);
+            if (params.visibility) httpParams = httpParams.set('visibility', params.visibility);
+            if (params.inStock !== null && params.inStock !== undefined) httpParams = httpParams.set('inStock', params.inStock.toString());
+            if (params.page) httpParams = httpParams.set('page', params.page.toString());
+            if (params.pageSize) httpParams = httpParams.set('pageSize', params.pageSize.toString());
+            if (params.sortColumn) httpParams = httpParams.set('sortColumn', params.sortColumn);
+            if (params.sortDirection) httpParams = httpParams.set('sortDirection', params.sortDirection);
+
+            // Handle arrays
+            if (params.tags?.length) {
+                httpParams = httpParams.set('tags', params.tags.join(','));
+            }
+        }
+
+        return httpParams;
     }
 }
