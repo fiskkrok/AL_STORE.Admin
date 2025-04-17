@@ -1,7 +1,7 @@
+// src/app/core/services/order.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { catchError, map, Observable } from 'rxjs';
+import { BaseCrudService } from './base-crud.service';
 import { PagedResponse } from '../../shared/models/paged-response.model';
 import { Order, OrderStatus, PaymentStatus } from '../../shared/models/order.model';
 
@@ -41,19 +41,16 @@ export interface UpdateShippingRequest {
 @Injectable({
     providedIn: 'root'
 })
-export class OrderService {
-    private readonly apiUrl = environment.apiUrls.admin.orders;
+export class OrderService extends BaseCrudService<Order, string, OrderListParams> {
+    protected override endpoint = 'orders';
 
-    constructor(private readonly http: HttpClient) { }
-
-    getOrder(id: string): Observable<Order> {
-        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-            map(this.mapOrderFromApi)
-        );
-    }
-
-    getOrders(params: any): Observable<any> {
-        return this.http.get<any>(this.apiUrl, { params }).pipe(
+    /**
+     * Get paged orders with filtering
+     * @param params Order filter parameters
+     * @returns Observable of paged orders
+     */
+    getOrders(params: OrderListParams): Observable<PagedResponse<Order>> {
+        return this.getPaged(params).pipe(
             map(response => ({
                 ...response,
                 items: response.items.map(this.mapOrderFromApi)
@@ -61,6 +58,58 @@ export class OrderService {
         );
     }
 
+    /**
+     * Get a specific order by ID
+     * @param id Order ID
+     * @returns Observable of order
+     */
+    override getById(id: string): Observable<Order> {
+        return super.getById(id).pipe(
+            map(this.mapOrderFromApi)
+        );
+    }
+
+    /**
+     * Update order status
+     * @param orderId Order ID
+     * @param request Status update request
+     * @returns Observable of operation result
+     */
+    updateOrderStatus(orderId: string, request: UpdateOrderStatusRequest): Observable<void> {
+        return this.http.put<void>(`${this.apiUrl}/${orderId}/status`, request).pipe(
+            catchError(error => this.handleError(error, 'Failed to update order status'))
+        );
+    }
+
+    /**
+     * Add payment to an order
+     * @param orderId Order ID
+     * @param payment Payment details
+     * @returns Observable of operation result
+     */
+    addPayment(orderId: string, payment: AddPaymentRequest): Observable<void> {
+        return this.http.post<void>(`${this.apiUrl}/${orderId}/payments`, payment).pipe(
+            catchError(error => this.handleError(error, 'Failed to add payment'))
+        );
+    }
+
+    /**
+     * Update order shipping information
+     * @param orderId Order ID
+     * @param shipping Shipping details
+     * @returns Observable of operation result
+     */
+    updateShipping(orderId: string, shipping: UpdateShippingRequest): Observable<void> {
+        return this.http.put<void>(`${this.apiUrl}/${orderId}/shipping`, shipping).pipe(
+            catchError(error => this.handleError(error, 'Failed to update shipping information'))
+        );
+    }
+
+    /**
+     * Map order from API response to client model
+     * @param order Raw order data
+     * @returns Mapped Order object
+     */
     private mapOrderFromApi(order: any): Order {
         return {
             id: order.id,
@@ -109,17 +158,5 @@ export class OrderService {
             lastModifiedAt: order.lastModifiedAt,
             lastModifiedBy: order.lastModifiedBy
         };
-    }
-
-    updateOrderStatus(orderId: string, request: UpdateOrderStatusRequest): Observable<void> {
-        return this.http.put<void>(`${this.apiUrl}/${orderId}/status`, request);
-    }
-
-    addPayment(orderId: string, payment: AddPaymentRequest): Observable<void> {
-        return this.http.post<void>(`${this.apiUrl}/${orderId}/payments`, payment);
-    }
-
-    updateShipping(orderId: string, shipping: UpdateShippingRequest): Observable<void> {
-        return this.http.put<void>(`${this.apiUrl}/${orderId}/shipping`, shipping);
     }
 }

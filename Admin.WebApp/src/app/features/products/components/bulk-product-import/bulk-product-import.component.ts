@@ -561,14 +561,14 @@ export class BulkProductImportComponent implements OnInit {
   ngOnInit(): void {
     // Load reference data
     forkJoin({
-      categories: this.categoryService.getCategories(),
+      categories: this.categoryService.getAll(),
       productTypes: this.productTypeService.getProductTypes()
     }).subscribe({
       next: (data) => {
         this.categories = data.categories;
         this.productTypes = data.productTypes;
       },
-      error: (error) => {
+      error: () => {
         this.errorService.addError({
           code: 'REFERENCE_DATA_ERROR',
           message: 'Failed to load reference data',

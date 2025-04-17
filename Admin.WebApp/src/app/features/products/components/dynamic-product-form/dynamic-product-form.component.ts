@@ -71,6 +71,16 @@ interface ProductFormModel {
   styleUrls: ['./dynamic-product-form.component.scss'],
 })
 export class DynamicProductFormComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly productService = inject(ProductService);
+  private readonly productTypeService = inject(ProductTypeService);
+  private readonly categoryService = inject(CategoryService);
+  private readonly errorService = inject(ErrorService);
+  private readonly snackBar = inject(MatSnackBar);
+
   // Forms for each step
   basicInfoForm = new FormGroup({});
   pricingForm = new FormGroup({});
@@ -106,23 +116,20 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
   // Component state as signals
   isEditMode = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
-  productId = input<string>();
+  productId = signal<string>('');
   productTypes = signal<ProductType[]>([]);
   selectedProductType = signal<ProductType | undefined>(undefined);
-
+  productTypeId = '';
   // Computed properties
-  hasAttributes = computed(() => this.attributesFields().length > 0);
-  canSubmit = computed(() => !this.isSubmitting());
+  hasAttributes = computed(() => {
+    const attributesFields = this.attributesFields();
+    return attributesFields.length > 0;
+  });
+  canSubmit = computed(() => {
+    const isSubmitting = this.isSubmitting();
+    return !isSubmitting;
+  });
 
-  private readonly destroy$ = new Subject<void>();
-
-  private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly productService = inject(ProductService);
-  private readonly productTypeService = inject(ProductTypeService);
-  private readonly categoryService = inject(CategoryService);
-  private readonly errorService = inject(ErrorService);
-  private readonly snackBar = inject(MatSnackBar);
 
   ngOnInit(): void {
     this.loadProductTypes();
@@ -137,15 +144,17 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
 
     // Get product ID either from input or route parameters
     const routeParamId = this.route.snapshot.paramMap.get('id');
-    const effectiveProductId = routeParamId || this.productId();
+    const effectiveProductId = routeParamId;
 
     if (effectiveProductId) {
+      this.productId.set(effectiveProductId);
       this.isEditMode.set(true);
       this.productService.getById(effectiveProductId)
         .pipe(takeUntil(this.destroy$))
         .subscribe(product => {
           if (product) {
             this.loadExistingProduct(product);
+            this.productTypeId = product.productTypeId;
           }
         });
     }
@@ -182,17 +191,88 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe(fields => {
           this.attributesFields.set(fields);
+
+          // Initialize default values for required fields
+          fields.forEach(field => {
+            if (field.props?.required && field.key) {
+              const keyStr = this.getKeyAsString(field.key);
+
+              // Set default values based on field type
+              switch (field.type) {
+                case 'input':
+                  this.model.attributes[keyStr] = '';
+                  break;
+                case 'number':
+                  this.model.attributes[keyStr] = 0;
+                  break;
+                case 'checkbox':
+                  this.model.attributes[keyStr] = false;
+                  break;
+                case 'select':
+                  // For select, use the first option if available
+                  if (field.props?.options) {
+                    this.model.attributes[keyStr] = field.props.options;
+                  }
+                  break;
+                case 'color-picker':
+                  this.model.attributes[keyStr] = '#000000';
+                  break;
+                // Add defaults for other custom types
+                default:
+                  this.model.attributes[keyStr] = '';
+              }
+            }
+          });
+
+          // Update the form after setting defaults
+          setTimeout(() => {
+            this.attributesForm.patchValue(this.model.attributes);
+          });
+
+          // Debug which fields are causing validation issues
+          // this.debugAttributeForm();
         });
     }
   }
 
+  // Add this helper method to debug form validation
+  // private debugAttributeForm(): void {
+  //   if (!environment.production) {
+  //     setTimeout(() => {
+  //       console.group('Attribute Form Validation');
+  //       console.log('Form valid:', this.attributesForm.valid);
+  //       console.log('Form values:', this.attributesForm.value);
+  //       console.log('Form errors:', this.attributesForm.errors);
+
+  //       const invalidControls: string[] = [];
+  //       Object.keys(this.attributesForm.controls).forEach(key => {
+  //         const control = this.attributesForm.get(key);
+  //         if (control && !control.valid) {
+  //           invalidControls.push(key);
+  //           console.log(`Invalid field "${key}":`, {
+  //             errors: control.errors,
+  //             value: control.value,
+  //             field: this.attributesFields().find(f => this.getKeyAsString(f.key ?? '') === key)
+  //           });
+  //         }
+  //       });
+
+  //       if (invalidControls.length) {
+  //         console.warn('Invalid fields:', invalidControls);
+  //       }
+
+  //       console.groupEnd();
+  //     }, 1000); // Small delay to ensure form controls are registered
+  //   }
+  // }
+
   private initBasicInfoFields(): void {
     combineLatest([
-      this.categoryService.getCategories().pipe(startWith([])),
-      of(['USD', 'EUR', 'GBP', 'CAD', 'AUD']), // Currencies
+      this.categoryService.getAll().pipe(startWith([])),
+      of([]), // Currencies
     ]).pipe(
       takeUntil(this.destroy$)
-    ).subscribe(([categories, currencies]) => {
+    ).subscribe(([categories]) => {
       this.basicInfoFields.set([
         {
           key: 'name',
@@ -271,7 +351,7 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
             label: 'Category',
             placeholder: 'Select a category',
             required: true,
-            options: categories.map(cat => ({
+            options: categories.map((cat: { name: string; id: string; }) => ({
               label: cat.name,
               value: cat.id
             }))
@@ -291,17 +371,20 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
             options: []
           },
           expressionProperties: {
-            'props.options': (model, formState) => {
+            'props.options': (model) => {
               const categoryId = model.categoryId;
               if (!categoryId) return [];
-
-              const category = categories.find(c => c.id === categoryId);
-              if (!category?.subCategories) return [];
-
-              return category.subCategories.map(sub => ({
+              return categories.map((sub: { name: string; id: string; }) => ({
                 label: sub.name,
                 value: sub.id
               }));
+              // const category = categories.find((c: { id: string; }) => c.id === categoryId);
+              // if (!category?.subCategories) return [];
+
+              // return category.subCategories.map((sub: { name: string; id: string; }) => ({
+              //   label: sub.name,
+              //   value: sub.id
+              // }));
             }
           }
         }
@@ -494,6 +577,7 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
     const productData: ProductCreateCommand = {
       name: this.model.basicInfo.name,
       description: this.model.basicInfo.description,
+      productTypeId: this.model.basicInfo.productTypeId,
       shortDescription: this.model.basicInfo.shortDescription,
       sku: this.model.basicInfo.sku,
       barcode: this.model.basicInfo.barcode,
@@ -517,7 +601,7 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
     };
 
     // Process attributes for specific product types
-    this.processTypeSpecificAttributes(productData);
+    // this.processTypeSpecificAttributes(productData);
 
     // Create or update product
     const request$ = this.isEditMode() && this.productId()
@@ -652,66 +736,6 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  processTypeSpecificAttributes(productData: any): void {
-    // This method will process attributes specific to certain product types
-    // For example, adding special handling for clothing sizes, electronics specs, etc.
-
-    if (!this.selectedProductType()) return;
-
-    switch (this.selectedProductType()?.id) {
-      case 'clothing':
-        // Process clothing-specific attributes
-        this.processClothingAttributes(productData);
-        break;
-      case 'electronics':
-        // Process electronics-specific attributes
-        this.processElectronicsAttributes(productData);
-        break;
-      case 'books':
-        // Process book-specific attributes
-        this.processBooksAttributes(productData);
-        break;
-      default:
-        // No special processing needed
-        break;
-    }
-  }
-
-  private processClothingAttributes(productData: any): void {
-    // Example: Convert size/color attributes to variants if needed
-    const sizes = this.model.attributes['size'];
-    const colors = this.model.attributes['color'];
-
-    if (Array.isArray(sizes) && sizes.length > 0 && colors) {
-      // This is just an example of what could be done
-      // In a real application, we might create product variants here
-      productData.hasVariants = true;
-      productData.variantAttributes = ['size', 'color'];
-    }
-  }
-
-  private processElectronicsAttributes(productData: any): void {
-    // Example: Add technical specifications section
-    if (this.model.attributes['brand'] || this.model.attributes['model']) {
-      productData.specifications = {
-        brand: this.model.attributes['brand'],
-        model: this.model.attributes['model'],
-        warrantyMonths: this.model.attributes['warranty']
-      };
-    }
-  }
-
-  private processBooksAttributes(productData: any): void {
-    // Example: Add publishing information
-    if (this.model.attributes['author']) {
-      productData.publishingDetails = {
-        author: this.model.attributes['author'],
-        isbn: this.model.attributes['isbn'],
-        pages: this.model.attributes['pages']
-      };
-    }
-  }
-
   /**
    * Save the current form data to session storage
    * This is used to preserve data during development when backend errors occur
@@ -827,11 +851,11 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
       basicInfo: {
         name: product.name,
         description: product.description,
-        shortDescription: product.shortDescription || '',
+        shortDescription: product.shortDescription ?? '',
         sku: product.sku,
-        barcode: product.barcode || '',
+        barcode: product.barcode ?? '',
         categoryId: product.category.id,
-        subCategoryId: product.subCategory?.id || '',
+        subCategoryId: product.subCategory?.id ?? '',
         productTypeId: product.category.id
       },
       pricing: {
@@ -842,12 +866,12 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
         lowStockThreshold: product.lowStockThreshold
       },
       attributes: {},
-      status: product.status || ProductStatus.Draft,
-      visibility: product.visibility || ProductVisibility.Hidden,
-      images: product.images || [],
-      seo: product.seo || {
+      status: product.status ?? ProductStatus.Draft,
+      visibility: product.visibility ?? ProductVisibility.Hidden,
+      images: product.images ?? [],
+      seo: product.seo ?? {
         title: product.name,
-        description: product.shortDescription || '',
+        description: product.shortDescription ?? '',
         keywords: []
       }
     };
@@ -900,4 +924,5 @@ export class DynamicProductFormComponent implements OnInit, OnDestroy {
 
     console.log('Product loaded successfully for editing', this.model);
   }
+  trackByProductTypeId = (_: number, type: { id: string }) => type.id;
 }

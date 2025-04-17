@@ -13,14 +13,14 @@ public class ProductJsonConverter : JsonConverter<Product>
             throw new JsonException();
         }
 
-        using (JsonDocument document = JsonDocument.ParseValue(ref reader))
+        using (var document = JsonDocument.ParseValue(ref reader))
         {
 
 
             var root = document.RootElement;
 
             // DEBUG: Log the entire JSON to understand its structure
-            string jsonString = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
+            var jsonString = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true, ReferenceHandler = ReferenceHandler.Preserve });
             System.Diagnostics.Debug.WriteLine("===== INCOMING JSON DATA =====");
             System.Diagnostics.Debug.WriteLine(jsonString);
             System.Diagnostics.Debug.WriteLine("==============================");
@@ -35,13 +35,13 @@ public class ProductJsonConverter : JsonConverter<Product>
                 }
 
                 // Get other properties with fallbacks
-                string name = "";
+                var name = "";
                 if (root.TryGetProperty("name", out var nameProperty))
                 {
                     name = nameProperty.GetString() ?? "";
                 }
 
-                string description = "";
+                var description = "";
                 if (root.TryGetProperty("description", out var descProperty))
                 {
                     description = descProperty.GetString() ?? "";
@@ -60,19 +60,19 @@ public class ProductJsonConverter : JsonConverter<Product>
                     }
                 }
 
-                string currency = "USD";
+                var currency = "USD";
                 if (root.TryGetProperty("currency", out var currencyProperty))
                 {
                     currency = currencyProperty.GetString() ?? "USD";
                 }
 
-                string sku = "";
+                var sku = "";
                 if (root.TryGetProperty("sku", out var skuProperty))
                 {
                     sku = skuProperty.GetString() ?? "";
                 }
 
-                int stock = 0;
+                var stock = 0;
                 if (root.TryGetProperty("stock", out var stockProperty))
                 {
                     stock = stockProperty.GetInt32();

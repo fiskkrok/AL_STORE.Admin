@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, tap } from 'rxjs/operators';
 import { FormlyFieldConfig } from '@ngx-formly/core';
-import { ProductType, ProductTypeAttribute } from '../../shared/models/product-type.model';
+import { ProductType } from '../../shared/models/product-type.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -33,7 +33,7 @@ export class ProductTypeService {
                 }),
                 catchError(error => {
                     console.error('Error fetching product types:', error);
-                    return of(this.getStaticProductTypes());
+                    return of(error);
                 }),
                 shareReplay(1)
             );
@@ -60,154 +60,6 @@ export class ProductTypeService {
         );
     }
 
-    // For development/fallback use
-    private getStaticProductTypes(): ProductType[] {
-        type AttributeType = ProductTypeAttribute['type'];
-
-        return [
-            {
-                id: 'clothing',
-                name: 'Clothing',
-                description: 'Apparel items including shirts, pants, dresses, etc.',
-                icon: 'checkroom',
-                attributes: [
-                    {
-                        id: 'size',
-                        name: 'Sizes',
-                        type: 'multiselect' as AttributeType,
-                        isRequired: true,
-                        options: [
-                            { label: 'One size', value: 'one_size' },
-                            { label: 'XS', value: 'XS' },
-                            { label: 'S', value: 'S' },
-                            { label: 'M', value: 'M' },
-                            { label: 'L', value: 'L' },
-                            { label: 'XL', value: 'XL' },
-                            { label: 'XXL', value: 'XXL' }
-                        ],
-                        displayOrder: 1,
-                        isFilterable: true,
-                        isComparable: false
-                    },
-                    {
-                        id: 'color',
-                        name: 'Colors',
-                        type: 'color' as AttributeType,
-                        isRequired: true,
-                        displayOrder: 2,
-                        isFilterable: true,
-                        isComparable: false
-                    },
-                    {
-                        id: 'material',
-                        name: 'Material',
-                        type: 'text' as AttributeType,
-                        isRequired: false,
-                        displayOrder: 3,
-                        isFilterable: true,
-                        isComparable: true
-                    },
-                    {
-                        id: 'gender',
-                        name: 'Gender',
-                        type: 'select' as AttributeType,
-                        isRequired: true,
-                        options: [
-                            { label: 'Men', value: 'men' },
-                            { label: 'Women', value: 'women' },
-                            { label: 'Unisex', value: 'unisex' },
-                            { label: 'Boys', value: 'boys' },
-                            { label: 'Girls', value: 'girls' }
-                        ],
-                        displayOrder: 4,
-                        isFilterable: true,
-                        isComparable: false
-                    }
-                ],
-                formConfig: [] // Will be generated dynamically based on attributes
-            },
-            {
-                id: 'electronics',
-                name: 'Electronics',
-                description: 'Electronic devices and accessories',
-                icon: 'devices',
-                attributes: [
-                    {
-                        id: 'brand',
-                        name: 'Brand',
-                        type: 'text' as AttributeType,
-                        isRequired: true,
-                        displayOrder: 1,
-                        isFilterable: true,
-                        isComparable: true
-                    },
-                    {
-                        id: 'model',
-                        name: 'Model',
-                        type: 'text' as AttributeType,
-                        isRequired: true,
-                        displayOrder: 2,
-                        isFilterable: true,
-                        isComparable: true
-                    },
-                    {
-                        id: 'warranty',
-                        name: 'Warranty Period (months)',
-                        type: 'number' as AttributeType,
-                        isRequired: false,
-                        displayOrder: 3,
-                        isFilterable: true,
-                        isComparable: true
-                    }
-                ],
-                formConfig: [] // Will be generated dynamically based on attributes
-            },
-            {
-                id: 'books',
-                name: 'Books',
-                description: 'Books, publications, and literature',
-                icon: 'menu_book',
-                attributes: [
-                    {
-                        id: 'author',
-                        name: 'Author',
-                        type: 'text' as AttributeType,
-                        isRequired: true,
-                        displayOrder: 1,
-                        isFilterable: true,
-                        isComparable: false
-                    },
-                    {
-                        id: 'isbn',
-                        name: 'ISBN',
-                        type: 'text' as AttributeType,
-                        isRequired: true,
-                        displayOrder: 2,
-                        isFilterable: false,
-                        isComparable: false,
-                        validation: {
-                            pattern: '^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$',
-                            message: 'Please enter a valid ISBN'
-                        }
-                    },
-                    {
-                        id: 'pages',
-                        name: 'Page Count',
-                        type: 'number' as AttributeType,
-                        isRequired: false,
-                        displayOrder: 3,
-                        isFilterable: false,
-                        isComparable: true
-                    }
-                ],
-                formConfig: [] // Will be generated dynamically based on attributes
-            }
-        ].map(type => ({
-            ...type,
-            formConfig: this.generateFormConfigFromAttributes(type.attributes)
-        }));
-    }
-
     // Dynamically converts ProductTypeAttributes to FormlyFieldConfig objects
     private generateFormConfigFromAttributes(attributes: any[]): FormlyFieldConfig[] {
         return attributes.map(attr => {
@@ -218,7 +70,8 @@ export class ProductTypeService {
                     description: attr.description,
                     required: attr.isRequired,
                     options: attr.options
-                }
+                },
+                defaultValue: attr.isRequired ? this.getDefaultValueForType(attr.type, attr.defaultValue) : undefined
             };
 
             // Set field type based on attribute type
@@ -276,8 +129,23 @@ export class ProductTypeService {
                     };
                 }
             }
-
             return baseField;
         });
+    }
+
+    private getDefaultValueForType(type: string, providedDefault: any): any {
+        if (providedDefault !== undefined) return providedDefault;
+
+        switch (type) {
+            case 'text': return '';
+            case 'number': return 0;
+            case 'boolean': return false;
+            case 'select': return '';
+            case 'multiselect': return [];
+            case 'color': return '#000000';
+            case 'size': return {};
+            case 'dimension': return {};
+            default: return '';
+        }
     }
 }

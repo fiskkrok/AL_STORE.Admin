@@ -35,8 +35,9 @@ public class CacheMappingProfile : Profile
             .ForMember(dest => dest.DomainEvents, opt => opt.Ignore())
             .ForMember(dest => dest.Category, opt => opt.Ignore())
             .ForMember(dest => dest.SubCategory, opt => opt.Ignore())
-          
+
             .AfterMap((src, dest) => {
+                // ...any other after-map logic...
             });
 
         CreateMap<CategoryCacheDto, Category>()

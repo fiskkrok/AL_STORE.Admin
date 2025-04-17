@@ -1,5 +1,6 @@
 ﻿using Admin.Application;
 using Admin.Infrastructure.Extensions;
+using Admin.Infrastructure.Persistence;
 using Admin.WebAPI.Configurations;
 
 namespace Admin.WebAPI.Extensions;
@@ -12,7 +13,7 @@ public static class ConfigurationExtensions
     /// <summary>
     /// Configures all application services
     /// </summary>
-    public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
+    public static void ConfigureServices(this IHostApplicationBuilder builder)
     {
         // Application 
         builder.Services.AddApplication();
@@ -21,10 +22,10 @@ public static class ConfigurationExtensions
 
         // Infrastructure services
         builder.Services.AddApplicationServices();
-        builder.Services.AddDatabaseServices(builder.Configuration);
+        builder.AddDatabaseServices(builder.Configuration);
         builder.Services.AddMessagingServices(builder.Configuration);
         builder.Services.AddStorageServices(builder.Configuration);
-        builder.Services.AddCachingServices(builder.Configuration);
+        builder.AddCachingServices(builder.Configuration);
         builder.Services.AddInfrastructureServices(builder.Configuration);
 
         // API services
@@ -37,7 +38,6 @@ public static class ConfigurationExtensions
         // Monitoring
         builder.Services.AddMonitoringServices(builder.Configuration);
 
-        return builder;
     }
 
     /// <summary>
@@ -49,7 +49,8 @@ public static class ConfigurationExtensions
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger(options => options.RouteTemplate = "api-docs/{documentName}/swagger.json");
-            app.UseSwaggerUI(options => {
+            app.UseSwaggerUI(options =>
+            {
                 options.SwaggerEndpoint("/api-docs/v1/swagger.json", "Admin API V1");
                 options.RoutePrefix = "api-docs";
                 options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
@@ -77,9 +78,21 @@ public static class ConfigurationExtensions
         // SignalR and Health checks
         app.MapSignalRHubs();
         app.UseHealthChecks();
-
-        // Seed database
-        await app.SeedDatabase();
+        if (app.Environment.IsDevelopment())
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+                // Seed database
+                await app.SeedDatabase();
+                context.Database.EnsureCreated();
+            }
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
+            app.UseHsts();
+        }
 
         return app;
     }

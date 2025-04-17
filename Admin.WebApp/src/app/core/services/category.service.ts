@@ -1,177 +1,98 @@
 // src/app/core/services/category.service.ts
-import { Injectable, inject, OnDestroy } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { Category } from 'src/app/shared/models/category.model';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+import { BaseCrudService } from './base-crud.service';
+import { Category } from '../../shared/models/category.model';
+import { Store } from '@ngrx/store';
+import { CategoryActions } from '../../store/category/category.actions';
 import {
     CreateCategoryRequest,
     UpdateCategoryRequest,
     ReorderCategoryRequest
-} from 'src/app/shared/models/Request.model';
-import { Store } from '@ngrx/store';
-import * as signalR from '@microsoft/signalr';
-import { CategoryActions } from 'src/app/store/category/category.actions';
-import { AuthService } from './auth.service';
+} from '../../shared/models/Request.model';
+import { StockSignalRService } from './stock-signalr.service';
 
 @Injectable({
     providedIn: 'root'
 })
-export class CategoryService implements OnDestroy {
-    private readonly apiUrl = environment.apiUrls.admin.categories;
-    private hubConnection: signalR.HubConnection | undefined;
-    private readonly authService = inject(AuthService);
-    private readonly http = inject(HttpClient)
-    private readonly store = inject(Store)
+export class CategoryService extends BaseCrudService<Category, string> {
+    protected override endpoint = 'categories';
 
-    constructor(
-    ) {
-        this.initializeSignalR();
-    }
-    private mapCategoryFromApi(category: Category): Category {
-        return {
-            ...category,
-            // Ensure collections are never null
-            subCategories: category.subCategories || [],
-            // Convert dates if needed
-            createdAt: category.createdAt,
-            lastModifiedAt: category.lastModifiedAt,
-            // Convert parent category recursively if it exists
-            parentCategory: category.parentCategory ? this.mapCategoryFromApi(category.parentCategory) : null
-        };
-    }
-    private initializeSignalR() {
-        this.authService.getAccessToken().subscribe(token => {
-            if (!token) {
-                console.warn('No auth token available for Category SignalR connection');
-                return;
-            }
+    private readonly store = inject(Store);
+    private readonly categorySignalR = inject(StockSignalRService);
 
-            this.hubConnection = new signalR.HubConnectionBuilder()
-                .withUrl(environment.signalR.category, {
-                    accessTokenFactory: () => token
-                })
-                .withAutomaticReconnect()
-                .build();
-
-            this.hubConnection.start().catch(err => console.error('Error starting SignalR:', err));
-
-            this.hubConnection.on('CategoryCreated', (category: Category) => {
-                this.store.dispatch(CategoryActions.createCategorySuccess({ category }));
-            });
-
-            this.hubConnection.on('CategoryUpdated', (category: Category) => {
-                this.store.dispatch(CategoryActions.updateCategorySuccess({ category }));
-            });
-
-            this.hubConnection.on('CategoryDeleted', (categoryId: string) => {
-                this.store.dispatch(CategoryActions.deleteCategorySuccess({ id: categoryId }));
-            });
-        });
-
-        // Recreate connection when auth state changes
-        this.authService.authState$.subscribe(state => {
-            if (state.isAuthenticated && state.accessToken && (!this.hubConnection || this.hubConnection.state === signalR.HubConnectionState.Disconnected)) {
-                this.createConnection(state.accessToken);
-            }
-        });
-    }
-
-    private createConnection(token: string) {
-        // Close existing connection if open
-        if (this.hubConnection) {
-            this.hubConnection.stop().catch(err => console.error('Error stopping connection:', err));
-        }
-
-        this.hubConnection = new signalR.HubConnectionBuilder()
-            .withUrl(environment.signalR.category, {
-                accessTokenFactory: () => token
-            })
-            .withAutomaticReconnect()
-            .build();
-
-        this.setupHubListeners();
-        this.hubConnection.start().catch(err => console.error('Error starting SignalR:', err));
-    }
-
-    private setupHubListeners() {
-        if (!this.hubConnection) return;
-
-        this.hubConnection.on('CategoryCreated', (category: Category) => {
-            this.store.dispatch(CategoryActions.createCategorySuccess({ category }));
-        });
-
-        this.hubConnection.on('CategoryUpdated', (category: Category) => {
-            this.store.dispatch(CategoryActions.updateCategorySuccess({ category }));
-        });
-
-        this.hubConnection.on('CategoryDeleted', (categoryId: string) => {
-            this.store.dispatch(CategoryActions.deleteCategorySuccess({ id: categoryId }));
-        });
-    }
-
-    getCategories(): Observable<Category[]> {
-        return this.http.get<Category[]>(this.apiUrl).pipe(
+    /**
+     * Get all categories 
+     * @returns Observable of categories
+     */
+    override getAll(): Observable<Category[]> {
+        return super.getAll().pipe(
             map(categories => categories.map(this.mapCategoryFromApi))
         );
     }
 
-    getCategory(id: string): Observable<Category> {
-        return this.http.get<Category>(`${this.apiUrl}/${id}`).pipe(
+    /**
+     * Get a specific category by ID
+     * @param id Category ID
+     * @returns Observable of category
+     */
+    override getById(id: string): Observable<Category> {
+        return super.getById(id).pipe(
             map(this.mapCategoryFromApi)
         );
     }
 
+    /**
+     * Create a new category
+     * @param request Category creation data
+     * @returns Observable of created category
+     */
     createCategory(request: CreateCategoryRequest): Observable<Category> {
-        return this.http.post<Category>(this.apiUrl, request).pipe(
-            catchError(this.handleError)
+        return this.create(request).pipe(
+            map(this.mapCategoryFromApi)
         );
     }
 
+    /**
+     * Update an existing category
+     * @param id Category ID
+     * @param request Category update data
+     * @returns Observable of updated category
+     */
     updateCategory(id: string, request: UpdateCategoryRequest): Observable<Category> {
-        return this.http.put<Category>(`${this.apiUrl}/${id}`, request).pipe(
-            catchError(this.handleError)
+        return this.update(id, request).pipe(
+            map(this.mapCategoryFromApi)
         );
     }
 
-    deleteCategory(id: string): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-            catchError(this.handleError)
-        );
-    }
-
+    /**
+     * Reorder categories
+     * @param requests Array of reorder requests
+     * @returns Observable of operation result
+     */
     reorderCategories(requests: ReorderCategoryRequest[]): Observable<void> {
         return this.http.post<void>(`${this.apiUrl}/reorder`, requests).pipe(
-            catchError(this.handleError)
+            tap(() => {
+                // After successful reordering, reload categories to get updated positions
+                this.store.dispatch(CategoryActions.loadCategories());
+            }),
+            catchError(error => this.handleError(error, 'Failed to reorder categories'))
         );
     }
 
-    private handleError(error: any): Observable<never> {
-        let errorMessage = 'An unknown error occurred';
-
-        if (error.error instanceof ErrorEvent) {
-            // Client-side error
-            errorMessage = error.error.message;
-        } else {
-            // Server-side error
-            if (error.status === 400 && error.error?.code === 'Category.HasProducts') {
-                errorMessage = 'Cannot delete category with associated products';
-            } else if (error.status === 400 && error.error?.code === 'Category.CircularReference') {
-                errorMessage = 'Cannot create circular reference in category hierarchy';
-            } else {
-                errorMessage = error.error?.message || 'Server error';
-            }
-        }
-
-        console.error('Category service error:', error);
-        return throwError(() => new Error(errorMessage));
-    }
-
-    // Clean up SignalR connection
-    ngOnDestroy() {
-        if (this.hubConnection) {
-            this.hubConnection.stop();
-        }
+    /**
+     * Map category from API response to client model
+     * @param category Raw category data
+     * @returns Mapped Category object
+     */
+    private mapCategoryFromApi(category: any): Category {
+        return {
+            ...category,
+            subCategories: category.subCategories || [],
+            createdAt: category.createdAt,
+            lastModifiedAt: category.lastModifiedAt,
+            parentCategory: category.parentCategory ? this.mapCategoryFromApi(category.parentCategory) : null
+        };
     }
 }

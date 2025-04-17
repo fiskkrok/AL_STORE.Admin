@@ -66,7 +66,7 @@ public class GetProductsEndpoint : EndpointWithoutRequest<PagedList<ProductDto>>
 
         if (result.IsSuccess)
         {
-            await SendOkAsync(result.Value, ct);
+            await SendOkAsync(result.Value!, ct);
         }
         else
         {

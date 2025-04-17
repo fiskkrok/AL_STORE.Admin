@@ -18,34 +18,35 @@ public static class CachingServicesConfiguration
     /// <summary>
     /// Adds caching services, including Redis and hybrid cache with DTO-based caching
     /// </summary>
-    public static IServiceCollection AddCachingServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddCachingServices(this IHostApplicationBuilder builder, IConfiguration configuration)
     {
         // Get Redis connection string
-        var redisConnectionString = configuration.GetConnectionString("Redis") ??
-                                    throw new InvalidOperationException("Redis connection string is not configured.");
+        //var redisConnectionString = configuration.GetConnectionString("Redis") ??
+        //                            throw new InvalidOperationException("Redis connection string is not configured.");
 
-        // Add Redis connection
-        services.AddSingleton<IConnectionMultiplexer>(sp =>
-            ConnectionMultiplexer.Connect(redisConnectionString));
+        //// Add Redis connection
+        //services.AddSingleton<IConnectionMultiplexer>(sp =>
+        //    ConnectionMultiplexer.Connect(redisConnectionString));
 
-        // Add Redis distributed cache
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = redisConnectionString;
-            options.InstanceName = "Admin_";
-            if (options.ConfigurationOptions != null)
-            {
-                options.ConfigurationOptions.ConnectTimeout = 10000; // 10 seconds
-                options.ConfigurationOptions.SyncTimeout = 10000;
-            }
-        });
+        //// Add Redis distributed cache
+        //services.AddStackExchangeRedisCache(options =>
+        //{
+        //    options.Configuration = redisConnectionString;
+        //    options.InstanceName = "Admin_";
+        //    if (options.ConfigurationOptions != null)
+        //    {
+        //        options.ConfigurationOptions.ConnectTimeout = 10000; // 10 seconds
+        //        options.ConfigurationOptions.SyncTimeout = 10000;
+        //    }
+        //});
+        builder.AddRedisClient("redis");
 
         // Add cache service
-        services.AddScoped<ICacheService, RedisCacheService>();
+        builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
         // Add hybrid cache (in-memory + Redis)
 #pragma warning disable EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        services.AddHybridCache(options =>
+        builder.Services.AddHybridCache(options =>
         {
             options.DefaultEntryOptions = new HybridCacheEntryOptions
             {
@@ -57,19 +58,18 @@ public static class CachingServicesConfiguration
 #pragma warning restore EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Register cache mapping profiles for DTO-based caching
-        services.AddAutoMapper(typeof(CacheMappingProfile).Assembly);
+        builder.Services.AddAutoMapper(typeof(CacheMappingProfile).Assembly);
 
         // Configure repository decorators with DTO-based caching
-        ConfigureRepositoryDecorators(services, configuration);
+        ConfigureRepositoryDecorators(builder.Services, configuration);
 
         // Add cache warming service
-        services.AddHostedService<CacheWarmingService>();
+        builder.Services.AddHostedService<CacheWarmingService>();
 
         // Add Redis health check
-        services.AddHealthChecks()
+        builder.Services.AddHealthChecks()
             .AddCheck<RedisHealthCheck>("redis", tags: new[] { "cache", "redis" });
 
-        return services;
     }
 
     private static void ConfigureRepositoryDecorators(IServiceCollection services, IConfiguration configuration)

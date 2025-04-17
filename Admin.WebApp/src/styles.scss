@@ -311,6 +311,12 @@
     }
 }
 
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 /* Material Design Component Overrides */
 /* Select dropdown styling */
 .mat-mdc-select-panel {
@@ -356,10 +362,10 @@
 }
 
 /* Form field styling */
-.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field {
+.mat-mdc-form-field {
     &.mat-mdc-form-field-appearance-outline {
         .mat-mdc-form-field-wrapper {
-            @apply rounded-md;
+            @apply rounded-md !important;
         }
 
         .mat-mdc-form-field-flex {
@@ -375,4 +381,12 @@
 /* Button styling */
 .mat-mdc-raised-button.mat-primary {
     @apply bg-primary-600 hover:bg-primary-700;
+}
+
+.mat-mdc-paginator {
+    .mat-mdc-select {
+        @apply w-14;
+        @apply ml-3;
+    }
+
 }

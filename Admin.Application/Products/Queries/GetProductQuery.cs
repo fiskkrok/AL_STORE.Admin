@@ -56,7 +56,7 @@ public class GetProductQueryHandler : QueryHandler<GetProductQuery, ProductDto>
                     .ThenInclude(v => v.Attributes)
                 .Include(p => p.Attributes)
                 .AsNoTracking() // Important for read operations
-                //.AsSplitQuery() 
+                //.AsSplitQuery()
                 .FirstOrDefaultAsync(p => p.Id == query.Id && !p.IsArchived, cancellationToken);
 
             if (product == null)

@@ -32,6 +32,7 @@ public class ProductMappingProfile : Profile
             .ConstructUsing((src, context) => new ProductDto
             {
                 Id = src.Id,
+                ProductTypeId = src.ProductTypeId.ToString() ?? "",
                 Name = src.Name,
                 Images = [],
                 Variants = [],

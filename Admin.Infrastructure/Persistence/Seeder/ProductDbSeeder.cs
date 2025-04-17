@@ -12,6 +12,11 @@ public class ProductDbSeeder : IProductSeeder
     private readonly AdminDbContext _context;
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<ProductDbSeeder> _logger;
+
+    private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    };
     private readonly StockManagementService _stockManagementService;
     private const int TOTAL_IMAGES = 29;
     private int _currentImageIndex = 1;
@@ -54,7 +59,7 @@ public class ProductDbSeeder : IProductSeeder
                 var sourcePath = Path.Combine(_env.ContentRootPath, "Setup", "product.json");
                 var sourceJson = await File.ReadAllTextAsync(sourcePath);
                 var seedData = JsonSerializer.Deserialize<ProductSeedData>(sourceJson,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    CachedJsonSerializerOptions);
 
                 // Get all categories with their subcategories
                 var categories = await _context.Categories

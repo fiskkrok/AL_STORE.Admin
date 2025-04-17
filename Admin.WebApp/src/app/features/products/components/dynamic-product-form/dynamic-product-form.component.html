@@ -19,9 +19,11 @@
                         <!-- Product Type Selection -->
                         <mat-form-field appearance="fill" class="full-width">
                             <mat-label>Product Type</mat-label>
-                            <mat-select [value]="selectedProductType()?.id"
+                            <mat-select
+                                [value]="isEditMode() && productTypeId ? productTypeId : selectedProductType()?.id"
                                 (selectionChange)="onProductTypeChange($event.value)">
-                                <mat-option *ngFor="let type of productTypes()" [value]="type.id">
+                                <mat-option *ngFor="let type of productTypes(); trackBy: trackByProductTypeId"
+                                    [value]="type.id">
                                     {{ type.name }}
                                 </mat-option>
                             </mat-select>

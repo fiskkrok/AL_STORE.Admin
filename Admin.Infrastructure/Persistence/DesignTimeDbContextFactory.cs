@@ -18,7 +18,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AdminDbCon
             .Build();
 
         var builder = new DbContextOptionsBuilder<AdminDbContext>();
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString("AdminConnection");
 
         builder.UseSqlServer(connectionString);
 

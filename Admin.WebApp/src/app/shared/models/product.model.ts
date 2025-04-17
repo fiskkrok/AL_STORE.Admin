@@ -23,6 +23,7 @@ export interface ProductCreateCommand {
     name: string;
     slug?: string;
     description: string;
+    productTypeId: string;
     shortDescription?: string;
     sku: string;
     price: number;
@@ -60,6 +61,7 @@ export interface Product {
     id: string;
     name: string;
     slug: string;
+    productTypeId: string;
     description: string;
     shortDescription?: string;
     sku: string;

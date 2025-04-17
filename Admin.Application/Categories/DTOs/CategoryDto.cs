@@ -16,7 +16,7 @@ public record CategoryDto
     public Guid? ParentCategoryId { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public CategoryDto? ParentCategory { get; init; }
-
+    [JsonIgnore]
     public List<CategoryDto> SubCategories { get; init; } = new();
     public int ProductCount { get; init; }
     public DateTime CreatedAt { get; init; }

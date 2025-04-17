@@ -484,6 +484,68 @@ public class ProductTypeDbSeeder : IProductTypeSeeder
         sportsType.UpdateAttributes(JsonSerializer.Serialize(sportsAttributes));
         _context.ProductTypes.Add(sportsType);
 
+        // ACCESSORIES
+        var accessoriesType = new ProductType(
+            id: CreateDeterministicGuid("accessories").ToString(),
+            name: "Accessories",
+            description: "Watches, jewelry, and other fashion add-ons",
+            icon: "watch");
+
+        var accessoriesAttributes = new List<object>
+    {
+        new {
+            Id = "brand",
+            Name = "Brand",
+            Type = "text",
+            IsRequired = true,
+            DisplayOrder = 1,
+            IsFilterable = true,
+            IsComparable = true
+        },
+        new {
+            Id = "color",
+            Name = "Color",
+            Type = "color",
+            IsRequired = false,
+            DisplayOrder = 2,
+            IsFilterable = true,
+            IsComparable = false
+        },
+        new {
+            Id = "material",
+            Name = "Material",
+            Type = "text",
+            IsRequired = false,
+            DisplayOrder = 3,
+            IsFilterable = true,
+            IsComparable = true
+        }
+    };
+        accessoriesType.UpdateAttributes(JsonSerializer.Serialize(accessoriesAttributes));
+        _context.ProductTypes.Add(accessoriesType);
+
+        // OTHER
+        var otherType = new ProductType(
+            id: CreateDeterministicGuid("other").ToString(),
+            name: "Other",
+            description: "General products that do not fit a specific type",
+            icon: "widgets");
+
+        var otherAttributes = new List<object>
+    {
+        new {
+            Id = "notes",
+            Name = "Notes",
+            Type = "text",
+            IsRequired = false,
+            DisplayOrder = 1,
+            IsFilterable = false,
+            IsComparable = false
+        }
+    };
+        otherType.UpdateAttributes(JsonSerializer.Serialize(otherAttributes));
+        _context.ProductTypes.Add(otherType);
+
         await _context.SaveChangesAsync();
         _logger.LogInformation("Product types seeded successfully");
     }

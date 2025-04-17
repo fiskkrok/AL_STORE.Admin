@@ -51,7 +51,9 @@ export class ProductEffects {
             ofType(ProductActions.addProduct),
             tap(() => this.loadingService.show()),
             mergeMap(action =>
-                this.productService.createProduct({ ...action.product, categoryId: action.product.category.id }).pipe(
+                this.productService.createProduct({
+                    ...action.product, categoryId: action.product.category.id
+                }).pipe(
                     map(product => {
                         this.loadingService.hide();
                         return ProductActions.addProductSuccess({ product });

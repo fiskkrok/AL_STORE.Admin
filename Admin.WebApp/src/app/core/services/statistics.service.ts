@@ -1,8 +1,8 @@
+// src/app/core/services/statistics.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { BaseCrudService } from './base-crud.service';
 
 export interface DashboardStats {
     totalProducts: number;
@@ -15,11 +15,17 @@ export interface DashboardStats {
     ordersChange?: number;
 }
 
+export interface TimeRangeParams {
+    timeRange?: 'day' | 'week' | 'month' | 'year';
+    fromDate?: string;
+    toDate?: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
-export class StatisticsService {
-    private apiUrl = `${environment.apiUrls.admin.baseUrl}/statistics`;
+export class StatisticsService extends BaseCrudService<any, string> {
+    protected override endpoint = 'statistics';
 
     // Mock data for development/demo purposes
     private mockStats: DashboardStats = {
@@ -35,11 +41,9 @@ export class StatisticsService {
 
     private categoryCount = 8;
 
-    constructor(private http: HttpClient) { }
-
     /**
      * Get statistics data from the API
-     * @param timeRange - Optional time range filter (day, week, month)
+     * @param timeRange Optional time range filter (day, week, month)
      * @returns Observable of statistics data
      */
     getStatistics(timeRange: string = 'day'): Observable<DashboardStats> {
@@ -47,7 +51,6 @@ export class StatisticsService {
         // return this.http.get<DashboardStats>(`${this.apiUrl}?timeRange=${timeRange}`)
         //   .pipe(
         //     catchError(error => {
-        //       console.error('Error fetching statistics:', error);
         //       return of(this.mockStats);
         //     })
         //   );
@@ -78,59 +81,80 @@ export class StatisticsService {
      * @returns Observable of products with low stock
      */
     getLowStockProducts(): Observable<any[]> {
-        // In production, use:
-        // return this.http.get<any[]>(`${this.apiUrl}/low-stock`);
-
-        // Mock data
-        return of([
-            { id: 1, name: 'Wireless Headphones', stock: 3, minStock: 5 },
-            { id: 2, name: 'Smart Watch', stock: 2, minStock: 10 },
-            { id: 3, name: 'Bluetooth Speaker', stock: 4, minStock: 8 }
-        ]);
+        return this.http.get<any[]>(`${this.apiUrl}/low-stock`).pipe(
+            catchError(error => {
+                this.handleError(error, 'Failed to fetch low stock products');
+                // Fallback to mock data
+                return of([
+                    { id: 1, name: 'Wireless Headphones', stock: 3, minStock: 5 },
+                    { id: 2, name: 'Smart Watch', stock: 2, minStock: 10 },
+                    { id: 3, name: 'Bluetooth Speaker', stock: 4, minStock: 8 }
+                ]);
+            })
+        );
     }
 
     /**
      * Get top selling products
-     * @param metric - The metric to sort by (sales or revenue)
-     * @param limit - Maximum number of products to return
+     * @param metric The metric to sort by (sales or revenue)
+     * @param limit Maximum number of products to return
      * @returns Observable of top products
      */
     getTopProducts(metric: 'sales' | 'revenue' = 'sales', limit: number = 5): Observable<any[]> {
-        // In production, use:
-        // return this.http.get<any[]>(`${this.apiUrl}/top-products?metric=${metric}&limit=${limit}`);
+        return this.http.get<any[]>(`${this.apiUrl}/top-products`, {
+            params: { metric, limit }
+        }).pipe(
+            catchError(error => {
+                this.handleError(error, 'Failed to fetch top products');
+                // Fallback to mock data
+                const products = [
+                    { id: 1, name: 'Wireless Headphones', category: 'Electronics', sales: 145, revenue: 1245.50, change: 12.5 },
+                    { id: 2, name: 'Smart Watch', category: 'Wearables', sales: 98, revenue: 945.20, change: 8.3 },
+                    { id: 3, name: 'Smartphone Case', category: 'Accessories', sales: 312, revenue: 625.40, change: -2.1 },
+                    { id: 4, name: 'USB-C Cable', category: 'Accessories', sales: 254, revenue: 510.30, change: 5.2 },
+                    { id: 5, name: 'Bluetooth Speaker', category: 'Electronics', sales: 87, revenue: 870.00, change: 3.7 }
+                ];
 
-        // Mock data
-        const products = [
-            { id: 1, name: 'Wireless Headphones', category: 'Electronics', sales: 145, revenue: 1245.50, change: 12.5 },
-            { id: 2, name: 'Smart Watch', category: 'Wearables', sales: 98, revenue: 945.20, change: 8.3 },
-            { id: 3, name: 'Smartphone Case', category: 'Accessories', sales: 312, revenue: 625.40, change: -2.1 },
-            { id: 4, name: 'USB-C Cable', category: 'Accessories', sales: 254, revenue: 510.30, change: 5.2 },
-            { id: 5, name: 'Bluetooth Speaker', category: 'Electronics', sales: 87, revenue: 870.00, change: 3.7 }
-        ];
-
-        // Sort by the specified metric
-        const sortedProducts = [...products].sort((a, b) => b[metric] - a[metric]);
-
-        return of(sortedProducts.slice(0, limit));
+                // Sort by the specified metric
+                const sortedProducts = [...products].sort((a, b) => b[metric] - a[metric]);
+                return of(sortedProducts.slice(0, limit));
+            })
+        );
     }
 
     /**
      * Get recent activity items
-     * @param limit - Maximum number of activity items to return
+     * @param limit Maximum number of activity items to return
      * @returns Observable of recent activity items
      */
     getRecentActivity(limit: number = 5): Observable<any[]> {
-        // In production, use:
-        // return this.http.get<any[]>(`${this.apiUrl}/recent-activity?limit=${limit}`);
+        return this.http.get<any[]>(`${this.apiUrl}/recent-activity`, {
+            params: { limit }
+        }).pipe(
+            catchError(error => {
+                this.handleError(error, 'Failed to fetch recent activity');
+                // Fallback to mock data
+                const activities = [
+                    { id: 1, type: 'product_add', title: 'New product added: Wireless Headphones', user: 'John Smith', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+                    { id: 2, type: 'order_ship', title: 'Order #12345 shipped', description: 'Shipped to Jane Doe', timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) },
+                    { id: 3, type: 'stock_update', title: 'Product stock updated: Smart Watch', user: 'Sarah Connor', timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+                    { id: 4, type: 'category_add', title: 'New category added: Accessories', user: 'John Smith', timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) }
+                ];
+                return of(activities.slice(0, limit));
+            })
+        );
+    }
 
-        // Mock data
-        const activities = [
-            { id: 1, type: 'product_add', title: 'New product added: Wireless Headphones', user: 'John Smith', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) },
-            { id: 2, type: 'order_ship', title: 'Order #12345 shipped', description: 'Shipped to Jane Doe', timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000) },
-            { id: 3, type: 'stock_update', title: 'Product stock updated: Smart Watch', user: 'Sarah Connor', timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-            { id: 4, type: 'category_add', title: 'New category added: Accessories', user: 'John Smith', timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) }
-        ];
-
-        return of(activities.slice(0, limit));
+    /**
+     * Get sales data by time period
+     * @param params Time range parameters
+     * @returns Observable of sales data
+     */
+    getSalesData(params: TimeRangeParams): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/sales`, {
+            params: params as any
+        }).pipe(
+            catchError(error => this.handleError(error, 'Failed to fetch sales data'))
+        );
     }
 }

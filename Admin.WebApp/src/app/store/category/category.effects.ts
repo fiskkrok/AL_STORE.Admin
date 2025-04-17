@@ -3,27 +3,26 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { map, mergeMap, catchError, withLatestFrom, tap } from 'rxjs/operators';
+import { map, mergeMap, catchError, tap } from 'rxjs/operators';
 import { CategoryService } from '../../core/services/category.service';
 import { CategoryActions } from './category.actions';
-import { selectCategoryState } from './category.selectors';
 import { LoadingService } from '../../core/services/loading.service';
 import { ErrorService } from '../../core/services/error.service';
 
 @Injectable()
 export class CategoryEffects {
-    private actions$ = inject(Actions);
-    private store = inject(Store);
-    private categoryService = inject(CategoryService);
-    private loadingService = inject(LoadingService);
-    private errorService = inject(ErrorService);
+    private readonly actions$ = inject(Actions);
+    private readonly store = inject(Store);
+    private readonly categoryService = inject(CategoryService);
+    private readonly loadingService = inject(LoadingService);
+    private readonly errorService = inject(ErrorService);
 
     loadCategories$ = createEffect(() => {
         return this.actions$.pipe(
             ofType(CategoryActions.loadCategories),
             tap(() => this.loadingService.show()),
             mergeMap(() =>
-                this.categoryService.getCategories().pipe(
+                this.categoryService.getAll().pipe(
                     map(categories => {
                         this.loadingService.hide();
                         return CategoryActions.loadCategoriesSuccess({ categories });
@@ -101,7 +100,7 @@ export class CategoryEffects {
             ofType(CategoryActions.deleteCategory),
             tap(() => this.loadingService.show()),
             mergeMap(action =>
-                this.categoryService.deleteCategory(action.id).pipe(
+                this.categoryService.delete(action.id).pipe(
                     map(() => {
                         this.loadingService.hide();
                         return CategoryActions.deleteCategorySuccess({ id: action.id });

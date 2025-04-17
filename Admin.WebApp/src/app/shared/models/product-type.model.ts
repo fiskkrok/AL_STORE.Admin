@@ -29,47 +29,6 @@ export interface ProductTypeAttribute {
     isComparable: boolean;
 }
 
-// Core product categories with specific attribute sets
-export enum ProductCategory {
-    Clothing = 'clothing',
-    Electronics = 'electronics',
-    Furniture = 'furniture',
-    Books = 'books',
-    Groceries = 'groceries',
-    Beauty = 'beauty',
-    Toys = 'toys',
-    Other = 'other'
-}
-
-// Specific product types within categories
-export interface ClothingAttributes {
-    size?: string[];
-    color?: string[];
-    material?: string;
-    gender?: 'men' | 'women' | 'unisex' | 'boys' | 'girls';
-    season?: string[];
-    care?: string;
-}
-
-export interface ElectronicsAttributes {
-    brand?: string;
-    model?: string;
-    specifications?: Record<string, string>;
-    warranty?: string;
-    powerRequirements?: string;
-    connectivity?: string[];
-}
-
-export interface BookAttributes {
-    author?: string;
-    publisher?: string;
-    isbn?: string;
-    language?: string;
-    format?: 'hardcover' | 'paperback' | 'ebook' | 'audiobook';
-    genre?: string[];
-    pages?: number;
-}
-
 // Utility types for product variants
 export interface SizeVariant {
     size: string;

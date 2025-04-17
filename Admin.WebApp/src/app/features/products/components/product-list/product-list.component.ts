@@ -33,6 +33,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ImagePreviewDialogComponent } from '../image-preview/image-preview-dialog.component';
 import { CategoryService } from 'src/app/core/services/category.service';
+import { StockSignalRService } from 'src/app/core/services/stock-signalr.service';
 
 @Component({
     selector: 'app-product-list',
@@ -65,11 +66,14 @@ export class ProductListComponent implements OnInit, OnDestroy {
     private readonly productService = inject(ProductService);
     private readonly errorService = inject(ErrorService);
     private readonly categoryService = inject(CategoryService);
-    readonly sort = viewChild.required(MatSort);
+    private readonly stockSignalRService = inject(StockSignalRService);
+    readonly sort = viewChild(MatSort);
     readonly paginator = viewChild.required(MatPaginator);
 
     displayedColumns = ['image', 'name', 'category', 'price', 'stock', 'actions'];
     private readonly destroy$ = new Subject<void>();
+    // Track product IDs that we've already loaded stock for
+    private loadedStockProductIds = new Set<string>();
 
     products$: Observable<Product[]>;
     loading$: Observable<boolean>;
@@ -95,15 +99,41 @@ export class ProductListComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.initializeFilters();
         this.loadCategories();
+
+        // Listen for real-time stock updates via SignalR
+        this.stockSignalRService.stockUpdate$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(stockItem => {
+                // Stock updated via SignalR - automatically handled by the store
+                console.log(`Stock updated via SignalR for product ${stockItem.productId}`);
+            });
+
+        // Initial load of products and their stock (once per product)
         this.products$.pipe(takeUntil(this.destroy$)).subscribe(products => {
             products.forEach(product => {
-                this.store.dispatch(StockActions.loadStock({ productId: product.id }));
+                // Only load stock and subscribe to updates if we haven't seen this product before
+                if (!this.loadedStockProductIds.has(product.id)) {
+                    // Initial load from API
+                    this.store.dispatch(StockActions.loadStock({ productId: product.id }));
+
+                    // Subscribe to real-time updates for this product
+                    this.stockSignalRService.subscribeToProductStock(product.id);
+
+                    // Mark as loaded
+                    this.loadedStockProductIds.add(product.id);
+                }
             });
         });
+
         this.loadProducts();
     }
 
     ngOnDestroy() {
+        // Unsubscribe from all SignalR stock updates for products we were tracking
+        this.loadedStockProductIds.forEach(productId => {
+            this.stockSignalRService.unsubscribeFromProductStock(productId);
+        });
+
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -140,9 +170,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
     }
 
     private loadCategories() {
-        this.categoryService.getCategories().subscribe({
+        this.categoryService.getAll().subscribe({
             next: (categories) => this.categories.set(categories),
-            error: (error) => {
+            error: () => {
                 this.errorService.addError({
                     code: '',
                     message: 'Failed to load categories',
@@ -189,7 +219,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
             inStock: this.inStockFilter.value || undefined,
             page: paginator?.pageIndex ? paginator.pageIndex + 1 : 1,
             pageSize: this.paginator()?.pageSize || 10,
-            sortColumn: sort?.active as keyof Product,
+            sortColumn: sort?.active as keyof Product || 'name',
             sortDirection: sort?.direction || undefined
         };
     }

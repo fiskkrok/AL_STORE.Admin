@@ -242,9 +242,8 @@
         </div>
 
         <!-- Pagination -->
-        <mat-paginator class="border-t border-slate-200 dark:border-slate-700"
-            [length]="(pagination$ | async)?.totalItems" [pageSize]="10" [pageSizeOptions]="[10, 25, 50]"
-            (page)="onPageChange($event)">
+        <mat-paginator #paginator [length]="(pagination$ | async)?.totalItems" [pageSize]="10"
+            [pageSizeOptions]="[10, 25, 50]" (page)="onPageChange($event)">
         </mat-paginator>
     </div>
 </div>

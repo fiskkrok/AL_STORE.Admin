@@ -378,7 +378,29 @@ public class Product : AuditableEntity
         _variants.Add(variant);
         AddDomainEvent(new ProductVariantAddedDomainEvent(this, variant));
     }
+
+    public void RemoveVariant(ProductVariant variant, string? modifiedBy = null)
+    {
+        Guard.Against.Null(variant, nameof(variant));
+
+        if (!_variants.Contains(variant))
+            throw new DomainException($"Variant with SKU '{variant.Sku}' does not exist in the product.");
+
+        _variants.Remove(variant);
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductVariantRemovedDomainEvent(this, variant));
+    }
+
+    public void ClearAttributes(string? modifiedBy = null)
+    {
+        _attributes.Clear();
+        SetModified(modifiedBy);
+        AddDomainEvent(new ProductAttributesClearedDomainEvent(this));
+    }
+
 }
+    public record ProductAttributesClearedDomainEvent(Product Product) : DomainEvent;
+    public record ProductVariantRemovedDomainEvent(Product Product, ProductVariant Variant) : DomainEvent;
 
 public record ProductBarcodeUpdatedDomainEvent(Product Product, string? Barcode) : DomainEvent;
 
